@@ -1,8 +1,6 @@
 package com.github.vizaizai.worker.core.processor;
 
 import com.github.vizaizai.common.model.TaskContext;
-import com.github.vizaizai.worker.core.annotation.Job;
-import com.github.vizaizai.worker.core.processor.BasicProcessor;
 
 import java.lang.reflect.Method;
 
@@ -65,5 +63,10 @@ public class MethodProcessor implements BasicProcessor {
 
     public Method getMethod() {
         return method;
+    }
+
+    @Override
+    public String toString() {
+        return name + "[" + bean.getClass() + "." + method.getName() + "(...)]";
     }
 }

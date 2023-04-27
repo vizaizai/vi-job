@@ -9,10 +9,12 @@ import com.github.vizaizai.remote.common.sender.Sender;
 import com.github.vizaizai.remote.server.processor.BizProcessor;
 import com.github.vizaizai.remote.utils.Utils;
 import com.github.vizaizai.worker.core.processor.BasicProcessor;
+import com.github.vizaizai.worker.core.processor.ProcessorRunner;
 import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 /**
  * Processor执行器
@@ -31,7 +33,11 @@ public class TaskExecutor implements BizProcessor {
      * @param processor 处理器
      */
     public static void register(String jobName, BasicProcessor processor) {
-        processors.put(jobName,processor);
+        if (processors.get(jobName) == null) {
+            processors.put(jobName,processor);
+        }else {
+            throw new RuntimeException("JobName[" + jobName + "] must be unique.") ;
+        }
     }
 
     /**
@@ -40,7 +46,7 @@ public class TaskExecutor implements BizProcessor {
      */
     public static void register(Map<String, BasicProcessor> processorMap) {
         if (Utils.isNotEmpty(processorMap)) {
-            processors.putAll(processorMap);
+            processorMap.forEach(TaskExecutor::register);
         }
 
     }
@@ -54,19 +60,20 @@ public class TaskExecutor implements BizProcessor {
         TaskContext taskContext = (TaskContext) request.getParam();
         TaskResult result;
         // 执行处理器
-        try {
-            BasicProcessor basicProcessor = processors.get(taskContext.getJobName());
-            if (basicProcessor != null) {
-                basicProcessor.execute(taskContext);
-                result = TaskResult.ok();
-            }else {
-                result = TaskResult.fail("Processor not found");
-            }
-        }catch (Exception e) {
-            logger.error("Execute '" + taskContext.getJobName() +"' error,",e);
-            result = TaskResult.fail(e.getMessage());
+        BasicProcessor basicProcessor = processors.get(taskContext.getJobName());
+        if (basicProcessor != null) {
+            result = TaskResult.ok();
+        }else {
+            result = TaskResult.fail("Processor not found");
         }
+        // 响应客户端
         RpcResponse response = RpcResponse.ok(request.getRequestId(), result);
         sender.send(response);
+
+        if (basicProcessor != null) {
+            // 推入待执行任务队列中
+            ProcessorRunner runner = ProcessorRunner.getInstance(taskContext.getJobId(), basicProcessor);
+            runner.pushTaskQueue(taskContext);
+        }
     }
 }

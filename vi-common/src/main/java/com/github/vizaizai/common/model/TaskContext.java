@@ -25,6 +25,11 @@ public class TaskContext implements Serializable {
      * 任务参数
      */
     private String jobParams;
+    /**
+     * 任务超时时间（单位：秒）
+     */
+    private Integer executeTimeout;
+
 
 
     public String getJobId() {
@@ -57,6 +62,14 @@ public class TaskContext implements Serializable {
 
     public void setJobParams(String jobParams) {
         this.jobParams = jobParams;
+    }
+
+    public Integer getExecuteTimeout() {
+        return executeTimeout;
+    }
+
+    public void setExecuteTimeout(Integer executeTimeout) {
+        this.executeTimeout = executeTimeout;
     }
 
     @Override

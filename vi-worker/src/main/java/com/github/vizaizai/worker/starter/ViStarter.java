@@ -62,6 +62,7 @@ public class ViStarter {
         if (this.port == null) {
             throw new IllegalArgumentException("Port must be not null");
         }
+        logger.info("host: {}",host);
         Server server = new NettyServer(this.host,this.port);
         server.addBizProcessor(BizCode.RUN, new TaskExecutor());
         server.start();

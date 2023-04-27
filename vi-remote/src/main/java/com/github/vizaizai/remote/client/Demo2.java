@@ -14,11 +14,11 @@ import org.slf4j.Logger;
 public class Demo2 {
     private static final Logger logger = LoggerFactory.getLogger(Demo2.class);
     public static void main(String[] args) {
-        Client client = new NettyPoolClient("127.0.0.1", 7070);
+        Client client = new NettyPoolClient("192.168.233.1", 3923);
         Sender sender = client.connect();
         TaskContext taskContext = new TaskContext();
         taskContext.setJobId("11111");
-        taskContext.setJobName("testJob");
+        taskContext.setJobName("demo-job");
         taskContext.setJobDispatchId("34444444");
         taskContext.setJobParams("fffffffffef&12");
 

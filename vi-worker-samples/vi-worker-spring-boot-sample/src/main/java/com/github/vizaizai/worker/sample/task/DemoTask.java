@@ -1,25 +1,28 @@
-package com.github.vizaizai.worker.core.processor;
+package com.github.vizaizai.worker.sample.task;
 
-import com.github.vizaizai.common.model.TaskContext;
 import com.github.vizaizai.logging.LoggerFactory;
 import com.github.vizaizai.worker.core.annotation.Job;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 /**
  * @author liaochongwei
- * @date 2023/4/25 14:16
+ * @date 2023/4/26 10:39
  */
+@Component
 public class DemoTask {
     private static final Logger logger = LoggerFactory.getLogger(DemoTask.class);
 
-    @Job("testJob")
-    private void job1(TaskContext taskContext) {
-        logger.info("开始执行定时任务: {}",taskContext.getJobId());
+    @Job("demo-job")
+    public void foo() {
+
+        logger.info("开始执行定时任务...");
         try {
             Thread.sleep(1000 * 10);
         }catch (Exception e) {
 
         }
-        logger.info("执行定时任务结束");
+        logger.info("执行订单任务完毕...");
+
     }
 }

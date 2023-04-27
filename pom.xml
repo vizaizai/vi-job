@@ -13,6 +13,7 @@
         <module>vi-worker</module>
         <module>vi-common</module>
         <module>vi-worker-boot-starter</module>
+        <module>vi-worker-samples</module>
     </modules>
 
     <properties>

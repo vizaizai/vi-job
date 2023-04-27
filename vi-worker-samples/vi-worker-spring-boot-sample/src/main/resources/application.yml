@@ -1,0 +1,14 @@
+server:
+  port: 8108
+
+
+spring:
+  application:
+    name: springboot-demo
+
+
+vi-job:
+  server:
+    address: 127.0.0.1:1101
+  worker:
+    app-name: ${spring.application.name}

@@ -1,5 +1,7 @@
 package com.github.vizaizai.worker.config;
 
+import com.github.vizaizai.worker.core.processor.method.JobMethodResolver;
+import com.github.vizaizai.worker.processor.SpringMethodResolver;
 import com.github.vizaizai.worker.starter.ViStarter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -25,5 +27,12 @@ public class ViJobAutoConfiguration {
         viStarter.start();
         return viStarter;
     }
+
+    @Bean
+    public JobMethodResolver jobMethodResolver() {
+        return new SpringMethodResolver();
+    }
+
+
 
 }

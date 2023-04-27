@@ -40,9 +40,9 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
                 60L,
                 TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(2000),
-                new BasicThreadFactory.Builder().namingPattern("vi-job, NettyServer bizThreadPool-%d").build(),
+                new BasicThreadFactory.Builder().namingPattern("NettyServer-bizProcessor-%d").build(),
                 (r, executor) -> {
-                    throw new RuntimeException("vi-job, NettyServer bizThreadPool is EXHAUSTED!");
+                    throw new RuntimeException("vi-job, NettyServer bizProcessor-pool is exhausted!");
                 });
     }
 
