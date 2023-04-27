@@ -70,6 +70,7 @@ public class RpcResponse implements Serializable {
         RpcResponse response = new RpcResponse();
         response.setRequestId(requestId);
         response.setSuccess(true);
+        response.setMsg(msg);
         return response;
     }
 

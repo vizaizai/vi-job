@@ -42,11 +42,6 @@ public class ProcessorRunner extends Thread{
      */
     private boolean running = false;
     /**
-     * 空闲次数
-     */
-    private int idleTimes = 0;
-
-    /**
      * 获取运行器
      * @param jobId 任务id
      * @param processor 任务处理器
@@ -84,28 +79,45 @@ public class ProcessorRunner extends Thread{
 
     @Override
     public void run() {
+        long startTime = System.currentTimeMillis();
         while (!stop) {
-            this.idleTimes ++;
             this.running = false;
-
             try {
                TaskContext taskContext = this.waitingTask.poll(5, TimeUnit.SECONDS);
                if (taskContext != null) {
-                   this.idleTimes = 0;
                    this.running = true;
-                   // 执行处理器
-                  try {
-                      this.processor.execute(taskContext);
-                  }catch (Exception ie) {
-                      logger.error("Execute error[{}-{}],",taskContext.getJobName(),taskContext.getJobId(),ie);
-                  }
-                   // 回调调度中心
+                   long st = System.currentTimeMillis();
+                   try {
+                       // 执行处理器
+                       this.processor.execute(taskContext);
+                       // 上报执行结果
+                   }catch (Exception ie) {
+                       logger.error("{}#{} execute error,",taskContext.getJobName(),taskContext.getJobId(),ie);
+                       // 上报执行结果
+                   }finally {
+                       long eTime = (System.currentTimeMillis() - st) / 1000;
+                       // 执行超时
+                       if (taskContext.getExecuteTimeout() != null
+                               && eTime > taskContext.getExecuteTimeout()) {
+                           logger.warn("{}#{} execute timeout.", taskContext.getJobName(),taskContext.getJobId());
+                       }
+                   }
+                   // 重置时间
+                   startTime = System.currentTimeMillis();
+               }else {
+                   // 空闲30s停止运行器
+                   if ((System.currentTimeMillis() - startTime) / 1000 >= 30
+                           && waitingTask.size() == 0) {
+                       stop = true;
+                       runners.remove(this.jobId);
+                       logger.info("Thead[{}] idle 30s", this.getName());
+                       this.interrupt();
+                   }
                }
-
            }catch (Exception e) {
-
-           }finally {
-
+                if (!stop) {
+                    logger.error("Thead[{}] exception,", this.getName(), e);
+                }
            }
         }
     }
@@ -126,7 +138,7 @@ public class ProcessorRunner extends Thread{
         return stop;
     }
 
-    public int getIdleTimes() {
-        return idleTimes;
+    public boolean isRunning() {
+        return running;
     }
 }

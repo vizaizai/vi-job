@@ -9,6 +9,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleStateEvent;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import java.net.SocketAddress;
@@ -44,8 +45,9 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<RpcResponse>
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RpcResponse response) throws Exception {
-        logger.debug("收到请求: {}",response);
-        NettySender.done(response.getRequestId(), response);
+        if (StringUtils.isNotBlank(response.getRequestId())) {
+            NettySender.done(response.getRequestId(), response);
+        }
     }
 
 

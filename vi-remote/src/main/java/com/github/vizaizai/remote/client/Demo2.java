@@ -14,17 +14,41 @@ import org.slf4j.Logger;
 public class Demo2 {
     private static final Logger logger = LoggerFactory.getLogger(Demo2.class);
     public static void main(String[] args) {
-        Client client = new NettyPoolClient("192.168.233.1", 3923);
-        Sender sender = client.connect();
-        TaskContext taskContext = new TaskContext();
-        taskContext.setJobId("11111");
-        taskContext.setJobName("demo-job");
-        taskContext.setJobDispatchId("34444444");
-        taskContext.setJobParams("fffffffffef&12");
 
-        logger.info("开始发送");
-        RpcRequest request = RpcRequest.wrap(BizCode.RUN, taskContext);
-        Object response = sender.sendAndRevResponse(request.getRequestId(), request, -1);
-        logger.info("收到响应: {}",response);
+        TaskContext taskContext1 = new TaskContext();
+        taskContext1.setJobId("11111");
+        taskContext1.setJobName("demoTask1");
+        taskContext1.setJobDispatchId("34444444");
+        taskContext1.setJobParams("fffffffffef&12");
+        taskContext1.setExecuteTimeout(3);
+
+        TaskContext taskContext2 = new TaskContext();
+        taskContext2.setJobId("22222");
+        taskContext2.setJobName("demoTask2");
+        taskContext2.setJobDispatchId("34444444");
+        taskContext2.setJobParams("fffffffffef&12");
+        taskContext2.setExecuteTimeout(3);
+
+        for (int i = 0; i < 120; i++) {
+            long s = System.currentTimeMillis();
+            Client client = new NettyPoolClient("192.168.233.1", 3923);
+            Sender sender = client.connect();
+            logger.info("耗时：{}ms",System.currentTimeMillis() - s);
+
+            RpcRequest request = RpcRequest.wrap(BizCode.RUN, taskContext1);
+            Object response = sender.sendAndRevResponse(request.getRequestId(), request, -1);
+            //logger.info("收到响应: {}",response);
+        }
+
+        for (int i = 0; i < 300; i++) {
+            long s = System.currentTimeMillis();
+            Client client = new NettyPoolClient("192.168.233.1", 3923);
+            Sender sender = client.connect();
+            logger.info("耗时：{}ms",System.currentTimeMillis() - s);
+
+            RpcRequest request = RpcRequest.wrap(BizCode.RUN, taskContext2);
+            Object response = sender.sendAndRevResponse(request.getRequestId(), request, -1);
+            //logger.info("收到响应: {}",response);
+        }
     }
 }
