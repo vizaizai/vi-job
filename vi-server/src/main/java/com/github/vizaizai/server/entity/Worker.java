@@ -6,22 +6,28 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 系统用户
+ * 执行器
  * @author liaochongwei
- * @date 2023/5/6 11:13
+ * @date 2023/5/7 17:10
  */
 @Data
-@TableName(value = "sys_user")
-public class User {
+@TableName(value = "worker")
+public class Worker {
 
-    @TableId(type = IdType.ASSIGN_ID)
-    private String id;
-
-    private String userName;
-
-    private String password;
-
-    private String passwordSalt;
+    @TableId(type = IdType.AUTO)
+    private Integer id;
+    /**
+     * 执行器名称
+     */
+    private String name;
+    /**
+     * 应用名称
+     */
+    private String appName;
+    /**
+     * 在线地址列表
+     */
+    private String addrList;
 
     private String creater;
 
@@ -32,4 +38,6 @@ public class User {
 
     @TableField(fill = FieldFill.UPDATE)
     private LocalDateTime updateTime;
+
+
 }

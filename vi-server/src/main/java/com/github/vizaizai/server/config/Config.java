@@ -1,5 +1,9 @@
 package com.github.vizaizai.server.config;
 
+import com.baomidou.mybatisplus.annotation.DbType;
+import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +18,7 @@ import javax.servlet.Filter;
  * @date 2023/4/28 16:37
  */
 @Configuration
+@MapperScan("com.github.vizaizai.server.dao")
 public class Config {
     @Bean
     public FilterRegistrationBean<Filter> corsFilter() {
@@ -32,5 +37,15 @@ public class Config {
         return bean;
     }
 
+    @Bean
+    public CustomMetaObjectHandler metaObjectHandler() {
+        return new CustomMetaObjectHandler();
+    }
 
+    @Bean
+    public MybatisPlusInterceptor mybatisPlusInterceptor() {
+        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+        interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
+        return interceptor;
+    }
 }

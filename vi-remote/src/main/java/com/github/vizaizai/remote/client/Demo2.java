@@ -8,6 +8,7 @@ import com.github.vizaizai.remote.common.sender.Sender;
 import org.slf4j.Logger;
 
 /**
+ *
  * @author liaochongwei
  * @date 2023/4/20 14:45
  */
@@ -31,7 +32,7 @@ public class Demo2 {
 
         for (int i = 0; i < 120; i++) {
             long s = System.currentTimeMillis();
-            Client client = new NettyPoolClient("192.168.233.1", 3923);
+            Client client = new NettyPoolClient("192.168.1.101", 3923);
             Sender sender = client.connect();
             logger.info("耗时：{}ms",System.currentTimeMillis() - s);
 
@@ -42,7 +43,7 @@ public class Demo2 {
 
         for (int i = 0; i < 300; i++) {
             long s = System.currentTimeMillis();
-            Client client = new NettyPoolClient("192.168.233.1", 3923);
+            Client client = new NettyPoolClient("192.168.1.101", 3923);
             Sender sender = client.connect();
             logger.info("耗时：{}ms",System.currentTimeMillis() - s);
 

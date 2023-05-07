@@ -3,20 +3,20 @@ package com.github.vizaizai.server.service.impl;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.crypto.digest.DigestUtil;
-import com.github.vizaizai.server.web.co.LoginCO;
-import com.github.vizaizai.server.web.co.UserAddCO;
-import com.github.vizaizai.server.web.dto.Result;
-import com.github.vizaizai.server.web.dto.UserDTO;
-import com.github.vizaizai.server.dao.UserRepository;
+import com.github.vizaizai.server.dao.UserMapper;
 import com.github.vizaizai.server.entity.User;
 import com.github.vizaizai.server.service.UserService;
 import com.github.vizaizai.server.utils.BeanUtils;
 import com.github.vizaizai.server.utils.UserUtils;
+import com.github.vizaizai.server.web.co.LoginCO;
+import com.github.vizaizai.server.web.co.UserAddCO;
+import com.github.vizaizai.server.web.dto.Result;
+import com.github.vizaizai.server.web.dto.UserDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 
 /**
@@ -28,7 +28,7 @@ import java.time.LocalDateTime;
 public class UserServiceImpl implements UserService {
 
     @Resource
-    private UserRepository userRepository;
+    private UserMapper userMapper;
 
     @Transactional
     @Override
@@ -39,13 +39,13 @@ public class UserServiceImpl implements UserService {
         user.setPassword(DigestUtil.md5Hex(DigestUtil.sha1Hex(user.getPassword())  + user.getPasswordSalt()));
         user.setCreater("sys");
         user.setCreateTime(LocalDateTime.now());
-        userRepository.save(user);
+        userMapper.insert(user);
         return Result.ok("新增用户成功");
     }
 
     @Override
     public Result<String> login(LoginCO loginCO) {
-        User user = userRepository.findByUserName(loginCO.getUserName());
+        User user = userMapper.findByUserName(loginCO.getUserName());
         if (user == null) {
             log.info("用户名【{}】不存在",loginCO.getUserName());
             return Result.handleFailure("用户名或密码错误");
