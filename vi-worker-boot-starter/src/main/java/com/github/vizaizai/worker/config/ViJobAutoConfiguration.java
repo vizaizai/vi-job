@@ -20,7 +20,7 @@ public class ViJobAutoConfiguration {
     @Bean
     public ViStarter viStarter(ServerProperties serverProperties, WorkerProperties workerProperties) {
         ViStarter viStarter = new ViStarter();
-        viStarter.setServerAddress(serverProperties.getAddress());
+        viStarter.setServerAddr(serverProperties.getAddress());
         viStarter.setAppName(workerProperties.getAppName());
         viStarter.setHost(workerProperties.getHost());
         viStarter.setPort(workerProperties.getPort());

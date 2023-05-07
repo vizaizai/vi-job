@@ -20,9 +20,9 @@ public class ViStarter {
      */
     private String appName;
     /**
-     * viJob-server地址，集群用逗号隔开
+     * vi-server地址，集群用逗号隔开
      */
-    private String serverAddress;
+    private String serverAddr;
     /**
      * 本地地址，默认由系统获取
      */
@@ -36,8 +36,8 @@ public class ViStarter {
         return appName;
     }
 
-    public String getServerAddress() {
-        return serverAddress;
+    public String getServerAddr() {
+        return serverAddr;
     }
 
     public String getHost() {
@@ -76,8 +76,8 @@ public class ViStarter {
         this.appName = appName;
     }
 
-    public void setServerAddress(String serverAddress) {
-        this.serverAddress = serverAddress;
+    public void setServerAddr(String serverAddr) {
+        this.serverAddr = serverAddr;
     }
 
     public void setHost(String host) {
