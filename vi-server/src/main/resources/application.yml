@@ -12,4 +12,4 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 auth:
-  excluded: /user/login
+  excluded: /user/login,/worker/**

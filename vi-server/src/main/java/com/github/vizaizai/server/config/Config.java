@@ -7,6 +7,7 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -17,6 +18,7 @@ import javax.servlet.Filter;
  * @author liaochongwei
  * @date 2023/4/28 16:37
  */
+@EnableScheduling
 @Configuration
 @MapperScan("com.github.vizaizai.server.dao")
 public class Config {

@@ -25,9 +25,9 @@ public class Worker {
      */
     private String appName;
     /**
-     * 在线地址列表
+     * 调度宿主
      */
-    private String addrList;
+    private String serverHost;
 
     private String creater;
 

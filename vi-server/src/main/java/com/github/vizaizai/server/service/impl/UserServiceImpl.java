@@ -1,6 +1,5 @@
 package com.github.vizaizai.server.service.impl;
 
-import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.github.vizaizai.server.dao.UserMapper;
@@ -10,14 +9,13 @@ import com.github.vizaizai.server.utils.BeanUtils;
 import com.github.vizaizai.server.utils.UserUtils;
 import com.github.vizaizai.server.web.co.LoginCO;
 import com.github.vizaizai.server.web.co.UserAddCO;
-import com.github.vizaizai.server.web.dto.Result;
+import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.server.web.dto.UserDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
 
 /**
  * @author liaochongwei
@@ -34,11 +32,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public Result<Void> addSysUser(UserAddCO userAddCO) {
         User user = BeanUtils.toBean(userAddCO, User::new);
-        user.setId(UUID.fastUUID().toString(true));
+        User userExist = userMapper.findByUserName(userAddCO.getUserName());
+        if (userExist != null) {
+            return Result.handleFailure("用户已存在");
+        }
         user.setPasswordSalt(RandomUtil.randomString(5));
         user.setPassword(DigestUtil.md5Hex(DigestUtil.sha1Hex(user.getPassword())  + user.getPasswordSalt()));
-        user.setCreater("sys");
-        user.setCreateTime(LocalDateTime.now());
+        user.setCreater(UserUtils.getUserName());
         userMapper.insert(user);
         return Result.ok("新增用户成功");
     }

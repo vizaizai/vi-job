@@ -1,4 +1,4 @@
-package com.github.vizaizai.server.web.dto;
+package com.github.vizaizai.common.model;
 
 import org.apache.commons.lang3.StringUtils;
 

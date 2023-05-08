@@ -1,7 +1,7 @@
 package com.github.vizaizai.server.utils;
 
 
-import org.springframework.data.domain.Page;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -90,11 +90,11 @@ public class BeanUtils {
      * @param <V> 数据目标类型
      * @return
      */
-    public static <E,V> Page<V> toPageBean(Page<E> pageSource, Class<V> targetClazz) {
+    public static <E,V> IPage<V> toPageBean(IPage<E> pageSource, Class<V> targetClazz) {
         if (pageSource == null) {
             return null;
         }
-        return pageSource.map(e -> toBean(e, targetClazz));
+        return pageSource.convert(e -> toBean(e, targetClazz));
     }
 
     /**
@@ -105,10 +105,10 @@ public class BeanUtils {
      * @param <V> 数据目标类型
      * @return
      */
-    public static <E,V> Page<V> toPageBean(Page<E> pageSource, Supplier<V> targetGetter) {
+    public static <E,V> IPage<V> toPageBean(IPage<E> pageSource, Supplier<V> targetGetter) {
         if (pageSource == null) {
             return null;
         }
-        return pageSource.map(e -> toBean(e, targetGetter));
+        return pageSource.convert(e -> toBean(e, targetGetter));
     }
 }

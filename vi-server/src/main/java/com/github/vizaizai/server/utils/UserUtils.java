@@ -31,6 +31,11 @@ public class UserUtils {
         JWT jwt = JWTUtil.parseToken(token);
         return jwt.getPayloads().toBean(User.class);
     }
+    public static String getUserName() {
+        User user = getUser();
+        return user == null ? null : user.getUserName();
+    }
+
 
 
     public static String createToken(User user) {

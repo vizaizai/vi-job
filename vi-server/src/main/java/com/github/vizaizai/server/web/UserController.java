@@ -2,7 +2,7 @@ package com.github.vizaizai.server.web;
 
 import com.github.vizaizai.server.web.co.LoginCO;
 import com.github.vizaizai.server.web.co.UserAddCO;
-import com.github.vizaizai.server.web.dto.Result;
+import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.server.web.dto.UserDTO;
 import com.github.vizaizai.server.service.UserService;
 import org.springframework.validation.annotation.Validated;

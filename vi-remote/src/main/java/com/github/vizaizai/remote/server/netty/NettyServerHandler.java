@@ -84,7 +84,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
             ctx.channel().close();
-            logger.warn("Channel idle in last {} seconds, close it", 30);
+            logger.warn("Channel idle in last {} seconds, close it", 90);
         } else {
             super.userEventTriggered(ctx, evt);
         }

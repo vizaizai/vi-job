@@ -24,6 +24,9 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<RpcResponse>
     private volatile Channel channel;
     private SocketAddress remotePeer;
     private NettySender nettySender;
+
+
+
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);

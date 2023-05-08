@@ -24,6 +24,10 @@ public class Registry {
      * 注册地址
      */
     private String address;
+    /**
+     * 是否在线 1-是 0-否
+     */
+    private Integer online;
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;

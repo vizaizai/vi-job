@@ -1,6 +1,6 @@
 package com.github.vizaizai.server.web.handler;
 
-import com.github.vizaizai.server.web.dto.Result;
+import com.github.vizaizai.common.model.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUploadBase;
 import org.springframework.beans.factory.annotation.Autowired;
