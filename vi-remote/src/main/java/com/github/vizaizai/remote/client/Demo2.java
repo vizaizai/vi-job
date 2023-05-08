@@ -2,8 +2,10 @@ package com.github.vizaizai.remote.client;
 
 import com.github.vizaizai.common.model.TaskContext;
 import com.github.vizaizai.logging.LoggerFactory;
+import com.github.vizaizai.remote.client.idle.IdleEventHandler;
 import com.github.vizaizai.remote.codec.RpcRequest;
 import com.github.vizaizai.remote.common.BizCode;
+import com.github.vizaizai.remote.common.HeartBeat;
 import com.github.vizaizai.remote.common.sender.Sender;
 import org.slf4j.Logger;
 
@@ -30,9 +32,25 @@ public class Demo2 {
         taskContext2.setJobParams("fffffffffef&12");
         taskContext2.setExecuteTimeout(3);
 
-        for (int i = 0; i < 120; i++) {
+        for (int i = 0; i < 2; i++) {
             long s = System.currentTimeMillis();
-            Client client = new NettyPoolClient("192.168.1.101", 3923);
+            Client client = new NettyPoolClient("192.168.1.105", 3923);
+            client.setIdleEventHandlerGetter(()->{
+                return new IdleEventHandler() {
+                    @Override
+                    public void handle(Sender sender) {
+                        long s = System.currentTimeMillis();
+                        RpcRequest request = RpcRequest.wrap(HeartBeat.CODE, "ping");
+                        logger.debug("[{}_{}]PING",sender.getRemoteAddress(),request.getRequestId());
+                        try {
+                            Object o = sender.sendAndRevResponse(request.getRequestId(), request, 15000);
+                            logger.debug("收到pong：{},耗时:{}ms",o,(System.currentTimeMillis() - s));
+                        }catch (Exception e) {
+                            logger.warn("[{}] send error:",request.getRequestId(),e);
+                        }
+                    }
+                };
+            });
             Sender sender = client.connect();
             logger.info("耗时：{}ms",System.currentTimeMillis() - s);
 
@@ -41,9 +59,9 @@ public class Demo2 {
             //logger.info("收到响应: {}",response);
         }
 
-        for (int i = 0; i < 300; i++) {
+        for (int i = 0; i < 4; i++) {
             long s = System.currentTimeMillis();
-            Client client = new NettyPoolClient("192.168.1.101", 3923);
+            Client client = new NettyPoolClient("192.168.1.105", 3923);
             Sender sender = client.connect();
             logger.info("耗时：{}ms",System.currentTimeMillis() - s);
 

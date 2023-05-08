@@ -1,6 +1,7 @@
 package com.github.vizaizai.remote.client.netty;
 
 import com.github.vizaizai.logging.LoggerFactory;
+import com.github.vizaizai.remote.client.idle.IdleEventHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
@@ -13,6 +14,7 @@ import io.netty.util.concurrent.FutureListener;
 import org.slf4j.Logger;
 
 import java.net.InetSocketAddress;
+import java.util.function.Supplier;
 
 /**
  * netty连接池
@@ -30,8 +32,24 @@ public class NettyConnectionPool {
     private final Bootstrap bootstrap = new Bootstrap();
     private final EventLoopGroup eventLoopGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2);
     private ChannelPoolMap<InetSocketAddress, SimpleChannelPool> poolMap;
+    private Supplier<IdleEventHandler> idleEventGetter;
+    private static volatile NettyConnectionPool nettyConnectionPool = null;
+    public static NettyConnectionPool getInstance() {
+        return getInstance(null);
+    }
+    public static synchronized NettyConnectionPool getInstance(Supplier<IdleEventHandler> initGetter) {
+        if (nettyConnectionPool == null) {
+            synchronized (NettyConnectionPool.class) {
+                if (nettyConnectionPool == null) {
+                    nettyConnectionPool = new NettyConnectionPool();
+                    nettyConnectionPool.idleEventGetter = initGetter;
+                }
+            }
+        }
+        return nettyConnectionPool;
+    }
 
-    public NettyConnectionPool() {
+    private NettyConnectionPool() {
         this.init();
     }
 
@@ -43,7 +61,8 @@ public class NettyConnectionPool {
         poolMap = new AbstractChannelPoolMap<InetSocketAddress, SimpleChannelPool>() {
             @Override
             protected SimpleChannelPool newPool(InetSocketAddress key) {
-                return new FixedChannelPool(bootstrap.remoteAddress(key), new NettyChannelPoolHandler(),
+                IdleEventHandler handler = idleEventGetter == null ? null : idleEventGetter.get();
+                return new FixedChannelPool(bootstrap.remoteAddress(key), new NettyChannelPoolHandler(handler),
                         healthCheck,acquireTimeoutAction, acquireTimeoutMillis, maxConnect,maxPendingAcquires,true,true);
             }
         };

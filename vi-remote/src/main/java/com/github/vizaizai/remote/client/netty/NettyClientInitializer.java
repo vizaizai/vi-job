@@ -19,6 +19,8 @@ import java.util.concurrent.TimeUnit;
  * @date 2023/4/20 11:36
  */
 public class NettyClientInitializer  extends ChannelInitializer<SocketChannel> {
+
+
     @Override
     protected void initChannel(SocketChannel sc) throws Exception {
         Serializer serializer = new KryoSerializer();

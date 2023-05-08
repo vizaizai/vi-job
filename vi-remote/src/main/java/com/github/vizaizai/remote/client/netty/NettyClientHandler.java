@@ -1,9 +1,8 @@
 package com.github.vizaizai.remote.client.netty;
 
 import com.github.vizaizai.logging.LoggerFactory;
-import com.github.vizaizai.remote.codec.RpcRequest;
+import com.github.vizaizai.remote.client.idle.IdleEventHandler;
 import com.github.vizaizai.remote.codec.RpcResponse;
-import com.github.vizaizai.remote.common.HeartBeat;
 import com.github.vizaizai.remote.common.sender.NettySender;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -13,6 +12,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import java.net.SocketAddress;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /*
  * netty客户端处理器
@@ -24,8 +25,14 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<RpcResponse>
     private volatile Channel channel;
     private SocketAddress remotePeer;
     private NettySender nettySender;
+    private IdleEventHandler idleEventHandler;
+    private static final Executor executor = Executors.newSingleThreadExecutor();
 
-
+    public NettyClientHandler() {
+    }
+    public NettyClientHandler(IdleEventHandler idleEventHandler) {
+        this.idleEventHandler = idleEventHandler;
+    }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -57,12 +64,8 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<RpcResponse>
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
-            RpcRequest request = RpcRequest.wrap(HeartBeat.CODE, "ping");
-            logger.debug("[{}_{}]PING",remotePeer,request.getRequestId());
-            try {
-                nettySender.send(request);
-            }catch (Exception e) {
-                logger.warn("[{}] send error:",request.getRequestId(),e);
+            if (this.idleEventHandler != null) {
+                executor.execute(()-> this.idleEventHandler.handle(this.nettySender));
             }
         } else {
             super.userEventTriggered(ctx, evt);

@@ -1,6 +1,9 @@
 package com.github.vizaizai.remote.client;
 
+import com.github.vizaizai.remote.client.idle.IdleEventHandler;
 import com.github.vizaizai.remote.common.sender.Sender;
+
+import java.util.function.Supplier;
 
 /**
  * 客户端
@@ -18,7 +21,9 @@ public interface Client {
      * 断开连接
      */
     void disconnect();
-
-
-
+    /**
+     * 设置心跳检测事件处理器getter
+     */
+    default void setIdleEventHandlerGetter(Supplier<IdleEventHandler> getter) {
+    }
 }
