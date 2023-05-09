@@ -3,6 +3,9 @@ package com.github.vizaizai.remote.client;
 import com.github.vizaizai.logging.LoggerFactory;
 import com.github.vizaizai.remote.client.netty.NettyClientHandler;
 import com.github.vizaizai.remote.client.netty.NettyClientInitializer;
+import com.github.vizaizai.remote.codec.RpcRequest;
+import com.github.vizaizai.remote.codec.RpcResponse;
+import com.github.vizaizai.remote.common.sender.NettySender;
 import com.github.vizaizai.remote.common.sender.Sender;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
@@ -48,9 +51,9 @@ public class NettyClient implements Client{
         this.bootstrap.group(eventLoopGroup)
                 .channel(NioSocketChannel.class)
                 .handler(new NettyClientInitializer());
+        this.connect();
     }
-    @Override
-    public Sender connect() {
+    private void connect() {
         final InetSocketAddress addr = new InetSocketAddress(this.host, this.port);
         startExecutor.execute(()->{
             ChannelFuture channelFuture = bootstrap.connect(addr);
@@ -71,12 +74,18 @@ public class NettyClient implements Client{
                 logger.error("Close future error.", ie);
             }
         });
-        return null;
     }
 
     @Override
-    public void disconnect() {
+    public RpcResponse request(RpcRequest request, long timeout) {
+        if (this.nettyClientHandler == null) {
+            throw new RuntimeException("Netty Client is not ready.");
+        }
+        return (RpcResponse) this.nettyClientHandler.getNettySender().sendAndRevResponse(request.getRequestId(), request, timeout);
+    }
 
+    @Override
+    public void destroy() {
     }
 
     public EventLoopGroup getEventLoopGroup() {
@@ -98,4 +107,6 @@ public class NettyClient implements Client{
     public NettyClientHandler getNettyClientHandler() {
         return nettyClientHandler;
     }
+
+
 }

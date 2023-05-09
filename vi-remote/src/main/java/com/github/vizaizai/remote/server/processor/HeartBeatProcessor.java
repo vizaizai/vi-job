@@ -6,6 +6,8 @@ import com.github.vizaizai.remote.codec.RpcResponse;
 import com.github.vizaizai.remote.common.sender.Sender;
 import org.slf4j.Logger;
 
+import java.util.Objects;
+
 /**
  * 心跳处理
  * @author liaochongwei
@@ -15,7 +17,10 @@ public class HeartBeatProcessor implements BizProcessor {
     private static final Logger logger = LoggerFactory.getLogger(HeartBeatProcessor.class);
     @Override
     public void execute(RpcRequest request, Sender sender) {
-        logger.info("[{}_{}]PONG",sender.getRemoteAddress(),request.getRequestId());
-        sender.send(RpcResponse.ok(request.getRequestId(),"pong"));
+        String action = (String) request.getParam();
+        if (Objects.equals(action,"ping")) {
+            logger.info("[{}_{}]PONG",sender.getRemoteAddress(),request.getRequestId());
+            sender.send(RpcResponse.ok(request.getRequestId(),"pong"));
+        }
     }
 }

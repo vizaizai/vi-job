@@ -25,7 +25,7 @@ public class Registry {
      */
     private String address;
     /**
-     * 是否在线 1-是 0-否
+     * 在线状态 1-是 0-否
      */
     private Integer online;
 

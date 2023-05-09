@@ -2,11 +2,9 @@ package com.github.vizaizai.remote.client;
 
 import com.github.vizaizai.common.model.TaskContext;
 import com.github.vizaizai.logging.LoggerFactory;
-import com.github.vizaizai.remote.client.idle.IdleEventHandler;
 import com.github.vizaizai.remote.codec.RpcRequest;
+import com.github.vizaizai.remote.codec.RpcResponse;
 import com.github.vizaizai.remote.common.BizCode;
-import com.github.vizaizai.remote.common.HeartBeat;
-import com.github.vizaizai.remote.common.sender.Sender;
 import org.slf4j.Logger;
 
 /**
@@ -16,7 +14,7 @@ import org.slf4j.Logger;
  */
 public class Demo2 {
     private static final Logger logger = LoggerFactory.getLogger(Demo2.class);
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
 
         TaskContext taskContext1 = new TaskContext();
         taskContext1.setJobId("11111");
@@ -32,42 +30,18 @@ public class Demo2 {
         taskContext2.setJobParams("fffffffffef&12");
         taskContext2.setExecuteTimeout(3);
 
-        for (int i = 0; i < 2; i++) {
-            long s = System.currentTimeMillis();
-            Client client = new NettyPoolClient("192.168.1.105", 3923);
-            client.setIdleEventHandlerGetter(()->{
-                return new IdleEventHandler() {
-                    @Override
-                    public void handle(Sender sender) {
-                        long s = System.currentTimeMillis();
-                        RpcRequest request = RpcRequest.wrap(HeartBeat.CODE, "ping");
-                        logger.debug("[{}_{}]PING",sender.getRemoteAddress(),request.getRequestId());
-                        try {
-                            Object o = sender.sendAndRevResponse(request.getRequestId(), request, 15000);
-                            logger.debug("收到pong：{},耗时:{}ms",o,(System.currentTimeMillis() - s));
-                        }catch (Exception e) {
-                            logger.warn("[{}] send error:",request.getRequestId(),e);
-                        }
-                    }
-                };
-            });
-            Sender sender = client.connect();
-            logger.info("耗时：{}ms",System.currentTimeMillis() - s);
-
-            RpcRequest request = RpcRequest.wrap(BizCode.RUN, taskContext1);
-            Object response = sender.sendAndRevResponse(request.getRequestId(), request, -1);
-            //logger.info("收到响应: {}",response);
+        Client client = NettyPoolClient.getInstance("192.168.233.1", 3923);
+        for (int i = 0; i < 3; i++) {
+            try {
+                long s = System.currentTimeMillis();
+                RpcRequest request = RpcRequest.wrap(BizCode.STOP, taskContext1);
+                RpcResponse response = client.request(request, 1500);
+                logger.info("收到响应: {}，耗时:{}ms",response,(System.currentTimeMillis()- s));
+            }catch (Exception e) {
+                logger.error("错误：",e);
+            }
         }
 
-        for (int i = 0; i < 4; i++) {
-            long s = System.currentTimeMillis();
-            Client client = new NettyPoolClient("192.168.1.105", 3923);
-            Sender sender = client.connect();
-            logger.info("耗时：{}ms",System.currentTimeMillis() - s);
-
-            RpcRequest request = RpcRequest.wrap(BizCode.RUN, taskContext2);
-            Object response = sender.sendAndRevResponse(request.getRequestId(), request, -1);
-            //logger.info("收到响应: {}",response);
-        }
+        //NettyConnectionPool.getInstance().remove(new InetSocketAddress("192.168.233.1",3923));
     }
 }

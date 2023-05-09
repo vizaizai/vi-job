@@ -1,7 +1,7 @@
 package com.github.vizaizai.remote.client.netty;
 
 import com.github.vizaizai.logging.LoggerFactory;
-import com.github.vizaizai.remote.client.idle.IdleEventHandler;
+import com.github.vizaizai.remote.client.idle.IdleEventListener;
 import com.github.vizaizai.remote.codec.RpcResponse;
 import com.github.vizaizai.remote.common.sender.NettySender;
 import io.netty.channel.Channel;
@@ -11,7 +11,6 @@ import io.netty.handler.timeout.IdleStateEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
-import java.net.SocketAddress;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -22,35 +21,32 @@ import java.util.concurrent.Executors;
  */
 public class NettyClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
     private static final Logger logger = LoggerFactory.getLogger(NettyClientHandler.class);
-    private volatile Channel channel;
-    private SocketAddress remotePeer;
     private NettySender nettySender;
-    private IdleEventHandler idleEventHandler;
+    private IdleEventListener idleEventListener;
     private static final Executor executor = Executors.newSingleThreadExecutor();
 
     public NettyClientHandler() {
     }
-    public NettyClientHandler(IdleEventHandler idleEventHandler) {
-        this.idleEventHandler = idleEventHandler;
+    public NettyClientHandler(IdleEventListener idleEventListener) {
+        this.idleEventListener = idleEventListener;
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        this.remotePeer = this.channel.remoteAddress();
     }
 
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         super.channelRegistered(ctx);
-        this.channel = ctx.channel();
-        this.nettySender = new NettySender(this.channel);
+        Channel channel = ctx.channel();
+        this.nettySender = new NettySender(channel);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.warn("Exception: {}", cause.getMessage());
         ctx.close();
+        logger.warn("Client cause exception:{}", cause.getMessage());
     }
 
     @Override
@@ -64,8 +60,8 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<RpcResponse>
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
-            if (this.idleEventHandler != null) {
-                executor.execute(()-> this.idleEventHandler.handle(this.nettySender));
+            if (this.idleEventListener != null) {
+                executor.execute(()-> this.idleEventListener.complete(this.nettySender));
             }
         } else {
             super.userEventTriggered(ctx, evt);
@@ -75,6 +71,10 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<RpcResponse>
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
-        logger.warn("{} disconnect", ctx.channel().remoteAddress());
+        logger.warn("Channel[{}] inactive,remote: {}",ctx.channel().id(), ctx.channel().remoteAddress());
+    }
+
+    public NettySender getNettySender() {
+        return nettySender;
     }
 }

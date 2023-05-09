@@ -1,7 +1,7 @@
 package com.github.vizaizai.remote.client.netty;
 
 import com.github.vizaizai.logging.LoggerFactory;
-import com.github.vizaizai.remote.client.idle.IdleEventHandler;
+import com.github.vizaizai.remote.client.idle.IdleEventListener;
 import com.github.vizaizai.remote.codec.RpcRequest;
 import com.github.vizaizai.remote.codec.RpcDecoder;
 import com.github.vizaizai.remote.codec.RpcEncoder;
@@ -24,10 +24,10 @@ import java.util.concurrent.TimeUnit;
  */
 public class NettyChannelPoolHandler implements ChannelPoolHandler {
     private static final Logger logger = LoggerFactory.getLogger(NettyChannelPoolHandler.class);
-    private final IdleEventHandler idleEventHandler;
+    private final IdleEventListener idleEventProcessor;
 
-    public NettyChannelPoolHandler(IdleEventHandler idleEventHandler) {
-        this.idleEventHandler = idleEventHandler;
+    public NettyChannelPoolHandler(IdleEventListener idleEventProcessor) {
+        this.idleEventProcessor = idleEventProcessor;
     }
 
     @Override
@@ -52,6 +52,6 @@ public class NettyChannelPoolHandler implements ChannelPoolHandler {
         cp.addLast("lengthFieldBasedFrameDecoder",new LengthFieldBasedFrameDecoder(65536, 0, 4, 0, 0));
         cp.addLast("rpcDecoder",new RpcDecoder(RpcResponse.class, serializer));
         cp.addLast("rpcEncoder",new RpcEncoder(RpcRequest.class, serializer));
-        cp.addLast("nettyClientHandler",new NettyClientHandler(idleEventHandler));
+        cp.addLast("nettyClientHandler",new NettyClientHandler(idleEventProcessor));
     }
 }

@@ -1,9 +1,9 @@
 package com.github.vizaizai.remote.client;
 
-import com.github.vizaizai.remote.client.idle.IdleEventHandler;
-import com.github.vizaizai.remote.common.sender.Sender;
+import com.github.vizaizai.remote.codec.RpcRequest;
+import com.github.vizaizai.remote.codec.RpcResponse;
 
-import java.util.function.Supplier;
+import java.net.InetSocketAddress;
 
 /**
  * 客户端
@@ -12,18 +12,9 @@ import java.util.function.Supplier;
  */
 public interface Client {
 
-    /**
-     * 连接
-     */
-    Sender connect();
-
-    /**
-     * 断开连接
-     */
-    void disconnect();
-    /**
-     * 设置心跳检测事件处理器getter
-     */
-    default void setIdleEventHandlerGetter(Supplier<IdleEventHandler> getter) {
+    RpcResponse request(RpcRequest request,long timeout);
+    void destroy();
+    default InetSocketAddress getAddress(){
+        return null;
     }
 }

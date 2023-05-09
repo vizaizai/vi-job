@@ -54,7 +54,6 @@ public class RpcRequest implements Serializable {
         request.setParam(param);
         return request;
     }
-
     @Override
     public String toString() {
         return "{" +

@@ -7,8 +7,8 @@ package com.github.vizaizai.remote.common;
  */
 public class HeartBeat {
     /**
-     * 业务码
+     * ping
      */
-    public static final String CODE = "heart-beat";
+    public static final String CODE = "heart_beat";
 
 }

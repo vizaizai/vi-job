@@ -31,9 +31,19 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
      * 业务处理执行线程池
      */
     private final Executor bizExecutor;
+    /**
+     * 心跳检查
+     */
+    private BizProcessor heartBeatProcessor;
+    /**
+     * 默认处理
+     */
+    private BizProcessor defaultProcessor;
 
     public NettyServerHandler(Map<String, BizProcessor> bizProcessorMap) {
         this.bizProcessorMap = bizProcessorMap;
+        this.heartBeatProcessor = new HeartBeatProcessor();
+        this.defaultProcessor = new DefaultProcessor();
         bizExecutor = new ThreadPoolExecutor(
                 0,
                 200,
@@ -61,17 +71,23 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
                     return;
                 }
                 if (Objects.equals(HeartBeat.CODE, bizCode)) {
-                    new HeartBeatProcessor().execute(rpcRequest, nettySender);
+                    heartBeatProcessor.execute(rpcRequest, nettySender);
                     return;
                 }
                 // 执行默认处理器
-                new DefaultProcessor().execute(rpcRequest, nettySender);
+                defaultProcessor.execute(rpcRequest, nettySender);
             });
         }catch (Exception e) {
             logger.error("Execute error,", e);
             nettySender.send(RpcResponse.error(rpcRequest.getRequestId(),e.getMessage()));
         }
 
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
+        logger.warn("{} down",ctx.channel().remoteAddress());
     }
 
     @Override
