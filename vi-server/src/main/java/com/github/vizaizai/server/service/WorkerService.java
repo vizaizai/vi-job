@@ -1,7 +1,7 @@
 package com.github.vizaizai.server.service;
 
-import com.github.vizaizai.server.web.co.RegisterCO;
 import com.github.vizaizai.common.model.Result;
+import com.github.vizaizai.server.web.co.RegisterCO;
 import com.github.vizaizai.server.web.co.WorkerUpdateCO;
 
 /**
@@ -36,5 +36,6 @@ public interface WorkerService {
      * @return
      */
     Result<Void> unregister(RegisterCO registerCO);
+
     
 }

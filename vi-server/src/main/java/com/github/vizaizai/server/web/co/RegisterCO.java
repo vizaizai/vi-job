@@ -17,8 +17,8 @@ public class RegisterCO {
     @NotNull(message = "应用名称必须")
     private String appName;
     /**
-     * 注入地址
+     * 注册地址
      */
-    @NotNull(message = "注入地址必须")
+    @NotNull(message = "注册地址必须")
     private String address;
 }

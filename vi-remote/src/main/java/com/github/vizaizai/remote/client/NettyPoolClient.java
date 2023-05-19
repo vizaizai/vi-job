@@ -61,12 +61,12 @@ public class NettyPoolClient implements Client{
         NettyConnectionPool.getInstance().remove(this.inetSocketAddress);
     }
 
-    public Sender createSender() {
+    private Sender createSender() {
         channel = NettyConnectionPool.getInstance().acquire(inetSocketAddress);
         return new NettySender(channel);
     }
 
-    public void release() {
+    private void release() {
         NettyConnectionPool.getInstance().release(this.channel, inetSocketAddress);
     }
 

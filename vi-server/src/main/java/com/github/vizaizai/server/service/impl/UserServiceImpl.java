@@ -3,7 +3,7 @@ package com.github.vizaizai.server.service.impl;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.github.vizaizai.server.dao.UserMapper;
-import com.github.vizaizai.server.entity.User;
+import com.github.vizaizai.server.dao.dataobject.UserDO;
 import com.github.vizaizai.server.service.UserService;
 import com.github.vizaizai.server.utils.BeanUtils;
 import com.github.vizaizai.server.utils.UserUtils;
@@ -31,8 +31,8 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public Result<Void> addSysUser(UserAddCO userAddCO) {
-        User user = BeanUtils.toBean(userAddCO, User::new);
-        User userExist = userMapper.findByUserName(userAddCO.getUserName());
+        UserDO user = BeanUtils.toBean(userAddCO, UserDO::new);
+        UserDO userExist = userMapper.findByUserName(userAddCO.getUserName());
         if (userExist != null) {
             return Result.handleFailure("用户已存在");
         }
@@ -45,7 +45,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Result<String> login(LoginCO loginCO) {
-        User user = userMapper.findByUserName(loginCO.getUserName());
+        UserDO user = userMapper.findByUserName(loginCO.getUserName());
         if (user == null) {
             log.info("用户名【{}】不存在",loginCO.getUserName());
             return Result.handleFailure("用户名或密码错误");
@@ -60,7 +60,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Result<UserDTO> info() {
-        User user = UserUtils.getUser();
+        UserDO user = UserUtils.getUser();
         return Result.handleSuccess(BeanUtils.toBean(user, UserDTO::new));
     }
 }

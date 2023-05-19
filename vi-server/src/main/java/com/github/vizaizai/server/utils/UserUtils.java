@@ -3,7 +3,7 @@ package com.github.vizaizai.server.utils;
 import cn.hutool.jwt.JWT;
 import cn.hutool.jwt.JWTUtil;
 import cn.hutool.jwt.RegisteredPayload;
-import com.github.vizaizai.server.entity.User;
+import com.github.vizaizai.server.dao.dataobject.UserDO;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -21,7 +21,7 @@ public class UserUtils {
 
     public static final String key = "o64nbbf2uryzj8z34acomrp81sjdzfnh7bqsblqv3k93w50fnc9oixnltefdcnib";
 
-    public static User getUser() {
+    public static UserDO getUser() {
         ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (requestAttributes == null) {
             return null;
@@ -29,16 +29,16 @@ public class UserUtils {
         HttpServletRequest request = requestAttributes.getRequest();
         String token = request.getHeader("X-Token");
         JWT jwt = JWTUtil.parseToken(token);
-        return jwt.getPayloads().toBean(User.class);
+        return jwt.getPayloads().toBean(UserDO.class);
     }
     public static String getUserName() {
-        User user = getUser();
+        UserDO user = getUser();
         return user == null ? null : user.getUserName();
     }
 
 
 
-    public static String createToken(User user) {
+    public static String createToken(UserDO user) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("id", user.getId());
         payload.put("userName", user.getUserName());

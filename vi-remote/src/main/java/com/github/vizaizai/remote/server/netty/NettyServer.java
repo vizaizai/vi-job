@@ -14,8 +14,6 @@ import org.slf4j.Logger;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author liaochongwei
@@ -23,8 +21,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class NettyServer implements Server {
     private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);
-
-    private static final ExecutorService executor = Executors.newFixedThreadPool(1);
     /**
      * 地址
      */
@@ -50,7 +46,7 @@ public class NettyServer implements Server {
     }
 
     @Override
-    public void start() {
+    public void start(ExecutorService executor) {
         executor.execute(() -> {
             // 一个线程来接收连接
             EventLoopGroup bossGroup = new NioEventLoopGroup(1);
@@ -73,19 +69,6 @@ public class NettyServer implements Server {
                 workerGroup.shutdownGracefully();
             }
         });
-    }
-    @Override
-    public void stop() {
-        try {
-            // 关闭任务线程池
-            executor.shutdown();
-            // 等待关闭
-            if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
-                executor.shutdownNow();
-            }
-        }catch (Exception e) {
-            logger.error("ShutDownFailure.",e);
-        }
     }
 
     public String getHost() {

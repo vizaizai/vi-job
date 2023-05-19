@@ -1,4 +1,4 @@
-package com.github.vizaizai.server.entity;
+package com.github.vizaizai.server.dao.dataobject;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @TableName(value = "registry")
-public class Registry {
+public class RegistryDO {
 
     @TableId(type = IdType.AUTO)
     private Integer id;

@@ -1,4 +1,4 @@
-package com.github.vizaizai.server.entity;
+package com.github.vizaizai.server.dao.dataobject;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @TableName(value = "worker")
-public class Worker {
+public class WorkerDO {
 
     @TableId(type = IdType.AUTO)
     private Integer id;
@@ -24,10 +24,6 @@ public class Worker {
      * 应用名称
      */
     private String appName;
-    /**
-     * 调度宿主
-     */
-    private String serverHost;
 
     private String creater;
 

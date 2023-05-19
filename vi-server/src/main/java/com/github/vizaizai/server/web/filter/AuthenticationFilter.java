@@ -21,9 +21,13 @@ import java.nio.charset.Charset;
 @WebFilter(filterName = "authenticationFilter", urlPatterns = "/*")
 public class AuthenticationFilter implements Filter {
 
-
-    @Value("#{'${auth.excluded}'.split(',')}")
-    private String[] exclude;
+    /**
+     * 排除路径
+     */
+    private final static String[] exclude = new String[] {
+            "/user/login",
+            "/worker/**"
+    };
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) throws ServletException, IOException {
@@ -38,24 +42,21 @@ public class AuthenticationFilter implements Filter {
 
         boolean excludeFlag = false;
         String path;
-        if (this.exclude != null && this.exclude.length > 0) {
-            String[] paths = this.exclude;
-            for (String s : paths) {
-                path = s;
-                if (StringUtils.endsWith(path, "/**")) {
-                    if (StringUtils.startsWith(requestURI, StringUtils.substring(path, 0, path.length() - 3))) {
-                        excludeFlag = true;
-                        break;
-                    }
-                } else if (StringUtils.endsWith(path, "/*")) {
-                    if (StringUtils.startsWith(requestURI, StringUtils.substring(path, 0, path.length() - 2))) {
-                        excludeFlag = true;
-                        break;
-                    }
-                } else if (StringUtils.equals(requestURI, path)) {
+        for (String s : exclude) {
+            path = s;
+            if (StringUtils.endsWith(path, "/**")) {
+                if (StringUtils.startsWith(requestURI, StringUtils.substring(path, 0, path.length() - 3))) {
                     excludeFlag = true;
                     break;
                 }
+            } else if (StringUtils.endsWith(path, "/*")) {
+                if (StringUtils.startsWith(requestURI, StringUtils.substring(path, 0, path.length() - 2))) {
+                    excludeFlag = true;
+                    break;
+                }
+            } else if (StringUtils.equals(requestURI, path)) {
+                excludeFlag = true;
+                break;
             }
         }
 

@@ -30,7 +30,6 @@ public class WorkerController {
         return workerService.saveOrUpdateWorker(workerUpdateCO);
     }
 
-
     @PostMapping("/register")
     public Result<Void> register(@Validated @RequestBody  RegisterCO registerCO) {
         return workerService.register(registerCO);

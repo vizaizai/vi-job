@@ -10,7 +10,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>vi-worker</artifactId>
-
+    <properties>
+        <jackson.version>2.14.0</jackson.version>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -18,11 +20,19 @@
             <artifactId>vi-remote</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+
         <dependency>
             <groupId>com.github.vizaizai</groupId>
             <artifactId>vi-common</artifactId>
             <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
     </dependencies>
 </project>

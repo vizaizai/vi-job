@@ -11,5 +11,12 @@ mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
-auth:
-  excluded: /user/login,/worker/**
+
+vi-job:
+  mode: cluster
+  dataDir: /tmp/server1
+  inetutils:
+    ip-address: 127.0.0.1
+  cluster:
+    nodes: 127.0.0.1:2141,127.0.0.1:2142,127.0.0.1:2143
+

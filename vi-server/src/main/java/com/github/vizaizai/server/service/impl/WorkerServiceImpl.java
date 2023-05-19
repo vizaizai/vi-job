@@ -2,12 +2,11 @@ package com.github.vizaizai.server.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.github.vizaizai.common.model.Result;
-import com.github.vizaizai.remote.utils.NetUtils;
 import com.github.vizaizai.remote.utils.Utils;
 import com.github.vizaizai.server.dao.RegistryMapper;
 import com.github.vizaizai.server.dao.WorkerMapper;
-import com.github.vizaizai.server.entity.Registry;
-import com.github.vizaizai.server.entity.Worker;
+import com.github.vizaizai.server.dao.dataobject.RegistryDO;
+import com.github.vizaizai.server.dao.dataobject.WorkerDO;
 import com.github.vizaizai.server.service.WorkerService;
 import com.github.vizaizai.server.utils.BeanUtils;
 import com.github.vizaizai.server.utils.UserUtils;
@@ -38,13 +37,13 @@ public class WorkerServiceImpl implements WorkerService {
     @Transactional
     @Override
     public Result<Void> saveOrUpdateWorker(WorkerUpdateCO updateCO) {
-        Worker worker = BeanUtils.toBean(updateCO, Worker::new);
+        WorkerDO worker = BeanUtils.toBean(updateCO, WorkerDO::new);
         if (worker.getId() != null) {
             // 应用名称禁止修改
             worker.setAppName(null);
             workerMapper.updateById(worker);
         }
-        Worker workerTemp = workerMapper.selectOne(Wrappers.<Worker>lambdaQuery().eq(Worker::getAppName, updateCO.getAppName()));
+        WorkerDO workerTemp = workerMapper.selectOne(Wrappers.<WorkerDO>lambdaQuery().eq(WorkerDO::getAppName, updateCO.getAppName()));
         if (workerTemp != null) {
             return Result.handleFailure("该执行器已存在");
         }
@@ -77,24 +76,17 @@ public class WorkerServiceImpl implements WorkerService {
             return Result.handleFailure("注册地址格式错误（ip:port）");
         }
         // 查询执行器
-        Worker worker = workerMapper.selectOne(Wrappers.<Worker>lambdaQuery().eq(Worker::getAppName, registerCO.getAppName()));
+        WorkerDO worker = workerMapper.selectOne(Wrappers.<WorkerDO>lambdaQuery().eq(WorkerDO::getAppName, registerCO.getAppName()));
         if (worker == null) {
             return Result.handleFailure("执行器[" + registerCO.getAppName() + "]未创建，注册失败");
         }
 
         // 查询是否存在
-        List<Registry> registries = registryMapper.selectList(Wrappers.<Registry>lambdaQuery().eq(Registry::getAppName, registerCO.getAppName())
-                .eq(Registry::getAddress, registerCO.getAddress()));
+        List<RegistryDO> registries = registryMapper.selectList(Wrappers.<RegistryDO>lambdaQuery().eq(RegistryDO::getAppName, registerCO.getAppName())
+                .eq(RegistryDO::getAddress, registerCO.getAddress()));
 
         if (Utils.isEmpty(registries)) {
-            registryMapper.insert(BeanUtils.toBean(registerCO, Registry::new));
-        }
-        // 当前执行器未选定调度服务地址，则初始化
-        if (StringUtils.isBlank(worker.getServerHost())) {
-            // 注入地址
-            String host = NetUtils.getLocalHost();
-            worker.setServerHost(host);
-            workerMapper.updateById(worker);
+            registryMapper.insert(BeanUtils.toBean(registerCO, RegistryDO::new));
         }
 
         return Result.ok("注册成功");
@@ -106,8 +98,8 @@ public class WorkerServiceImpl implements WorkerService {
         if (registerCO.getAddress().split(":").length != 2) {
             return Result.handleFailure("地址格式错误（ip:port）");
         }
-        registryMapper.delete(Wrappers.<Registry>lambdaQuery().eq(Registry::getAppName, registerCO.getAppName())
-                .eq(Registry::getAddress, registerCO.getAddress()));
+        registryMapper.delete(Wrappers.<RegistryDO>lambdaQuery().eq(RegistryDO::getAppName, registerCO.getAppName())
+                .eq(RegistryDO::getAddress, registerCO.getAddress()));
         return Result.ok("注册移除成功");
     }
 }
