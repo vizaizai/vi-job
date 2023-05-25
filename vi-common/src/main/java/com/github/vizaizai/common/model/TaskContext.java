@@ -29,6 +29,11 @@ public class TaskContext implements Serializable {
      * 任务超时时间（单位：秒）
      */
     private Integer executeTimeout;
+    /**
+     * 任务超时处理策略 1-标记 2-中断
+     */
+    private Integer timeoutHandleType = 1;
+
 
 
 
@@ -72,13 +77,23 @@ public class TaskContext implements Serializable {
         this.executeTimeout = executeTimeout;
     }
 
+    public Integer getTimeoutHandleType() {
+        return timeoutHandleType;
+    }
+
+    public void setTimeoutHandleType(Integer timeoutHandleType) {
+        this.timeoutHandleType = timeoutHandleType;
+    }
+
     @Override
     public String toString() {
-        return "{" +
+        return "TaskContext{" +
                 "jobId='" + jobId + '\'' +
                 ", jobName='" + jobName + '\'' +
                 ", jobDispatchId='" + jobDispatchId + '\'' +
                 ", jobParams='" + jobParams + '\'' +
+                ", executeTimeout=" + executeTimeout +
+                ", timeoutHandleType=" + timeoutHandleType +
                 '}';
     }
 }

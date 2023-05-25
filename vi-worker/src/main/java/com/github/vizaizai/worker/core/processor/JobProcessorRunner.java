@@ -14,13 +14,13 @@ import java.util.concurrent.TimeUnit;
  * @author liaochongwei
  * @date 2023/4/27 11:26
  */
-public class ProcessorRunner extends Thread{
+public class JobProcessorRunner extends Thread{
 
-    private static final Logger logger = LoggerFactory.getLogger(ProcessorRunner.class);
+    private static final Logger logger = LoggerFactory.getLogger(JobProcessorRunner.class);
     /**
      * 运行器映射(jobId->runner)
      */
-    private static final Map<String, ProcessorRunner> runners = new ConcurrentHashMap<>();
+    private static final Map<String, JobProcessorRunner> runners = new ConcurrentHashMap<>();
     /**
      * jobId
      */
@@ -47,12 +47,12 @@ public class ProcessorRunner extends Thread{
      * @param processor 任务处理器
      * @return
      */
-    public static ProcessorRunner getInstance(String jobId, BasicProcessor processor) {
-        ProcessorRunner runner = runners.get(jobId);
+    public static JobProcessorRunner getInstance(String jobId, BasicProcessor processor) {
+        JobProcessorRunner runner = runners.get(jobId);
         if (runner != null) {
             return runner;
         }
-        runner = new ProcessorRunner();
+        runner = new JobProcessorRunner();
         runner.jobId = jobId;
         runner.processor = processor;
         runner.waitingTask = new LinkedBlockingQueue<>();
@@ -140,5 +140,9 @@ public class ProcessorRunner extends Thread{
 
     public boolean isRunning() {
         return running;
+    }
+
+    public static JobProcessorRunner getRunner(String jobId) {
+        return runners.get(jobId);
     }
 }

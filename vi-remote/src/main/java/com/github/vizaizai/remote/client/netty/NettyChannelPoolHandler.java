@@ -48,7 +48,7 @@ public class NettyChannelPoolHandler implements ChannelPoolHandler {
 
         Serializer serializer = new KryoSerializer();
         ChannelPipeline cp = ch.pipeline();
-        cp.addLast("beat",new IdleStateHandler(0, 0, 30, TimeUnit.SECONDS));
+        cp.addLast("beat",new IdleStateHandler(0, 0, 60, TimeUnit.SECONDS));
         cp.addLast("lengthFieldBasedFrameDecoder",new LengthFieldBasedFrameDecoder(65536, 0, 4, 0, 0));
         cp.addLast("rpcDecoder",new RpcDecoder(RpcResponse.class, serializer));
         cp.addLast("rpcEncoder",new RpcEncoder(RpcRequest.class, serializer));

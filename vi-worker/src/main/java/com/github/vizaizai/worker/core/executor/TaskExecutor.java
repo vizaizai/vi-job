@@ -9,12 +9,11 @@ import com.github.vizaizai.remote.common.sender.Sender;
 import com.github.vizaizai.remote.server.processor.BizProcessor;
 import com.github.vizaizai.remote.utils.Utils;
 import com.github.vizaizai.worker.core.processor.BasicProcessor;
-import com.github.vizaizai.worker.core.processor.ProcessorRunner;
+import com.github.vizaizai.worker.core.processor.JobProcessorRunner;
 import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executor;
 
 /**
  * Processor执行器
@@ -72,7 +71,7 @@ public class TaskExecutor implements BizProcessor {
 
         if (basicProcessor != null) {
             // 推入待执行任务队列中
-            ProcessorRunner runner = ProcessorRunner.getInstance(taskContext.getJobId(), basicProcessor);
+            JobProcessorRunner runner = JobProcessorRunner.getInstance(taskContext.getJobId(), basicProcessor);
             runner.pushTaskQueue(taskContext);
         }
     }

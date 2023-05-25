@@ -28,7 +28,7 @@ public class JobDO {
     /**
      * 执行器id
      */
-    private String workerId;
+    private Integer workerId;
 
     /**
      * 生命周期开始
@@ -71,17 +71,27 @@ public class JobDO {
     /**
      * 频率
      */
-    private Integer speed;
+    private Integer speedS;
     /**
      * 延时
      */
-    private Integer delayed;
-
+    private Integer delayedS;
     /**
-     * 下一次触发时间
+     * 路由策略
      */
-    private LocalDateTime nextTriggerTime;
-
+    private Integer routeType;
+    /**
+     * 任务失败重试次数
+     */
+    private Integer retryCount;
+    /**
+     * 任务超时时间
+     */
+    private Integer timeoutS;
+    /**
+     * 任务超时处理策略 1-标记 2-中断
+     */
+    private Integer timeoutHandleType;
     /**
      * 新建人
      */

@@ -5,7 +5,9 @@ import com.github.vizaizai.retry.mode.CronSequenceGenerator;
 import com.github.vizaizai.server.constant.TriggerType;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
@@ -25,11 +27,10 @@ public class Job {
      * 任务名称
      */
     private String name;
-
     /**
      * 执行器id
      */
-    private String workerId;
+    private Integer workerId;
 
     /**
      * 生命周期开始
@@ -68,15 +69,29 @@ public class Job {
     /**
      * 频率
      */
-    private Integer speed;
+    private Integer speedS;
     /**
      * 延时
      */
-    private Integer delayed;
+    private Integer delayedS;
     /**
-     * 下一次触发时间
+     * 路由策略
      */
-    private LocalDateTime nextTriggerTime;
+    private Integer routeType;
+
+    /**
+     * 任务失败重试次数(-1:不限制)
+     */
+    private Integer retryCount;
+    /**
+     * 任务超时时间(-1:不限制)
+     */
+    private Integer timeoutS;
+    /**
+     * 任务超时处理策略 1-标记 2-中断
+     */
+    private Integer timeoutHandleType;
+
     /**
      * 上一次触发时间
      */
@@ -93,14 +108,31 @@ public class Job {
      * 计算下一次触发时间
      * @return 时间戳
      */
-    public Long calculateNextTriggerTime() {
+    public Long getNextTriggerTime() {
+        LocalDateTime now = LocalDateTimeUtil.now();
+        // 未开始
+        if (startTime != null && now.isBefore(startTime)) {
+            return getNextTriggerTime0(startTime);
+        }
+        // 已结束
+        if (endTime != null && now.isAfter(endTime)) {
+            return null;
+        }
+        return getNextTriggerTime0(now);
+
+    }
+    /**
+     * 计算下一次触发时间
+     * @return 时间戳
+     */
+    public Long getNextTriggerTime0(LocalDateTime dateTime) {
         if (triggerType == TriggerType.NON.getCode()) {
             return null;
         }
         // cron
         if (triggerType == TriggerType.CRON.getCode()){
             final CronSequenceGenerator cronSequenceGenerator = new CronSequenceGenerator(cron);
-            Date next = cronSequenceGenerator.next(new Date());
+            Date next = cronSequenceGenerator.next(Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant()));
             return next.getTime();
         }
         // 固定频率
@@ -108,20 +140,20 @@ public class Job {
             if (lastTriggerTime == null) {
                 lastTriggerTime = LocalDateTimeUtil.now();
             }
-            return LocalDateTimeUtil.toEpochMilli(lastTriggerTime) + speed;
+            return LocalDateTimeUtil.toEpochMilli(lastTriggerTime) + speedS * 1000;
         }
         // 固定延时，需要基于上一次执行完成时间
         if (triggerType == TriggerType.DELAYED.getCode()) {
             // 首次触发
             if (lastTriggerTime == null) {
                 lastTriggerTime = LocalDateTimeUtil.now();
-                return LocalDateTimeUtil.toEpochMilli(lastTriggerTime) + delayed;
+                return LocalDateTimeUtil.toEpochMilli(lastTriggerTime) + delayedS  * 1000;
             }
             // 上一次未执行完成
             if (lastExecuteEndTime == null) {
                 return null;
             }
-            return LocalDateTimeUtil.toEpochMilli(lastExecuteEndTime) + delayed;
+            return LocalDateTimeUtil.toEpochMilli(lastExecuteEndTime) + delayedS * 1000;
         }
 
         return null;

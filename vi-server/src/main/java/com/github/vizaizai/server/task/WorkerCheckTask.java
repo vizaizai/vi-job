@@ -5,7 +5,7 @@ import com.github.vizaizai.remote.client.Client;
 import com.github.vizaizai.remote.client.NettyPoolClient;
 import com.github.vizaizai.remote.codec.RpcRequest;
 import com.github.vizaizai.remote.codec.RpcResponse;
-import com.github.vizaizai.remote.common.HeartBeat;
+import com.github.vizaizai.remote.common.BizCode;
 import com.github.vizaizai.remote.utils.NetUtils;
 import com.github.vizaizai.remote.utils.Utils;
 import com.github.vizaizai.server.dao.RegistryMapper;
@@ -33,7 +33,7 @@ public class WorkerCheckTask {
     private WorkerMapper workerMapper;
     @Resource
     private RegistryMapper registryMapper;
-    private final static Map<Integer,Integer> offlineCounts = new HashMap<>();
+    private static final Map<Integer,Integer> offlineCounts = new HashMap<>();
     /**
      * 一分钟扫描一次
      */
@@ -47,18 +47,17 @@ public class WorkerCheckTask {
             return;
         }
         for (WorkerDO worker : workers) {
-            List<RegistryDO> registries = registryMapper.selectList(Wrappers.<RegistryDO>lambdaQuery().eq(RegistryDO::getAppName, worker.getAppName()));
+            List<RegistryDO> registries = registryMapper.selectList(Wrappers.<RegistryDO>lambdaQuery().eq(RegistryDO::getWorkerId, worker.getId()));
             if (Utils.isEmpty(registries)) {
                 continue;
             }
             for (RegistryDO registry : registries) {
                 String address = registry.getAddress();
-                String[] hostAndPort = address.split(":");
                 boolean online = false;
                 Client client = null;
                 try {
-                    client = NettyPoolClient.getInstance(hostAndPort[0], Integer.parseInt(hostAndPort[1]));
-                    RpcResponse pong = client.request(RpcRequest.wrap(HeartBeat.CODE, "ping"), 5000);
+                    client = NettyPoolClient.getInstance(address);
+                    RpcResponse pong = client.request(RpcRequest.wrap(BizCode.BEAT, "ping"), 5000);
                     // 心跳检查成功且返回
                     if (pong.getSuccess() && Objects.equals(pong.getResult(),"pong")) {
                         online = true;

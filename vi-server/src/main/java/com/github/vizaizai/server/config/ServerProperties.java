@@ -1,8 +1,15 @@
 package com.github.vizaizai.server.config;
 
+import cn.hutool.core.collection.CollUtil;
+import com.github.vizaizai.remote.utils.Utils;
 import lombok.Data;
+import org.apache.commons.io.FileUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.io.File;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -41,12 +48,40 @@ public class ServerProperties {
     @Data
     public static class Cluster {
         /**
-         * 配置文件路径
+         * 配置文件路径（优先级更高）
          */
         private String confDir;
         /**
          * 集群节点(127.0.0.1:2141,127.0.0.1:2142,127.0.0.1:2143)
          */
         private List<String> nodes;
+
+
+        public List<String> getNodes() {
+            if (Utils.isNotBlank(confDir)) {
+                this.nodes = getAddress(confDir);
+                return nodes;
+            }
+            return nodes;
+        }
+    }
+
+    private static List<String> getAddress(String path) {
+        try {
+            List<String> lines = FileUtils.readLines(new File(path), Charset.defaultCharset());
+            if (CollUtil.isEmpty(lines)) {
+                return Collections.emptyList();
+            }
+            List<String> addressList = new ArrayList<>();
+            for (String line : lines) {
+                if (line.trim().startsWith("#")) {
+                    continue;
+                }
+                addressList.add(line);
+            }
+            return addressList;
+        }catch (Exception ex) {
+            throw new RuntimeException("读取集群地址配置错误，"+ ex.getMessage());
+        }
     }
 }

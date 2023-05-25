@@ -19,7 +19,7 @@ public class HeartBeatProcessor implements BizProcessor {
     public void execute(RpcRequest request, Sender sender) {
         String action = (String) request.getParam();
         if (Objects.equals(action,"ping")) {
-            logger.info("[{}_{}]PONG",sender.getRemoteAddress(),request.getRequestId());
+            logger.debug("[{}_{}]PONG",sender.getRemoteAddress(),request.getRequestId());
             sender.send(RpcResponse.ok(request.getRequestId(),"pong"));
         }
     }

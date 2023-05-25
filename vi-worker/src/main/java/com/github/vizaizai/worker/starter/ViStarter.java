@@ -6,6 +6,7 @@ import com.github.vizaizai.remote.server.Server;
 import com.github.vizaizai.remote.server.netty.NettyServer;
 import com.github.vizaizai.remote.utils.NetUtils;
 import com.github.vizaizai.remote.utils.Utils;
+import com.github.vizaizai.worker.core.executor.IdleExecutor;
 import com.github.vizaizai.worker.core.executor.TaskExecutor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -89,6 +90,7 @@ public class ViStarter {
         logger.info("host: {}",host);
         Server server = new NettyServer(this.host,this.port);
         server.addBizProcessor(BizCode.RUN, new TaskExecutor());
+        server.addBizProcessor(BizCode.IDlE, new IdleExecutor());
         server.start(scheduledExecutorService);
     }
 

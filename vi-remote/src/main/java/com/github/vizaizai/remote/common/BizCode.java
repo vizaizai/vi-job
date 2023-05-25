@@ -7,11 +7,20 @@ package com.github.vizaizai.remote.common;
  */
 public class BizCode {
     /**
-     * 执行定时任务
+     * 心跳检测
+     */
+    public static final String BEAT = "heart_beat";
+    /**
+     * 执行任务
      */
     public static final String RUN = "run";
     /**
-     *
+     * 中断任务
      */
-    public static final String STOP = "stop";
+    public static final String KILL = "kill";
+    /**
+     * 空闲检测
+     */
+    public static final String IDlE = "idle";
+
 }

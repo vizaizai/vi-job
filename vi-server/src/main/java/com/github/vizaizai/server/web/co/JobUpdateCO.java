@@ -1,5 +1,6 @@
 package com.github.vizaizai.server.web.co;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
@@ -7,12 +8,16 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 /**
- * 任务添加-CO
+ * 任务更新-CO
  * @author liaochongwei
  * @date 2023/5/18 17:11
  */
 @Data
-public class JobAddCO {
+public class JobUpdateCO {
+    /**
+     * 数据id
+     */
+    private String id;
     /**
      * 任务名称
      */
@@ -22,17 +27,19 @@ public class JobAddCO {
     /**
      * 执行器id
      */
-    @NotEmpty(message = "执行器id必须")
-    private String workerId;
+    @NotNull(message = "执行器id必须")
+    private Integer workerId;
 
     /**
      * 生命周期开始
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime startTime;
 
     /**
      * 生命周期结束
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime endTime;
 
     /**
@@ -63,17 +70,31 @@ public class JobAddCO {
     /**
      * 频率
      */
-    private Integer speed;
+    private Integer speedS;
     /**
      * 延时
      */
-    private Integer delayed;
-
+    private Integer delayedS;
     /**
-     * 下一次触发时间
+     * 路由策略
      */
-    private LocalDateTime nextTriggerTime;
-
+    @NotNull(message = "路由策略必须")
+    private Integer routeType;
+    /**
+     * 任务失败重试次数(-1:不限制)
+     */
+    @NotNull(message = "任务失败重试次数必须")
+    private Integer retryCount;
+    /**
+     * 任务超时时间(-1:不限制)
+     */
+    @NotNull(message = "任务超时时间必须")
+    private Integer timeoutS = -1;
+    /**
+     * 任务超时处理策略 1-标记 2-中断
+     */
+    @NotNull(message = "任务超时时间必须")
+    private Integer timeoutHandleType = 1;
     /**
      * 新建人
      */

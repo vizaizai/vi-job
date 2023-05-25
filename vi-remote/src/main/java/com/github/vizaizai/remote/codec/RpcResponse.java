@@ -69,7 +69,7 @@ public class RpcResponse implements Serializable {
     public static RpcResponse error(String requestId, String msg) {
         RpcResponse response = new RpcResponse();
         response.setRequestId(requestId);
-        response.setSuccess(true);
+        response.setSuccess(false);
         response.setMsg(msg);
         return response;
     }

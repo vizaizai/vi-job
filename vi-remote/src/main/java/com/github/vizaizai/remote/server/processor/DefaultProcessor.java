@@ -15,7 +15,7 @@ public class DefaultProcessor implements BizProcessor {
     private static final Logger logger = LoggerFactory.getLogger(DefaultProcessor.class);
     @Override
     public void execute(RpcRequest request, Sender sender) {
-        logger.info("[{}_{}]{}",sender.getRemoteAddress(),request.getRequestId(),request);
+        logger.debug("[{}_{}]{}",sender.getRemoteAddress(),request.getRequestId(),request);
         sender.send(RpcResponse.error(request.getRequestId(),"Not found!"));
     }
 }

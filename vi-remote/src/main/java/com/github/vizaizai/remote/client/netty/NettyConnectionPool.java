@@ -77,7 +77,7 @@ public class NettyConnectionPool {
             Future<Channel> fch = poolMap.get(inetSocketAddress).acquire();
             fch.addListener((FutureListener<Channel>) e -> {
                 if (e.isSuccess()) {
-                    logger.info("Successfully connect to remote server:{}", inetSocketAddress);
+                    logger.debug("Successfully connect to remote server:{}", inetSocketAddress);
                 }else {
                     logger.error("Can not connect to remote server:{}", inetSocketAddress);
                 }

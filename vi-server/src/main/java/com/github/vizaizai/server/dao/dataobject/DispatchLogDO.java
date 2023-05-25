@@ -1,9 +1,9 @@
 package com.github.vizaizai.server.dao.dataobject;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
+import com.github.vizaizai.remote.utils.Utils;
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
 
@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
  * @date 2023/5/18 19:51
  */
 @Data
+@Accessors(chain = true)
 @TableName(value = "dispatch_log")
 public class DispatchLogDO {
     /**
@@ -25,11 +26,15 @@ public class DispatchLogDO {
      * 任务id
      */
     private String jobId;
+    /**
+     * 任务参数
+     */
+    private String jobParam;
 
     /**
      * 执行器id
      */
-    private String workerId;
+    private Integer workerId;
 
     /**
      * 执行器地址
@@ -37,14 +42,18 @@ public class DispatchLogDO {
     private String workerAddress;
 
     /**
-     * 调度状态 0-失败 1-成功
+     * 调度状态 0-失败 1-调度中 2-调度成功
      */
     private Integer dispatchStatus;
 
     /**
-     * 执行状态 0-失败 1-执行中 2-执行成功 3-超时执行 4-超时中断 5-主动中断'
+     * 执行状态 0-失败 1-执行中 2-执行成功 3-执行成功（超时） 4-超时中断 5-主动中断
      */
     private Integer executeStatus;
+    /**
+     * 错误消息
+     */
+    private String errorMsg;
     /**
      * 处理器类型 1-Bean 2-HTTP
      */
@@ -53,12 +62,6 @@ public class DispatchLogDO {
      * 处理器
      */
     private String processor;
-
-    /**
-     * 处理器参数
-     */
-    private String processorParam;
-
     /**
      * 触发时间
      */
@@ -74,5 +77,13 @@ public class DispatchLogDO {
     /**
      * 创建时间
      */
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
+
+    public DispatchLogDO setErrorMsg(String errorMsg) {
+        if (Utils.isBlank(errorMsg) && errorMsg.length() > 1024) {
+            this.errorMsg = errorMsg.substring(0, 1023);
+        }
+        return this;
+    }
 }

@@ -3,7 +3,7 @@ package com.github.vizaizai.remote.server.netty;
 import com.github.vizaizai.logging.LoggerFactory;
 import com.github.vizaizai.remote.codec.RpcRequest;
 import com.github.vizaizai.remote.codec.RpcResponse;
-import com.github.vizaizai.remote.common.HeartBeat;
+import com.github.vizaizai.remote.common.BizCode;
 import com.github.vizaizai.remote.common.sender.NettySender;
 import com.github.vizaizai.remote.server.processor.BizProcessor;
 import com.github.vizaizai.remote.server.processor.DefaultProcessor;
@@ -16,7 +16,10 @@ import org.slf4j.Logger;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 服务器端处理器
@@ -28,32 +31,31 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
     private final Map<String, BizProcessor> bizProcessorMap;
     private NettySender nettySender;
     /**
-     * 业务处理执行线程池
-     */
-    private final Executor bizExecutor;
-    /**
      * 心跳检查
      */
-    private BizProcessor heartBeatProcessor;
+    private final BizProcessor heartBeatProcessor;
     /**
      * 默认处理
      */
-    private BizProcessor defaultProcessor;
+    private final BizProcessor defaultProcessor;
+    /**
+     * 业务处理执行线程池
+     */
+    private static final Executor bizExecutor = new ThreadPoolExecutor(
+            0,
+            200,
+            60L,
+            TimeUnit.SECONDS,
+            new LinkedBlockingQueue<>(2000),
+            new BasicThreadFactory.Builder().namingPattern("NettyServer-bizProcessor-%d").build(),
+            (r, executor) -> {
+                throw new RuntimeException("vi-job, NettyServer bizProcessor-pool is exhausted!");
+            });
 
     public NettyServerHandler(Map<String, BizProcessor> bizProcessorMap) {
         this.bizProcessorMap = bizProcessorMap;
         this.heartBeatProcessor = new HeartBeatProcessor();
         this.defaultProcessor = new DefaultProcessor();
-        bizExecutor = new ThreadPoolExecutor(
-                0,
-                200,
-                60L,
-                TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(2000),
-                new BasicThreadFactory.Builder().namingPattern("NettyServer-bizProcessor-%d").build(),
-                (r, executor) -> {
-                    throw new RuntimeException("vi-job, NettyServer bizProcessor-pool is exhausted!");
-                });
     }
 
     @Override
@@ -70,7 +72,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
                     bizProcessor.execute(rpcRequest, nettySender);
                     return;
                 }
-                if (Objects.equals(HeartBeat.CODE, bizCode)) {
+                if (Objects.equals(BizCode.BEAT, bizCode)) {
                     heartBeatProcessor.execute(rpcRequest, nettySender);
                     return;
                 }

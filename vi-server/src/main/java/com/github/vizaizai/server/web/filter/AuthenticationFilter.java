@@ -24,7 +24,7 @@ public class AuthenticationFilter implements Filter {
     /**
      * 排除路径
      */
-    private final static String[] exclude = new String[] {
+    private static final String[] exclude = new String[] {
             "/user/login",
             "/worker/**"
     };

@@ -18,7 +18,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author liaochongwei
@@ -61,7 +63,6 @@ public class WorkerServiceImpl implements WorkerService {
     @Override
     public Result<Void> removeWorker(Integer id) {
         // 检查任务(存在任务无法删除)
-
         int count = workerMapper.deleteById(id);
         if (count == 0) {
             return Result.handleFailure("删除执行器失败");
@@ -80,13 +81,14 @@ public class WorkerServiceImpl implements WorkerService {
         if (worker == null) {
             return Result.handleFailure("执行器[" + registerCO.getAppName() + "]未创建，注册失败");
         }
-
-        // 查询是否存在
-        List<RegistryDO> registries = registryMapper.selectList(Wrappers.<RegistryDO>lambdaQuery().eq(RegistryDO::getAppName, registerCO.getAppName())
+        //是否存在
+        List<RegistryDO> registries = registryMapper.selectList(Wrappers.<RegistryDO>lambdaQuery().eq(RegistryDO::getWorkerId, worker.getId())
                 .eq(RegistryDO::getAddress, registerCO.getAddress()));
 
         if (Utils.isEmpty(registries)) {
-            registryMapper.insert(BeanUtils.toBean(registerCO, RegistryDO::new));
+            RegistryDO registryDO = BeanUtils.toBean(registerCO, RegistryDO::new);
+            registryDO.setWorkerId(worker.getId());
+            registryMapper.insert(registryDO);
         }
 
         return Result.ok("注册成功");
@@ -98,8 +100,22 @@ public class WorkerServiceImpl implements WorkerService {
         if (registerCO.getAddress().split(":").length != 2) {
             return Result.handleFailure("地址格式错误（ip:port）");
         }
-        registryMapper.delete(Wrappers.<RegistryDO>lambdaQuery().eq(RegistryDO::getAppName, registerCO.getAppName())
+        // 查询执行器
+        WorkerDO worker = workerMapper.selectOne(Wrappers.<WorkerDO>lambdaQuery().eq(WorkerDO::getAppName, registerCO.getAppName()));
+        if (worker == null) {
+            return Result.handleFailure("执行器[" + registerCO.getAppName() + "]未创建，注册失败");
+        }
+        registryMapper.delete(Wrappers.<RegistryDO>lambdaQuery().eq(RegistryDO::getWorkerId, worker.getId())
                 .eq(RegistryDO::getAddress, registerCO.getAddress()));
         return Result.ok("注册移除成功");
+    }
+
+    @Override
+    public List<String> getWorkerAddressList(Integer workerId) {
+        List<RegistryDO> registries = registryMapper.selectList(Wrappers.<RegistryDO>lambdaQuery().eq(RegistryDO::getWorkerId, workerId));
+        if (Utils.isEmpty(registries)) {
+            return Collections.emptyList();
+        }
+        return registries.stream().map(RegistryDO::getAddress).collect(Collectors.toList());
     }
 }

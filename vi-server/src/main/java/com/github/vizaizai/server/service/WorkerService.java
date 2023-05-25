@@ -4,6 +4,8 @@ import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.server.web.co.RegisterCO;
 import com.github.vizaizai.server.web.co.WorkerUpdateCO;
 
+import java.util.List;
+
 /**
  * 执行器业务接口
  * @author liaochongwei
@@ -36,6 +38,13 @@ public interface WorkerService {
      * @return
      */
     Result<Void> unregister(RegisterCO registerCO);
+
+    /**
+     * 获取在线地址列表
+     * @param workerId
+     * @return
+     */
+    List<String> getWorkerAddressList(Integer workerId);
 
     
 }

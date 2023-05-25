@@ -17,9 +17,9 @@ public class RegistryDO {
     @TableId(type = IdType.AUTO)
     private Integer id;
     /**
-     * 应用名称
+     * 执行器id
      */
-    private String appName;
+    private Integer workerId;
     /**
      * 注册地址
      */

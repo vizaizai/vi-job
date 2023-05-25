@@ -2,7 +2,8 @@ package com.github.vizaizai.server.web;
 
 import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.server.service.JobService;
-import com.github.vizaizai.server.web.co.JobAddCO;
+import com.github.vizaizai.server.web.co.JobStatusUpdateCO;
+import com.github.vizaizai.server.web.co.JobUpdateCO;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,8 +24,13 @@ public class JobController {
     private JobService jobService;
 
     @PostMapping("/addJob")
-    public Result<Void> addJob(@RequestBody @Validated JobAddCO jobAddCO) {
-        return jobService.addJob(jobAddCO);
+    public Result<Void> addJob(@RequestBody @Validated JobUpdateCO jobUpdateCO) {
+        return jobService.addJob(jobUpdateCO);
+    }
+
+    @PostMapping("/updateStatus")
+    public Result<Void> updateStatus(@RequestBody @Validated JobStatusUpdateCO jobStatusUpdateCO) {
+        return jobService.updateJobStatus(jobStatusUpdateCO);
     }
 
 }
