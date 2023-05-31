@@ -1,7 +1,8 @@
-package com.github.vizaizai.worker.core.processor;
+package com.github.vizaizai.worker.runner;
 
 import com.github.vizaizai.common.model.TaskContext;
 import com.github.vizaizai.logging.LoggerFactory;
+import com.github.vizaizai.worker.core.processor.BasicProcessor;
 import org.slf4j.Logger;
 
 import java.util.Map;
@@ -10,21 +11,21 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Processor运行器（一个jobId对应一个单机运行器）
+ * 任务处理运行器（一个jobId对应一个单机运行器）
  * @author liaochongwei
  * @date 2023/4/27 11:26
  */
-public class JobProcessorRunner extends Thread{
+public class JobProcessRunner extends Thread{
 
-    private static final Logger logger = LoggerFactory.getLogger(JobProcessorRunner.class);
+    private static final Logger logger = LoggerFactory.getLogger(JobProcessRunner.class);
     /**
      * 运行器映射(jobId->runner)
      */
-    private static final Map<String, JobProcessorRunner> runners = new ConcurrentHashMap<>();
+    private static final Map<Long, JobProcessRunner> runners = new ConcurrentHashMap<>();
     /**
      * jobId
      */
-    private String jobId;
+    private Long jobId;
     /**
      * 处理器
      */
@@ -47,12 +48,12 @@ public class JobProcessorRunner extends Thread{
      * @param processor 任务处理器
      * @return
      */
-    public static JobProcessorRunner getInstance(String jobId, BasicProcessor processor) {
-        JobProcessorRunner runner = runners.get(jobId);
+    public static JobProcessRunner getInstance(Long jobId, BasicProcessor processor) {
+        JobProcessRunner runner = runners.get(jobId);
         if (runner != null) {
             return runner;
         }
-        runner = new JobProcessorRunner();
+        runner = new JobProcessRunner();
         runner.jobId = jobId;
         runner.processor = processor;
         runner.waitingTask = new LinkedBlockingQueue<>();
@@ -122,7 +123,28 @@ public class JobProcessorRunner extends Thread{
         }
     }
 
-    public String getJobId() {
+
+    /**
+     * 停止
+     */
+    public void shutdown() {
+        try {
+            if (!this.isInterrupted()) {
+                this.interrupt();
+            }
+            stop = true;
+            running = false;
+            this.waitingTask.clear();
+        }catch (Exception e) {
+            logger.error("Shutdown JobProcessRunner error,", e);
+        }
+    }
+
+    public static void shutdownAll() {
+        runners.forEach((k, v)-> v.shutdown());
+    }
+
+    public Long getJobId() {
         return jobId;
     }
 
@@ -142,7 +164,7 @@ public class JobProcessorRunner extends Thread{
         return running;
     }
 
-    public static JobProcessorRunner getRunner(String jobId) {
+    public static JobProcessRunner getRunner(Long jobId) {
         return runners.get(jobId);
     }
 }

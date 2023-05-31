@@ -5,7 +5,7 @@ import com.github.vizaizai.remote.codec.RpcRequest;
 import com.github.vizaizai.remote.codec.RpcResponse;
 import com.github.vizaizai.remote.common.sender.Sender;
 import com.github.vizaizai.remote.server.processor.BizProcessor;
-import com.github.vizaizai.worker.core.processor.JobProcessorRunner;
+import com.github.vizaizai.worker.runner.JobProcessRunner;
 
 /**
  * 空闲检测
@@ -15,8 +15,8 @@ import com.github.vizaizai.worker.core.processor.JobProcessorRunner;
 public class IdleExecutor implements BizProcessor {
     @Override
     public void execute(RpcRequest request, Sender sender) {
-        String jobId = (String) request.getParam();
-        JobProcessorRunner runner = JobProcessorRunner.getRunner(jobId);
+        Long jobId = (Long) request.getParam();
+        JobProcessRunner runner = JobProcessRunner.getRunner(jobId);
         RpcResponse response;
         if (runner == null || !runner.isRunning()) {
             response = RpcResponse.ok(request.getRequestId(), TaskResult.ok());

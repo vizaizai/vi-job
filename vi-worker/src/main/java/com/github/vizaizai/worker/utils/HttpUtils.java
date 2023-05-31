@@ -86,11 +86,11 @@ public class HttpUtils {
                     result.append(line);
                 }
             }else {
-                logger.error("Http status code error,code={}, message:{}",responseCode,connection.getResponseMessage());
+                logger.error("Http status code error,code: {}, message: {}",responseCode,connection.getResponseMessage());
             }
             return result.toString();
         }catch (Exception e) {
-            logger.error("Http request error, message:{}", e.getMessage());
+            logger.error("Http request error: {}", e.getMessage());
         }
         return null;
     }

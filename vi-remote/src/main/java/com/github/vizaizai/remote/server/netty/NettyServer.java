@@ -46,8 +46,8 @@ public class NettyServer implements Server {
     }
 
     @Override
-    public void start(ExecutorService executor) {
-        executor.execute(() -> {
+    public void start() {
+        Thread startThread = new Thread(()->{
             // 一个线程来接收连接
             EventLoopGroup bossGroup = new NioEventLoopGroup(1);
             // 处理器个数*2
@@ -69,6 +69,9 @@ public class NettyServer implements Server {
                 workerGroup.shutdownGracefully();
             }
         });
+        startThread.setName("Worker-server");
+        startThread.setDaemon(true);
+        startThread.start();
     }
 
     public String getHost() {

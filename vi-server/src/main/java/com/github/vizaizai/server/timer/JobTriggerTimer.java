@@ -1,8 +1,8 @@
 package com.github.vizaizai.server.timer;
 
-import cn.hutool.core.date.LocalDateTimeUtil;
 import com.github.vizaizai.retry.timewheel.HashedWheelTimer;
 import com.github.vizaizai.retry.timewheel.Timeout;
+import com.github.vizaizai.server.constant.Commons;
 import com.github.vizaizai.server.constant.TriggerType;
 import com.github.vizaizai.server.entity.Job;
 import com.github.vizaizai.server.service.JobService;
@@ -12,7 +12,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.springframework.boot.system.SystemProperties;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -37,13 +36,12 @@ public class JobTriggerTimer {
      */
     private final HashedWheelTimer fastHashedWheelTimer;
 
-    private final Map<String,Timeout>  slowTimeouts = new ConcurrentHashMap<>();
-    private final Map<String,Timeout>  fastTimeouts = new ConcurrentHashMap<>();
-
+    private final Map<Long,Timeout>  slowTimeouts = new ConcurrentHashMap<>();
+    private final Map<Long,Timeout>  fastTimeouts = new ConcurrentHashMap<>();
 
     private JobTriggerTimer() {
-        slowHashedWheelTimer = new HashedWheelTimer(1000L, 1024, 0, 1,-1);
-        fastHashedWheelTimer = new HashedWheelTimer(100L, 4096, 1, Runtime.getRuntime().availableProcessors() * 2, -1);
+        slowHashedWheelTimer = new HashedWheelTimer(500L, 1024, 0, 1,-1);
+        fastHashedWheelTimer = new HashedWheelTimer(10L, 4096, 1, Runtime.getRuntime().availableProcessors() * 2, -1);
 
         String size = SystemProperties.get("job.trigger.maxPoolSize");
         int poolSize = StringUtils.isNotBlank(size) ? Integer.parseInt(size) : 200;
@@ -68,48 +66,75 @@ public class JobTriggerTimer {
     }
 
 
-    public void pushTimer(Job job) {
+    /**
+     * 将job添加到Timer
+     * @param job
+     */
+    public synchronized void addToTimer(Job job) {
         Long triggerTime = job.getNextTriggerTime();
         if (triggerTime == null) {
             return;
         }
         // 等待毫秒数
         long waitMs = triggerTime - System.currentTimeMillis();
-        // 等待10分钟以上推入慢时间轮循环
-        if (waitMs > 600000) {
+        if (waitMs > Commons.TIMER_MAX) {
+            return;
+        }
+        // 避免任务重复调度
+        if (getTimeout(job.getId()) != null) {
+            return;
+        }
+        // 等待时间大于最小时间->推入慢时间轮循环
+        if (waitMs > Commons.TIMER_MIN) {
             Timeout timeout = slowHashedWheelTimer.newTimeout(()-> {
-                this.pushTimer(job);
+                this.addToTimer(job);
                 slowTimeouts.remove(job.getId());
-            }, waitMs - 600000, TimeUnit.MILLISECONDS);
-
+            }, waitMs - Commons.TIMER_MIN, TimeUnit.MILLISECONDS);
             // 将Timeout缓存下来，用于中止任务
             slowTimeouts.put(job.getId(),timeout);
-        }else if (waitMs > 100L) {
+        }else if (waitMs > 50L) {
             Timeout timeout = fastHashedWheelTimer.newTimeout(()->{
                 // 调度任务
                 this.invoke(job);
+                fastTimeouts.remove(job.getId());
             }, waitMs, TimeUnit.MILLISECONDS);
             fastTimeouts.put(job.getId(),timeout);
         }else {
             // 直接触发
             this.invoke(job);
         }
-
     }
 
+    /**
+     * 从Timer中移除job
+     * @param jobId 任务id
+     */
+    public synchronized void remove(Long jobId) {
+        Timeout timeout = this.getTimeout(jobId);
+        if (timeout != null) {
+            timeout.cancel();
+        }
+    }
+
+
     private void invoke(Job job) {
-        job.setLastTriggerTime(LocalDateTimeUtil.now());
+        job.setLastTriggerTime(System.currentTimeMillis());
         // 若触发类型非固定延时,则重新推入timer中
         if (job.getTriggerType() != TriggerType.DELAYED.getCode()) {
-            pushTimer(job);
+            addToTimer(job);
         }
         invokeExecutor.execute(() -> {
             try {
-                ContextUtil.getBean(JobService.class).invoke(job);
+                JobService jobService = ContextUtil.getBean(JobService.class);
+                // 调度
+                jobService.invoke(job);
+                // 刷新触发时间
+                jobService.refreshTriggerTime(job.getId(), job.getLastTriggerTime(), job.getNextTriggerTime());
             }catch (Exception e) {
                 log.error("Job execute error.", e);
             }
         });
+
 
     }
 
@@ -121,7 +146,7 @@ public class JobTriggerTimer {
         return fastHashedWheelTimer;
     }
 
-    public Timeout getTimeout(String jobId) {
+    public Timeout getTimeout(Long jobId) {
         if (slowTimeouts.containsKey(jobId)) {
             return slowTimeouts.get(jobId);
         }
@@ -129,11 +154,11 @@ public class JobTriggerTimer {
 
     }
 
-    public Map<String, Timeout> getSlowTimeouts() {
+    public Map<Long, Timeout> getSlowTimeouts() {
         return slowTimeouts;
     }
 
-    public Map<String, Timeout> getFastTimeouts() {
+    public Map<Long, Timeout> getFastTimeouts() {
         return fastTimeouts;
     }
 

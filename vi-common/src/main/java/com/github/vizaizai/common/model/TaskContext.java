@@ -12,7 +12,7 @@ public class TaskContext implements Serializable {
     /**
      * 任务id
      */
-    private String jobId;
+    private Long jobId;
     /**
      * 任务名称
      */
@@ -37,11 +37,11 @@ public class TaskContext implements Serializable {
 
 
 
-    public String getJobId() {
+    public Long getJobId() {
         return jobId;
     }
 
-    public void setJobId(String jobId) {
+    public void setJobId(Long jobId) {
         this.jobId = jobId;
     }
 

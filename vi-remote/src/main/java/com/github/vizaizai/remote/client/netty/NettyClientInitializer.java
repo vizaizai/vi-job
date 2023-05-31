@@ -27,8 +27,10 @@ public class NettyClientInitializer  extends ChannelInitializer<SocketChannel> {
         ChannelPipeline cp = sc.pipeline();
         cp.addLast("beat",new IdleStateHandler(0, 0, 30, TimeUnit.SECONDS));
         cp.addLast("lengthFieldBasedFrameDecoder",new LengthFieldBasedFrameDecoder(65536, 0, 4, 0, 0));
-        cp.addLast("rpcDecoder",new RpcDecoder(RpcResponse.class, serializer));
-        cp.addLast("rpcEncoder",new RpcEncoder(RpcRequest.class, serializer));
+        cp.addLast("rpcDecoder1",new RpcDecoder(RpcResponse.class, serializer));
+        cp.addLast("rpcDecoder2",new RpcDecoder(RpcRequest.class, serializer));
+        cp.addLast("rpcEncoder1",new RpcEncoder(RpcRequest.class, serializer));
+        cp.addLast("rpcEncoder2",new RpcEncoder(RpcResponse.class, serializer));
         cp.addLast("nettyClientHandler",new NettyClientHandler());
     }
 }

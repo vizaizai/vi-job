@@ -9,6 +9,6 @@ spring:
 
 vi-job:
   server:
-    address: 127.0.0.1:1101
+    address: 127.0.0.1:1141
   worker:
     app-name: ${spring.application.name}

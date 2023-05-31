@@ -1,23 +1,22 @@
-package com.github.vizaizai.server.dao.dataobject;
+package com.github.vizaizai.server.web.dto;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.github.vizaizai.server.constant.Commons;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 /**
- * 任务信息
+ * 任务信息-DTO
  * @author liaochongwei
  * @date 2023/5/18 17:11
  */
 @Data
-@TableName(value = "job")
-public class JobDO {
+public class JobDTO {
 
     /**
      * id
      */
-    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
@@ -33,11 +32,13 @@ public class JobDO {
     /**
      * 生命周期开始
      */
+    @JsonFormat(pattern = Commons.DT_PATTERN)
     private LocalDateTime startTime;
 
     /**
      * 生命周期结束
      */
+    @JsonFormat(pattern = Commons.DT_PATTERN)
     private LocalDateTime endTime;
 
     /**
@@ -93,35 +94,8 @@ public class JobDO {
      */
     private Integer timeoutHandleType;
     /**
-     * 上次触发时间
-     */
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
-    private Long lastTriggerTime;
-    /**
-     * 下次触发时间
-     */
-    @TableField(updateStrategy = FieldStrategy.IGNORED)
-    private Long nextTriggerTime;
-
-    /**
-     * 新建人
-     */
-    private String creater;
-
-    /**
      * 创建时间
      */
-    @TableField(fill = FieldFill.INSERT)
+    @JsonFormat(pattern = Commons.DT_PATTERN)
     private LocalDateTime createTime;
-
-    /**
-     * 更新人
-     */
-    private String updater;
-
-    /**
-     * 更新时间
-     */
-    @TableField(fill = FieldFill.UPDATE)
-    private LocalDateTime updateTime;
 }

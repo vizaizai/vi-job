@@ -1,6 +1,7 @@
 package com.github.vizaizai.server.web.co;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.github.vizaizai.server.constant.Commons;
 import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
@@ -17,7 +18,7 @@ public class JobUpdateCO {
     /**
      * 数据id
      */
-    private String id;
+    private Long id;
     /**
      * 任务名称
      */
@@ -33,13 +34,13 @@ public class JobUpdateCO {
     /**
      * 生命周期开始
      */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = Commons.DT_PATTERN)
     private LocalDateTime startTime;
 
     /**
      * 生命周期结束
      */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = Commons.DT_PATTERN)
     private LocalDateTime endTime;
 
     /**

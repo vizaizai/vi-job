@@ -16,16 +16,16 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties({ServerProperties.class, WorkerProperties.class})
 public class ViJobAutoConfiguration {
 
-    @ConditionalOnMissingBean
     @Bean
+    @ConditionalOnMissingBean
     public ViStarter viStarter(ServerProperties serverProperties, WorkerProperties workerProperties) {
-        ViStarter viStarter = new ViStarter();
-        viStarter.setServerAddr(serverProperties.getAddress());
-        viStarter.setAppName(workerProperties.getAppName());
-        viStarter.setHost(workerProperties.getHost());
-        viStarter.setPort(workerProperties.getPort());
-        viStarter.start();
-        return viStarter;
+        ViSpringStarter starter = new ViSpringStarter();
+        starter.setServerAddr(serverProperties.getAddress());
+        starter.setAppName(workerProperties.getAppName());
+        starter.setHost(workerProperties.getHost());
+        starter.setPort(workerProperties.getPort());
+        starter.start();
+        return starter;
     }
 
     @Bean

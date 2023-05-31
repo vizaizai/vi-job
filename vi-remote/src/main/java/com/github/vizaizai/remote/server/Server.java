@@ -2,8 +2,6 @@ package com.github.vizaizai.remote.server;
 
 import com.github.vizaizai.remote.server.processor.BizProcessor;
 
-import java.util.concurrent.ExecutorService;
-
 /**
  * @author liaochongwei
  * @date 2022/2/18 15:28
@@ -19,5 +17,5 @@ public interface Server {
     /**
      * 启动服务
      */
-    void start(ExecutorService executor);
+    void start();
 }

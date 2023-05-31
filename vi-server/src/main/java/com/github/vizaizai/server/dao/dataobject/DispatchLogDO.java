@@ -25,7 +25,7 @@ public class DispatchLogDO {
     /**
      * 任务id
      */
-    private String jobId;
+    private Long jobId;
     /**
      * 任务参数
      */
@@ -81,7 +81,7 @@ public class DispatchLogDO {
     private LocalDateTime createTime;
 
     public DispatchLogDO setErrorMsg(String errorMsg) {
-        if (Utils.isBlank(errorMsg) && errorMsg.length() > 1024) {
+        if (Utils.isNotBlank(errorMsg) && errorMsg.length() > 1024) {
             this.errorMsg = errorMsg.substring(0, 1023);
         }
         return this;

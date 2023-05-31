@@ -1,14 +1,15 @@
 package com.github.vizaizai.server.web;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.server.service.JobService;
+import com.github.vizaizai.server.web.co.IdCO;
+import com.github.vizaizai.server.web.co.JobQueryCO;
 import com.github.vizaizai.server.web.co.JobStatusUpdateCO;
 import com.github.vizaizai.server.web.co.JobUpdateCO;
+import com.github.vizaizai.server.web.dto.JobDTO;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -23,9 +24,24 @@ public class JobController {
     @Resource
     private JobService jobService;
 
-    @PostMapping("/addJob")
-    public Result<Void> addJob(@RequestBody @Validated JobUpdateCO jobUpdateCO) {
+    @GetMapping("/page")
+    public Result<IPage<JobDTO>> page(@Validated JobQueryCO jobQueryCO) {
+        return jobService.pageJobs(jobQueryCO);
+    }
+
+    @PostMapping("/add")
+    public Result<Void> add(@RequestBody @Validated JobUpdateCO jobUpdateCO) {
         return jobService.addJob(jobUpdateCO);
+    }
+
+    @PostMapping("/update")
+    public Result<Void> update(@RequestBody @Validated JobUpdateCO jobUpdateCO) {
+        return jobService.updateJob(jobUpdateCO);
+    }
+
+    @PostMapping("/delete")
+    public Result<Void> delete(@RequestBody @Validated IdCO idCO) {
+        return jobService.deleteJob(Long.valueOf(idCO.getId()));
     }
 
     @PostMapping("/updateStatus")

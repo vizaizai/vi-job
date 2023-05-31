@@ -1,9 +1,15 @@
 package com.github.vizaizai.server.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.vizaizai.common.model.Result;
+import com.github.vizaizai.server.dao.dataobject.JobDO;
 import com.github.vizaizai.server.entity.Job;
+import com.github.vizaizai.server.web.co.JobQueryCO;
 import com.github.vizaizai.server.web.co.JobStatusUpdateCO;
 import com.github.vizaizai.server.web.co.JobUpdateCO;
+import com.github.vizaizai.server.web.dto.JobDTO;
+
+import java.util.List;
 
 /**
  * 任务接口
@@ -20,15 +26,51 @@ public interface JobService {
     Result<Void> addJob(JobUpdateCO jobUpdateCO);
 
     /**
+     * 更新任务
+     * @param jobUpdateCO
+     * @return
+     */
+    Result<Void> updateJob(JobUpdateCO jobUpdateCO);
+
+    /**
+     * 删除任务
+     * @param id 任务id
+     * @return
+     */
+    Result<Void> deleteJob(Long id);
+
+    /**
+     * 分页查询任务
+     * @param jobQueryCO
+     * @return
+     */
+    Result<IPage<JobDTO>> pageJobs(JobQueryCO jobQueryCO);
+
+    /**
      * 更新任务状态
      * @param jobStatusUpdateCO
      * @return
      */
     Result<Void> updateJobStatus(JobStatusUpdateCO jobStatusUpdateCO);
-
+    /**
+     * 查询所有等待触发的任务
+     * @param maxTime 最大时间
+     * @return
+     */
+    List<JobDO> listWaitingJobs(long maxTime);
     /**
      * 执行任务
      * @param job 任务
      */
     void invoke(Job job);
+
+    /**
+     * 刷新触发时间
+     * @param jobId
+     * @param lastTriggerTime
+     * @param nextTriggerTime
+     */
+    void refreshTriggerTime(Long jobId, Long lastTriggerTime, Long nextTriggerTime);
+
+
 }

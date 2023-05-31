@@ -8,13 +8,13 @@ import com.github.vizaizai.remote.utils.NetUtils;
 import com.github.vizaizai.remote.utils.Utils;
 import com.github.vizaizai.worker.core.executor.IdleExecutor;
 import com.github.vizaizai.worker.core.executor.TaskExecutor;
+import com.github.vizaizai.worker.runner.JobProcessRunner;
+import com.github.vizaizai.worker.runner.RegistryRunner;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 启动器
@@ -39,12 +39,11 @@ public class ViStarter {
      * 本地服务端口号
      */
     private Integer port;
-    /**
-     * 任务线程池
-     */
-    private static final ScheduledExecutorService scheduledExecutorService =
-            Executors.newScheduledThreadPool(2, new BasicThreadFactory.Builder().namingPattern("Worker-Task-%d").build());
 
+    /**
+     * 调度中心地址列表
+     */
+    private final List<String> severAddrList = new ArrayList<>();
     public String getAppName() {
         return appName;
     }
@@ -73,12 +72,10 @@ public class ViStarter {
 
     public void stop() {
         try {
-            // 关闭任务线程池
-            scheduledExecutorService.shutdown();
-            // 等待关闭
-            if (!scheduledExecutorService.awaitTermination(5, TimeUnit.SECONDS)) {
-                scheduledExecutorService.shutdownNow();
-            }
+            // 关闭任务运行
+            JobProcessRunner.shutdownAll();
+            // 关闭注册
+            RegistryRunner.shutdown();
         }catch (Exception e) {
             logger.error("ShutDownFailure.",e);
         }
@@ -87,15 +84,15 @@ public class ViStarter {
     private void initEmbedServer() {
         // 获取主机地址
         this.host = this.host == null || this.host.trim().length() == 0 ? NetUtils.getLocalHost() : this.host;
-        logger.info("host: {}",host);
-        Server server = new NettyServer(this.host,this.port);
+        logger.info("address: {}", host+":" + port);
+        Server server = new NettyServer(this.host, this.port);
         server.addBizProcessor(BizCode.RUN, new TaskExecutor());
         server.addBizProcessor(BizCode.IDlE, new IdleExecutor());
-        server.start(scheduledExecutorService);
+        server.start();
     }
 
     private void registry() {
-
+        RegistryRunner.initAndStart(this.host + ":" + this.port,  this.appName, this.getSeverAddrList());
     }
 
     void checkParams() {
@@ -105,10 +102,28 @@ public class ViStarter {
         if (this.port == null) {
             throw new IllegalArgumentException("Port must be not null");
         }
-        if (StringUtils.isBlank(serverAddr)) {
+        if (StringUtils.isBlank(serverAddr.trim())) {
+            throw new IllegalArgumentException("ServerAddr invalid");
+        }
+
+        String[] addrArray = serverAddr.split(",");
+        for (String addr : addrArray) {
+            addr = addr.trim();
+            if (addr.startsWith("http://") || addr.startsWith("https://")) {
+                severAddrList.add(addr);
+            }else {
+                if (StringUtils.isNotBlank(addr)) {
+                    addr = "http://" + addr;
+                    severAddrList.add(addr);
+                }
+            }
+        }
+        if (Utils.isEmpty(this.severAddrList)) {
             throw new IllegalArgumentException("ServerAddr invalid");
         }
     }
+
+
 
     public void setAppName(String appName) {
         this.appName = appName;
@@ -124,5 +139,9 @@ public class ViStarter {
 
     public void setPort(Integer port) {
         this.port = port;
+    }
+
+    public List<String> getSeverAddrList() {
+        return severAddrList;
     }
 }

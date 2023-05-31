@@ -1,11 +1,8 @@
 package com.github.vizaizai.server.web.co;
 
 import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 
 /**
  * 任务状态更新-CO
@@ -18,7 +15,7 @@ public class JobStatusUpdateCO {
      * 数据id
      */
     @NotNull(message = "数据id")
-    private String id;
+    private Long id;
     /**
      * 0-停止 1-运行中
      */
