@@ -3,6 +3,8 @@ package com.github.vizaizai.remote.serializer.kryo;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.github.vizaizai.common.model.Result;
+import com.github.vizaizai.remote.codec.RpcRequest;
 import com.github.vizaizai.remote.serializer.Serializer;
 
 import java.io.ByteArrayInputStream;
@@ -43,8 +45,7 @@ public class KryoSerializer implements Serializer {
         } finally {
             try {
                 byteArrayOutputStream.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            } catch (IOException ignored) {
             }
         }
     }
@@ -63,8 +64,7 @@ public class KryoSerializer implements Serializer {
         } finally {
             try {
                 byteArrayInputStream.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            } catch (IOException ignored) {
             }
         }
     }

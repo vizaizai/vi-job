@@ -5,8 +5,6 @@ import com.github.vizaizai.remote.client.netty.NettyClientHandler;
 import com.github.vizaizai.remote.client.netty.NettyClientInitializer;
 import com.github.vizaizai.remote.codec.RpcRequest;
 import com.github.vizaizai.remote.codec.RpcResponse;
-import com.github.vizaizai.remote.common.sender.NettySender;
-import com.github.vizaizai.remote.common.sender.Sender;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -81,7 +79,7 @@ public class NettyClient implements Client{
         if (this.nettyClientHandler == null) {
             throw new RuntimeException("Netty Client is not ready.");
         }
-        return (RpcResponse) this.nettyClientHandler.getNettySender().sendAndRevResponse(request.getRequestId(), request, timeout);
+        return (RpcResponse) this.nettyClientHandler.getNettySender().sendAndRevResponse(request, timeout);
     }
 
     @Override

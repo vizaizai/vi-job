@@ -1,4 +1,4 @@
-package com.github.vizaizai.remote.common;
+package com.github.vizaizai.common.contants;
 
 /**
  * 业务编码
@@ -6,6 +6,8 @@ package com.github.vizaizai.remote.common;
  * @date 2023/4/24 14:39
  */
 public class BizCode {
+
+    /*==================================执行器==================================*/
     /**
      * 心跳检测
      */
@@ -22,5 +24,11 @@ public class BizCode {
      * 空闲检测
      */
     public static final String IDlE = "idle";
+
+    /*==================================调度中心==================================*/
+    /**
+     * 状态上报
+     */
+    public static final String REPORT = "report";
 
 }

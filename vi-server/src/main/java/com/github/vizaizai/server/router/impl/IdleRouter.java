@@ -1,7 +1,7 @@
 package com.github.vizaizai.server.router.impl;
 
 import com.github.vizaizai.common.model.TaskResult;
-import com.github.vizaizai.remote.common.BizCode;
+import com.github.vizaizai.common.contants.BizCode;
 import com.github.vizaizai.server.entity.Job;
 import com.github.vizaizai.server.router.NodeRouter;
 import com.github.vizaizai.server.utils.RpcUtils;

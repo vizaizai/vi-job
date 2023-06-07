@@ -45,7 +45,7 @@ public class HttpUtils {
      * @param body 请求体
      * @return 响应内容
      */
-    public static String doPost(String httpUrl, Object body) {
+    public static String doPost(String httpUrl, Object body, long timeout) {
         final URL url;
         final HttpURLConnection connection;
         try {
@@ -62,8 +62,8 @@ public class HttpUtils {
 
             connection.setDoOutput(true);
             connection.setDoInput(true);
-            connection.setConnectTimeout(1000 * 15);
-            connection.setReadTimeout(1000 * 15);
+            connection.setConnectTimeout((int) timeout);
+            connection.setReadTimeout((int) timeout);
             connection.setAllowUserInteraction(false);
             connection.setInstanceFollowRedirects(false);
             connection.setRequestMethod("POST");

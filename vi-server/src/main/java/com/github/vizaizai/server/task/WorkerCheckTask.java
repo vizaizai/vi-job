@@ -1,11 +1,11 @@
 package com.github.vizaizai.server.task;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.github.vizaizai.common.contants.BizCode;
 import com.github.vizaizai.remote.client.Client;
 import com.github.vizaizai.remote.client.NettyPoolClient;
 import com.github.vizaizai.remote.codec.RpcRequest;
 import com.github.vizaizai.remote.codec.RpcResponse;
-import com.github.vizaizai.remote.common.BizCode;
 import com.github.vizaizai.remote.utils.NetUtils;
 import com.github.vizaizai.remote.utils.Utils;
 import com.github.vizaizai.server.dao.RegistryMapper;
@@ -13,7 +13,7 @@ import com.github.vizaizai.server.dao.WorkerMapper;
 import com.github.vizaizai.server.dao.dataobject.RegistryDO;
 import com.github.vizaizai.server.dao.dataobject.WorkerDO;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
@@ -27,7 +27,7 @@ import java.util.Objects;
  * @date 2023/5/8 17:12
  */
 @Slf4j
-//@Component
+@Component
 public class WorkerCheckTask {
     @Resource
     private WorkerMapper workerMapper;
@@ -37,10 +37,9 @@ public class WorkerCheckTask {
     /**
      * 一分钟扫描一次
      */
-    @Scheduled(fixedDelay = 1000 * 6)
+    //@Scheduled(fixedDelay = 1000 * 6)
     public void check() {
-        String host = NetUtils.getLocalHost();
-        log.info("节点[{}]正在检查worker...", host);
+        log.info(">>>>>>>>>>正在检查worker...");
         // 查询当前机器下的所有执行器
         List<WorkerDO> workers = workerMapper.selectList(null);
         if (Utils.isEmpty(workers)) {

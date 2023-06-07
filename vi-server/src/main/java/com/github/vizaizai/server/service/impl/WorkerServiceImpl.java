@@ -1,6 +1,9 @@
 package com.github.vizaizai.server.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.remote.utils.Utils;
 import com.github.vizaizai.server.dao.RegistryMapper;
@@ -11,7 +14,9 @@ import com.github.vizaizai.server.service.WorkerService;
 import com.github.vizaizai.server.utils.BeanUtils;
 import com.github.vizaizai.server.utils.UserUtils;
 import com.github.vizaizai.server.web.co.RegisterCO;
+import com.github.vizaizai.server.web.co.WorkerQueryCO;
 import com.github.vizaizai.server.web.co.WorkerUpdateCO;
+import com.github.vizaizai.server.web.dto.WorkerDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -58,6 +63,13 @@ public class WorkerServiceImpl implements WorkerService {
         worker.setCreater(UserUtils.getUserName());
         workerMapper.insert(worker);
         return Result.ok("操作成功");
+    }
+
+    @Override
+    public Result<IPage<WorkerDTO>> pageWorkers(WorkerQueryCO queryCO) {
+        LambdaQueryWrapper<WorkerDO> wrapper = Wrappers.<WorkerDO>lambdaQuery().eq(queryCO.getAppName() != null, WorkerDO::getAppName, queryCO.getAppName());
+        Page<WorkerDO> workerPage = workerMapper.selectPage(queryCO.toPage(), wrapper);
+        return Result.handleSuccess(BeanUtils.toPageBean(workerPage,WorkerDTO::new));
     }
 
     @Override

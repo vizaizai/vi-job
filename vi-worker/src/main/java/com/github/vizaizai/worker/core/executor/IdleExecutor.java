@@ -1,6 +1,7 @@
 package com.github.vizaizai.worker.core.executor;
 
 import com.github.vizaizai.common.model.TaskResult;
+import com.github.vizaizai.remote.codec.RpcMessage;
 import com.github.vizaizai.remote.codec.RpcRequest;
 import com.github.vizaizai.remote.codec.RpcResponse;
 import com.github.vizaizai.remote.common.sender.Sender;
@@ -19,10 +20,10 @@ public class IdleExecutor implements BizProcessor {
         JobProcessRunner runner = JobProcessRunner.getRunner(jobId);
         RpcResponse response;
         if (runner == null || !runner.isRunning()) {
-            response = RpcResponse.ok(request.getRequestId(), TaskResult.ok());
+            response = RpcResponse.ok(TaskResult.ok());
         }else {
-            response = RpcResponse.ok(request.getRequestId(), TaskResult.fail("Job["+jobId+"] is busy"));
+            response = RpcResponse.ok( TaskResult.fail("Job["+jobId+"] is busy"));
         }
-        sender.send(response);
+        sender.send(RpcMessage.createResponse(request.getRid(),response));
     }
 }

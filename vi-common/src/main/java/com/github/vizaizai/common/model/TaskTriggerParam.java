@@ -3,11 +3,11 @@ package com.github.vizaizai.common.model;
 import java.io.Serializable;
 
 /**
- * 任务上下文
+ * 任务调度参数
  * @author liaochongwei
  * @date 2023/4/23 10:18
  */
-public class TaskContext implements Serializable {
+public class TaskTriggerParam implements Serializable {
 
     /**
      * 任务id

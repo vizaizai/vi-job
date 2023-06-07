@@ -43,7 +43,7 @@ public class NettyPoolClient implements Client{
         Sender sender = this.createSender();
         // 发送请求并且等待返回
        try {
-           return (RpcResponse) sender.sendAndRevResponse(request.getRequestId(), request, timeout);
+           return (RpcResponse) sender.sendAndRevResponse(request, timeout);
        }finally {
            // 释放
            release();
@@ -65,7 +65,7 @@ public class NettyPoolClient implements Client{
     }
 
     @Override
-    public InetSocketAddress getAddress() {
-        return this.inetSocketAddress;
+    public InetSocketAddress getAddress(){
+            return this.inetSocketAddress;
     }
 }

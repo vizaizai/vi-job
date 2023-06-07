@@ -1,6 +1,7 @@
 package com.github.vizaizai.remote.server.processor;
 
 import com.github.vizaizai.logging.LoggerFactory;
+import com.github.vizaizai.remote.codec.RpcMessage;
 import com.github.vizaizai.remote.codec.RpcRequest;
 import com.github.vizaizai.remote.codec.RpcResponse;
 import com.github.vizaizai.remote.common.sender.Sender;
@@ -19,8 +20,8 @@ public class HeartBeatProcessor implements BizProcessor {
     public void execute(RpcRequest request, Sender sender) {
         String action = (String) request.getParam();
         if (Objects.equals(action,"ping")) {
-            logger.debug("[{}_{}]PONG",sender.getRemoteAddress(),request.getRequestId());
-            sender.send(RpcResponse.ok(request.getRequestId(),"pong"));
+            logger.debug("[{}]PONG",sender.getRemoteAddress());
+            sender.send(RpcMessage.createResponse(request.getRid(),RpcResponse.ok("pong")));
         }
     }
 }

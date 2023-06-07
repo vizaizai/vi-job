@@ -31,7 +31,8 @@ public class JobCheckTask {
     /**
      * 3分钟执行一次,将5分钟内触发的任务添加到触发Timer中
      */
-    @Scheduled(fixedDelay = 1000 * 60 * 3)
+    //@Scheduled(fixedDelay = 1000 * 60 * 3)
+    @Scheduled(fixedDelay = 1000 * 3)
     public void check() {
         List<JobDO> jobs = jobService.listWaitingJobs(System.currentTimeMillis() + Commons.TIMER_MAX);
         if (Utils.isEmpty(jobs)) {

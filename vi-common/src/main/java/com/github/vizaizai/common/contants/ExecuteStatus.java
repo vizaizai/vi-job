@@ -1,4 +1,4 @@
-package com.github.vizaizai.server.constant;
+package com.github.vizaizai.common.contants;
 
 /**
  * 执行状态

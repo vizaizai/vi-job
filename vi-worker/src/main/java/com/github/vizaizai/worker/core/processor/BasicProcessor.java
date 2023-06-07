@@ -1,7 +1,8 @@
 package com.github.vizaizai.worker.core.processor;
 
 
-import com.github.vizaizai.common.model.TaskContext;
+import com.github.vizaizai.common.model.TaskTriggerParam;
+import com.github.vizaizai.worker.core.TaskContext;
 
 /**
  * 基础处理器

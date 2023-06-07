@@ -1,13 +1,15 @@
 package com.github.vizaizai.worker.core.executor;
 
-import com.github.vizaizai.common.model.TaskContext;
 import com.github.vizaizai.common.model.TaskResult;
+import com.github.vizaizai.common.model.TaskTriggerParam;
 import com.github.vizaizai.logging.LoggerFactory;
+import com.github.vizaizai.remote.codec.RpcMessage;
 import com.github.vizaizai.remote.codec.RpcRequest;
 import com.github.vizaizai.remote.codec.RpcResponse;
 import com.github.vizaizai.remote.common.sender.Sender;
 import com.github.vizaizai.remote.server.processor.BizProcessor;
 import com.github.vizaizai.remote.utils.Utils;
+import com.github.vizaizai.worker.core.TaskContext;
 import com.github.vizaizai.worker.core.processor.BasicProcessor;
 import com.github.vizaizai.worker.runner.JobProcessRunner;
 import org.slf4j.Logger;
@@ -56,22 +58,21 @@ public class TaskExecutor implements BizProcessor {
 
     @Override
     public void execute(RpcRequest request, Sender sender) {
-        TaskContext taskContext = (TaskContext) request.getParam();
+        TaskTriggerParam triggerParam = (TaskTriggerParam) request.getParam();
         TaskResult result;
         // 执行处理器
-        BasicProcessor basicProcessor = processors.get(taskContext.getJobName());
+        BasicProcessor basicProcessor = processors.get(triggerParam.getJobName());
         if (basicProcessor != null) {
             result = TaskResult.ok();
         }else {
             result = TaskResult.fail("Processor not found");
         }
         // 响应客户端
-        RpcResponse response = RpcResponse.ok(request.getRequestId(), result);
-        sender.send(response);
-
+        sender.send(RpcMessage.createResponse(request.getRid(),RpcResponse.ok(result)));
         if (basicProcessor != null) {
             // 推入待执行任务队列中
-            JobProcessRunner runner = JobProcessRunner.getInstance(taskContext.getJobId(), basicProcessor);
+            TaskContext taskContext = new TaskContext(triggerParam, sender);
+            JobProcessRunner runner = JobProcessRunner.getInstance(triggerParam.getJobId(), basicProcessor);
             runner.pushTaskQueue(taskContext);
         }
     }

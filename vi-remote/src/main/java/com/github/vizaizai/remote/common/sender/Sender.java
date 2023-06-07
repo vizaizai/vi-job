@@ -10,7 +10,6 @@ import java.net.SocketAddress;
  * @date 2023/4/23 13:53
  */
 public interface Sender {
-
     /**
      * 直接发送
      * @param msg 消息内容
@@ -19,24 +18,28 @@ public interface Sender {
 
     /**
      * 发送且返回future
-     * @param requestId 请求id
      * @param msg 消息内容
      * @return RpcFuture
      */
-    RpcFuture sendAndRevFuture(String requestId, Object msg);
+    RpcFuture sendAndRevFuture(Object msg);
 
     /**
      * 发送且等待响应（会阻塞）
-     * @param requestId 请求id
      * @param msg 消息内容
-     * @param timeout 超时时间 (单位: 毫秒，-1表示不限制)
+     * @param timeout 超时时间 (单位: 毫秒)
      * @return Object
      */
-    Object sendAndRevResponse(String requestId, Object msg, long timeout);
+    Object sendAndRevResponse(Object msg, long timeout);
 
     /**
      * 获取远程地址
      * @return SocketAddress
      */
     SocketAddress getRemoteAddress();
+
+    /**
+     * 是否可用
+     * @return boolean
+     */
+    boolean available();
 }

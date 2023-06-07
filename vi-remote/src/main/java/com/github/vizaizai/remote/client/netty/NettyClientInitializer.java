@@ -1,9 +1,6 @@
 package com.github.vizaizai.remote.client.netty;
 
-import com.github.vizaizai.remote.codec.RpcDecoder;
-import com.github.vizaizai.remote.codec.RpcEncoder;
-import com.github.vizaizai.remote.codec.RpcRequest;
-import com.github.vizaizai.remote.codec.RpcResponse;
+import com.github.vizaizai.remote.codec.*;
 import com.github.vizaizai.remote.serializer.Serializer;
 import com.github.vizaizai.remote.serializer.kryo.KryoSerializer;
 import io.netty.channel.ChannelInitializer;
@@ -27,10 +24,8 @@ public class NettyClientInitializer  extends ChannelInitializer<SocketChannel> {
         ChannelPipeline cp = sc.pipeline();
         cp.addLast("beat",new IdleStateHandler(0, 0, 30, TimeUnit.SECONDS));
         cp.addLast("lengthFieldBasedFrameDecoder",new LengthFieldBasedFrameDecoder(65536, 0, 4, 0, 0));
-        cp.addLast("rpcDecoder1",new RpcDecoder(RpcResponse.class, serializer));
-        cp.addLast("rpcDecoder2",new RpcDecoder(RpcRequest.class, serializer));
-        cp.addLast("rpcEncoder1",new RpcEncoder(RpcRequest.class, serializer));
-        cp.addLast("rpcEncoder2",new RpcEncoder(RpcResponse.class, serializer));
-        cp.addLast("nettyClientHandler",new NettyClientHandler());
+        cp.addLast("rpcDecoder",new RpcDecoder(RpcMessage.class, serializer));
+        cp.addLast("rpcEncoder",new RpcEncoder(RpcMessage.class, serializer));
+        cp.addLast("nettyClientHandler",new NettyClientHandler(null));
     }
 }

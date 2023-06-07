@@ -9,8 +9,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * 任务实体
@@ -104,19 +103,22 @@ public class Job {
      * 执行器地址列表
      */
     private List<String> workerAddressList;
+
+
+    // private static final Set<String> delayedJobSet = Collections.synchronizedSet(new HashSet<>());
     /**
      * 计算下一次触发时间
      * @return 时间戳
      */
     public Long getNextTriggerTime() {
         long now = System.currentTimeMillis();
-        LocalDateTime nowDatetime = LocalDateTimeUtil.of(now);
+        LocalDateTime nowDateTime = LocalDateTimeUtil.of(now);
         // 未开始
-        if (startTime != null && nowDatetime.isBefore(startTime)) {
+        if (startTime != null && nowDateTime.isBefore(startTime)) {
             return getNextTriggerTime0(LocalDateTimeUtil.toEpochMilli(startTime));
         }
         // 已结束
-        if (endTime != null && nowDatetime.isAfter(endTime)) {
+        if (endTime != null && nowDateTime.isAfter(endTime)) {
             return null;
         }
         return getNextTriggerTime0(now);

@@ -3,10 +3,7 @@ package com.github.vizaizai.server.web;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.server.service.JobService;
-import com.github.vizaizai.server.web.co.IdCO;
-import com.github.vizaizai.server.web.co.JobQueryCO;
-import com.github.vizaizai.server.web.co.JobStatusUpdateCO;
-import com.github.vizaizai.server.web.co.JobUpdateCO;
+import com.github.vizaizai.server.web.co.*;
 import com.github.vizaizai.server.web.dto.JobDTO;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -47,6 +44,11 @@ public class JobController {
     @PostMapping("/updateStatus")
     public Result<Void> updateStatus(@RequestBody @Validated JobStatusUpdateCO jobStatusUpdateCO) {
         return jobService.updateJobStatus(jobStatusUpdateCO);
+    }
+
+    @PostMapping("/statusReport")
+    public Result<Void> statusReport(@RequestBody @Validated StatusReportCO statusReportCO) {
+        return jobService.statusReport(statusReportCO);
     }
 
 }

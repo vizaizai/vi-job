@@ -7,6 +7,7 @@ import com.github.vizaizai.server.entity.Job;
 import com.github.vizaizai.server.web.co.JobQueryCO;
 import com.github.vizaizai.server.web.co.JobStatusUpdateCO;
 import com.github.vizaizai.server.web.co.JobUpdateCO;
+import com.github.vizaizai.server.web.co.StatusReportCO;
 import com.github.vizaizai.server.web.dto.JobDTO;
 
 import java.util.List;
@@ -66,11 +67,18 @@ public interface JobService {
 
     /**
      * 刷新触发时间
-     * @param jobId
-     * @param lastTriggerTime
-     * @param nextTriggerTime
+     * @param jobId 任务id
+     * @param lastTriggerTime 上次触发时间
+     * @param nextTriggerTime 下次触发时间
      */
     void refreshTriggerTime(Long jobId, Long lastTriggerTime, Long nextTriggerTime);
+
+    /**
+     * 状态上报
+     * @param statusReportCO
+     * @return
+     */
+    Result<Void> statusReport(StatusReportCO statusReportCO);
 
 
 }

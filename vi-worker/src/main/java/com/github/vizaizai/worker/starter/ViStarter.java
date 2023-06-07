@@ -1,7 +1,7 @@
 package com.github.vizaizai.worker.starter;
 
 import com.github.vizaizai.logging.LoggerFactory;
-import com.github.vizaizai.remote.common.BizCode;
+import com.github.vizaizai.common.contants.BizCode;
 import com.github.vizaizai.remote.server.Server;
 import com.github.vizaizai.remote.server.netty.NettyServer;
 import com.github.vizaizai.remote.utils.NetUtils;

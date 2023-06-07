@@ -7,10 +7,11 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.vizaizai.common.contants.ExecuteStatus;
 import com.github.vizaizai.common.model.Result;
-import com.github.vizaizai.common.model.TaskContext;
+import com.github.vizaizai.common.model.TaskTriggerParam;
 import com.github.vizaizai.common.model.TaskResult;
-import com.github.vizaizai.remote.common.BizCode;
+import com.github.vizaizai.common.contants.BizCode;
 import com.github.vizaizai.retry.util.Assert;
 import com.github.vizaizai.server.constant.*;
 import com.github.vizaizai.server.dao.DispatchLogMapper;
@@ -28,6 +29,7 @@ import com.github.vizaizai.server.utils.UserUtils;
 import com.github.vizaizai.server.web.co.JobQueryCO;
 import com.github.vizaizai.server.web.co.JobStatusUpdateCO;
 import com.github.vizaizai.server.web.co.JobUpdateCO;
+import com.github.vizaizai.server.web.co.StatusReportCO;
 import com.github.vizaizai.server.web.dto.JobDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -188,21 +190,21 @@ public class JobServiceImpl implements JobService {
             dispatchLogMapper.insert(dispatchLogInsert);
             Assert.notNull(dispatchLogInsert.getId(),"保存调度记录错误");
 
-            // 构建任务上下文
-            TaskContext taskContext = new TaskContext();
-            taskContext.setJobId(job.getId());
-            taskContext.setJobName(job.getProcessor());
-            taskContext.setJobDispatchId(dispatchLogInsert.getId());
-            taskContext.setJobParams(job.getParam());
-            taskContext.setExecuteTimeout(job.getTimeoutS());
-            taskContext.setTimeoutHandleType(job.getTimeoutHandleType());
+            // 构建任务触发参数
+            TaskTriggerParam taskTriggerParam = new TaskTriggerParam();
+            taskTriggerParam.setJobId(job.getId());
+            taskTriggerParam.setJobName(job.getProcessor());
+            taskTriggerParam.setJobDispatchId(dispatchLogInsert.getId());
+            taskTriggerParam.setJobParams(job.getParam());
+            taskTriggerParam.setExecuteTimeout(job.getTimeoutS());
+            taskTriggerParam.setTimeoutHandleType(job.getTimeoutHandleType());
 
             // 执行任务触发
-            TaskResult taskResult = RpcUtils.toTaskResult(RpcUtils.call(address, BizCode.RUN, taskContext));
+            TaskResult taskResult = RpcUtils.toTaskResult(RpcUtils.call(address, BizCode.RUN, taskTriggerParam));
             // 调度失败->更新调度日志
             if (!taskResult.isSuccess()) {
                 DispatchLogDO dispatchLogUpdate = new DispatchLogDO()
-                        .setId(taskContext.getJobDispatchId())
+                        .setId(taskTriggerParam.getJobDispatchId())
                         .setDispatchStatus(DispatchStatus.FAIL.getCode())
                         .setExecuteStatus(ExecuteStatus.FAIL.getCode())
                         .setErrorMsg(taskResult.getMsg());
@@ -223,6 +225,19 @@ public class JobServiceImpl implements JobService {
         }catch (Exception e) {
             log.error("更新触发时间错误,{}",e.getMessage());
         }
+    }
+
+    @Transactional
+    @Override
+    public Result<Void> statusReport(StatusReportCO statusReportCO) {
+        DispatchLogDO dispatchLogDO = new DispatchLogDO();
+        dispatchLogDO.setId(statusReportCO.getDispatchId());
+        dispatchLogDO.setDispatchStatus(statusReportCO.getExecuteStatus());
+        dispatchLogDO.setExecuteStartTime(LocalDateTimeUtil.of(statusReportCO.getExecuteStartTime()));
+        dispatchLogDO.setExecuteEndTime(LocalDateTimeUtil.of(statusReportCO.getExecuteEndTime()));
+        dispatchLogMapper.updateById(dispatchLogDO);
+        // TODO: 2023/6/1 延时任务处理
+        return Result.ok("上报成功");
     }
 
     /**

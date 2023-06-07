@@ -2,6 +2,8 @@ package com.github.vizaizai.remote.common.sender;
 
 import com.github.vizaizai.logging.LoggerFactory;
 import com.github.vizaizai.remote.client.RpcFuture;
+import com.github.vizaizai.remote.codec.RpcMessage;
+import com.github.vizaizai.remote.codec.RpcRequest;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import org.slf4j.Logger;
@@ -16,7 +18,7 @@ import java.util.concurrent.TimeUnit;
  * @author liaochongwei
  * @date 2023/4/23 13:55
  */
-public class NettySender implements Sender{
+public class NettySender implements Sender {
 
     private static final Logger logger = LoggerFactory.getLogger(NettySender.class);
     /**
@@ -37,19 +39,21 @@ public class NettySender implements Sender{
         try {
             ChannelFuture channelFuture = channel.writeAndFlush(msg).sync();
             if (!channelFuture.isSuccess()) {
-                logger.error("Send request error[{}]", msg);
+                logger.error("Send message error[{}]", msg);
             }
         } catch (InterruptedException e) {
-            logger.error("Send request exception: " + e.getMessage());
+            logger.error("Send message exception: " + e.getMessage());
         }
     }
 
     @Override
-    public RpcFuture sendAndRevFuture(String requestId, Object msg) {
-        RpcFuture rpcFuture = new RpcFuture(requestId);
-        pendingFutures.put(requestId, rpcFuture);
+    public RpcFuture sendAndRevFuture(Object msg) {
+        this.check(msg);
+        RpcMessage message = RpcMessage.createRequest((RpcRequest) msg);
+        RpcFuture rpcFuture = new RpcFuture(message.getTraceId());
+        pendingFutures.put(message.getTraceId(), rpcFuture);
         try {
-            ChannelFuture channelFuture = channel.writeAndFlush(msg).sync();
+            ChannelFuture channelFuture = channel.writeAndFlush(message).sync();
             if (!channelFuture.isSuccess()) {
                 logger.error("Send request error[{}]", msg);
             }
@@ -60,8 +64,9 @@ public class NettySender implements Sender{
     }
 
     @Override
-    public Object sendAndRevResponse(String requestId, Object msg, long timeout) {
-        RpcFuture rpcFuture = this.sendAndRevFuture(requestId, msg);
+    public Object sendAndRevResponse(Object msg, long timeout) {
+        this.check(msg);
+        RpcFuture rpcFuture = this.sendAndRevFuture(msg);
         try {
             if (timeout <= -1) {
                 return rpcFuture.get();
@@ -95,5 +100,19 @@ public class NettySender implements Sender{
 
     public Channel getChannel() {
         return channel;
+    }
+
+    @Override
+    public boolean available() {
+        return channel != null && channel.isActive();
+    }
+
+    private void check(Object msg) {
+        if (!available()) {
+            throw new RuntimeException("The sender is not available");
+        }
+        if (!(msg instanceof RpcRequest)) {
+            throw new RuntimeException("msg's type must be [com.github.vizaizai.remote.codec.RpcRequest]");
+        }
     }
 }

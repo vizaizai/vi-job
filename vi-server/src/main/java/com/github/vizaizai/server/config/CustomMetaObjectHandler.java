@@ -15,13 +15,13 @@ import java.time.LocalDateTime;
 public class CustomMetaObjectHandler implements MetaObjectHandler {
     @Override
     public void insertFill(MetaObject metaObject) {
-        log.info("start insert fill ....");
+        log.debug("start insert fill ....");
         this.strictInsertFill(metaObject, "createTime", LocalDateTime::now, LocalDateTime.class);
     }
 
     @Override
     public void updateFill(MetaObject metaObject) {
-        log.info("start update fill ....");
+        log.debug("start update fill ....");
         this.strictUpdateFill(metaObject, "updateTime", LocalDateTime::now, LocalDateTime.class);
     }
 }

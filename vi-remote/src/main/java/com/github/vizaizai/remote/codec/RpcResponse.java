@@ -9,10 +9,6 @@ import java.io.Serializable;
  */
 public class RpcResponse implements Serializable {
     /**
-     * 请求id
-     */
-    private String requestId;
-    /**
      * 是否成功
      */
     private boolean success;
@@ -24,15 +20,6 @@ public class RpcResponse implements Serializable {
      * 返回结果
      */
     private Object result;
-
-
-    public String getRequestId() {
-        return requestId;
-    }
-
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
-    }
 
     public boolean getSuccess() {
         return success;
@@ -58,17 +45,15 @@ public class RpcResponse implements Serializable {
         this.result = result;
     }
 
-    public static RpcResponse ok(String requestId, Object result) {
+    public static RpcResponse ok(Object result) {
         RpcResponse response = new RpcResponse();
-        response.setRequestId(requestId);
         response.setSuccess(true);
         response.setResult(result);
         return response;
     }
 
-    public static RpcResponse error(String requestId, String msg) {
+    public static RpcResponse error(String msg) {
         RpcResponse response = new RpcResponse();
-        response.setRequestId(requestId);
         response.setSuccess(false);
         response.setMsg(msg);
         return response;
@@ -77,7 +62,6 @@ public class RpcResponse implements Serializable {
     @Override
     public String toString() {
         return "{" +
-                "requestId='" + requestId + '\'' +
                 ", success=" + success +
                 ", msg='" + msg + '\'' +
                 ", result=" + result +

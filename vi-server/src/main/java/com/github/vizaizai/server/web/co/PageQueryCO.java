@@ -2,6 +2,8 @@ package com.github.vizaizai.server.web.co;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
 
@@ -10,7 +12,8 @@ import javax.validation.constraints.NotNull;
  * @author liaochongwei
  * @date 2023/5/26 15:46
  */
-@Data
+@Getter
+@Setter
 public class PageQueryCO {
     /**
      * 页码

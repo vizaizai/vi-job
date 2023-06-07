@@ -2,6 +2,7 @@ package com.github.vizaizai.remote.client.netty;
 
 import com.github.vizaizai.logging.LoggerFactory;
 import com.github.vizaizai.remote.client.idle.IdleEventListener;
+import com.github.vizaizai.remote.server.processor.BizProcessor;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
@@ -33,8 +34,14 @@ public class NettyConnectionPool {
     private final Bootstrap bootstrap = new Bootstrap();
     private final EventLoopGroup eventLoopGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2);
     private ChannelPoolMap<InetSocketAddress, SimpleChannelPool> poolMap;
-    // 心跳检查监听器
-    private static final Map<InetSocketAddress, IdleEventListener> idleEventListenerMap = new HashMap<>();
+    /**
+     * 心跳检查监听器
+     */
+    private static IdleEventListener idleEventListener = null;
+    /**
+     * 业务处理器
+     */
+    private static final Map<String, BizProcessor> bizProcessorMap = new HashMap<>();
     private static volatile NettyConnectionPool nettyConnectionPool = null;
 
     public static synchronized NettyConnectionPool getInstance() {
@@ -61,7 +68,7 @@ public class NettyConnectionPool {
         poolMap = new AbstractChannelPoolMap<InetSocketAddress, SimpleChannelPool>() {
             @Override
             protected SimpleChannelPool newPool(InetSocketAddress key) {
-                return new FixedChannelPool(bootstrap.remoteAddress(key), new NettyChannelPoolHandler(idleEventListenerMap.get(key)),
+                return new FixedChannelPool(bootstrap.remoteAddress(key), new NettyChannelPoolHandler(idleEventListener, bizProcessorMap) ,
                         healthCheck,acquireTimeoutAction, acquireTimeoutMillis, maxConnect, maxPendingAcquires,true,true);
             }
         };
@@ -114,9 +121,19 @@ public class NettyConnectionPool {
 
     /**
      * 注册心跳检查事件处理
-     * @param listener
+     * @param listener 监听器
      */
-    public static void registerIdleListener(InetSocketAddress inetSocketAddress, IdleEventListener listener) {
-        idleEventListenerMap.put(inetSocketAddress, listener);
+    public static void setIdleEventListener(IdleEventListener listener) {
+        idleEventListener = listener;
     }
+
+    /**
+     * 注册处理器
+     * @param bizCode 业务码
+     * @param processor 处理器
+     */
+    public static void registerProcessor(String bizCode, BizProcessor processor) {
+        bizProcessorMap.put(bizCode, processor);
+    }
+
 }

@@ -1,8 +1,11 @@
 package com.github.vizaizai.server.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.server.web.co.RegisterCO;
+import com.github.vizaizai.server.web.co.WorkerQueryCO;
 import com.github.vizaizai.server.web.co.WorkerUpdateCO;
+import com.github.vizaizai.server.web.dto.WorkerDTO;
 
 import java.util.List;
 
@@ -20,6 +23,12 @@ public interface WorkerService {
      */
     Result<Void> saveOrUpdateWorker(WorkerUpdateCO updateCO);
 
+    /**
+     * 分页查询workers
+     * @param queryCO
+     * @return
+     */
+    Result<IPage<WorkerDTO>> pageWorkers(WorkerQueryCO queryCO);
     /**
      * 移除执行器
      * @param id

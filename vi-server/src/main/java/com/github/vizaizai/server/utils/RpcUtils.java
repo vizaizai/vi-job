@@ -33,12 +33,12 @@ public class RpcUtils {
      * @param param 参数
      * @return RpcResponse
      */
-    public static RpcResponse call(String address,String bizCode, Object param) {
+    public static RpcResponse call(String address, String bizCode, Object param) {
         RpcRequest request = RpcRequest.wrap(bizCode, param);
         try {
             return NettyPoolClient.getInstance(address).request(request, 30000);
         }catch (Exception e) {
-            return RpcResponse.error(request.getRequestId(),e.getMessage());
+            return RpcResponse.error(e.getMessage());
         }
     }
 }

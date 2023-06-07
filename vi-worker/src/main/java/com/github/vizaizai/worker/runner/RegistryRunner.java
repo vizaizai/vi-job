@@ -56,6 +56,9 @@ public class RegistryRunner extends Thread {
      * @param serverAddrList 调度中心地址列表
      */
     public static void initAndStart(String address, String appName, List<String> serverAddrList) {
+        if (runner != null) {
+            return;
+        }
         runner = new RegistryRunner();
         runner.address = address;
         runner.appName = appName;
@@ -117,7 +120,7 @@ public class RegistryRunner extends Thread {
         body.put("appName", appName);
         body.put("address", address);
         try {
-            String resultStr = HttpUtils.doPost(url, body);
+            String resultStr = HttpUtils.doPost(url, body, 15000);
             if (StringUtils.isBlank(resultStr)) {
                 return false;
             }

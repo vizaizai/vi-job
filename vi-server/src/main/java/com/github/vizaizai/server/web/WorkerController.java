@@ -1,14 +1,12 @@
 package com.github.vizaizai.server.web;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.server.service.WorkerService;
-import com.github.vizaizai.server.web.co.RegisterCO;
-import com.github.vizaizai.server.web.co.WorkerUpdateCO;
+import com.github.vizaizai.server.web.co.*;
+import com.github.vizaizai.server.web.dto.WorkerDTO;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -25,9 +23,19 @@ public class WorkerController {
     private WorkerService workerService;
 
 
-    @PostMapping("/saveOrUpdateWorker")
+    @PostMapping("/saveOrUpdate")
     public Result<Void> saveOrUpdateWorker(@Validated @RequestBody WorkerUpdateCO workerUpdateCO) {
         return workerService.saveOrUpdateWorker(workerUpdateCO);
+    }
+
+    @GetMapping("/page")
+    public Result<IPage<WorkerDTO>> pageWorkers(WorkerQueryCO workerUpdateCO) {
+        return workerService.pageWorkers(workerUpdateCO);
+    }
+
+    @PostMapping("/remove")
+    public Result<Void> removeWorker(@Validated @RequestBody NumberIdCO idCO) {
+        return workerService.removeWorker(idCO.getId().intValue());
     }
 
     @PostMapping("/register")

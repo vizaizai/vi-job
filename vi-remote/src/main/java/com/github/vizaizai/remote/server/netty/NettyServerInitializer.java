@@ -2,8 +2,7 @@ package com.github.vizaizai.remote.server.netty;
 
 import com.github.vizaizai.remote.codec.RpcDecoder;
 import com.github.vizaizai.remote.codec.RpcEncoder;
-import com.github.vizaizai.remote.codec.RpcRequest;
-import com.github.vizaizai.remote.codec.RpcResponse;
+import com.github.vizaizai.remote.codec.RpcMessage;
 import com.github.vizaizai.remote.serializer.Serializer;
 import com.github.vizaizai.remote.serializer.kryo.KryoSerializer;
 import com.github.vizaizai.remote.server.processor.BizProcessor;
@@ -36,8 +35,8 @@ public class NettyServerInitializer extends ChannelInitializer<SocketChannel> {
         cp.addLast("beat",new IdleStateHandler(0, 0, 90, TimeUnit.SECONDS));
         // 处理粘包/拆包
         cp.addLast("lengthFieldBasedFrameDecoder",new LengthFieldBasedFrameDecoder(65536, 0, 4, 0, 0));
-        cp.addLast("rpcDecoder",new RpcDecoder(RpcRequest.class, serializer));
-        cp.addLast("rpcEncoder",new RpcEncoder(RpcResponse.class, serializer));
+        cp.addLast("rpcDecoder",new RpcDecoder(RpcMessage.class, serializer));
+        cp.addLast("rpcEncoder",new RpcEncoder(RpcMessage.class, serializer));
         cp.addLast("nettyServerHandler",new NettyServerHandler(bizProcessorMap));
     }
 }

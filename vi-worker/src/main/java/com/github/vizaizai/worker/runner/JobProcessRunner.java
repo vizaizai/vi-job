@@ -1,7 +1,10 @@
 package com.github.vizaizai.worker.runner;
 
-import com.github.vizaizai.common.model.TaskContext;
+import com.github.vizaizai.common.contants.ExecuteStatus;
+import com.github.vizaizai.common.model.StatusReportParam;
+import com.github.vizaizai.common.model.TaskTriggerParam;
 import com.github.vizaizai.logging.LoggerFactory;
+import com.github.vizaizai.worker.core.TaskContext;
 import com.github.vizaizai.worker.core.processor.BasicProcessor;
 import org.slf4j.Logger;
 
@@ -46,7 +49,7 @@ public class JobProcessRunner extends Thread{
      * 获取运行器
      * @param jobId 任务id
      * @param processor 任务处理器
-     * @return
+     * @return JobProcessRunner
      */
     public static JobProcessRunner getInstance(Long jobId, BasicProcessor processor) {
         JobProcessRunner runner = runners.get(jobId);
@@ -73,8 +76,8 @@ public class JobProcessRunner extends Thread{
         try {
             waitingTask.put(taskContext);
         }catch (Exception e) {
-            logger.error("Queue operation error,",e);
-            throw new RuntimeException("Queue operation error," + e.getMessage());
+            logger.error("Process-Queue operation error,",e);
+            throw new RuntimeException("Process-Queue operation error," + e.getMessage());
         }
     }
 
@@ -84,24 +87,37 @@ public class JobProcessRunner extends Thread{
         while (!stop) {
             this.running = false;
             try {
-               TaskContext taskContext = this.waitingTask.poll(5, TimeUnit.SECONDS);
+                TaskContext taskContext = this.waitingTask.poll(5, TimeUnit.SECONDS);
                if (taskContext != null) {
                    this.running = true;
                    long st = System.currentTimeMillis();
+                   TaskTriggerParam triggerParam = taskContext.getTriggerParam();
+                   // 构建上报参数
+                   StatusReportParam reportParam = new StatusReportParam();
+                   reportParam.setJobId(triggerParam.getJobId());
+                   reportParam.setDispatchId(triggerParam.getJobDispatchId());
+                   reportParam.setExecuteStartTime(st);
                    try {
                        // 执行处理器
                        this.processor.execute(taskContext);
-                       // 上报执行结果
+                       reportParam.setExecuteStatus(ExecuteStatus.OK.getCode());
                    }catch (Exception ie) {
-                       logger.error("{}#{} execute error,",taskContext.getJobName(),taskContext.getJobId(),ie);
-                       // 上报执行结果
+                       logger.error("{}#{} execute error,", triggerParam.getJobName(),triggerParam.getJobId(), ie);
+                       reportParam.setExecuteStatus(ExecuteStatus.FAIL.getCode());
                    }finally {
-                       long eTime = (System.currentTimeMillis() - st) / 1000;
+                       long et = System.currentTimeMillis();
+                       reportParam.setExecuteEndTime(et);
+                       // 执行时间
+                       long eTime = (et - st) / 1000;
                        // 执行超时
-                       if (taskContext.getExecuteTimeout() != null
-                               && eTime > taskContext.getExecuteTimeout()) {
-                           logger.warn("{}#{} execute timeout.", taskContext.getJobName(),taskContext.getJobId());
+                       if (triggerParam.getExecuteTimeout() != null
+                               && eTime > triggerParam.getExecuteTimeout()) {
+                           logger.warn("{}#{} execute timeout.", triggerParam.getJobName(),triggerParam.getJobId());
+                           reportParam.setExecuteStatus(ExecuteStatus.OK_TIMEOUT.getCode());
                        }
+                       taskContext.setReportParam(reportParam);
+                       // 推入上报队列
+                       ReportRunner.getInstance().pushReportQueue(taskContext);
                    }
                    // 重置时间
                    startTime = System.currentTimeMillis();
