@@ -2,6 +2,11 @@ package com.github.vizaizai.server.service.impl;
 
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.crypto.digest.DigestUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.server.dao.UserMapper;
 import com.github.vizaizai.server.dao.dataobject.UserDO;
 import com.github.vizaizai.server.service.UserService;
@@ -9,13 +14,15 @@ import com.github.vizaizai.server.utils.BeanUtils;
 import com.github.vizaizai.server.utils.UserUtils;
 import com.github.vizaizai.server.web.co.LoginCO;
 import com.github.vizaizai.server.web.co.UserAddCO;
-import com.github.vizaizai.common.model.Result;
+import com.github.vizaizai.server.web.co.UserQueryCO;
 import com.github.vizaizai.server.web.dto.UserDTO;
+import com.github.vizaizai.server.web.dto.UserListDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 
 /**
  * @author liaochongwei
@@ -44,6 +51,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Result<IPage<UserListDTO>> page(UserQueryCO queryCO) {
+        LambdaQueryWrapper<UserDO> queryWrapper = Wrappers.<UserDO>lambdaQuery()
+                .eq(queryCO.getUserName() != null, UserDO::getUserName, queryCO.getUserName())
+                .orderByDesc(UserDO::getCreateTime);
+        Page<UserDO> userPage = userMapper.selectPage(queryCO.toPage(), queryWrapper);
+        return Result.handleSuccess(BeanUtils.toPageBean(userPage, UserListDTO::new));
+    }
+
+    @Transactional
+    @Override
+    public Result<Void> remove(String id) {
+        userMapper.deleteById(id);
+        return Result.ok();
+    }
+
+    @Override
     public Result<String> login(LoginCO loginCO) {
         UserDO user = userMapper.findByUserName(loginCO.getUserName());
         if (user == null) {
@@ -61,6 +84,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public Result<UserDTO> info() {
         UserDO user = UserUtils.getUser();
-        return Result.handleSuccess(BeanUtils.toBean(user, UserDTO::new));
+        if (user != null) {
+            UserDTO userDTO = new UserDTO();
+            userDTO.setId(user.getId());
+            userDTO.setUserName(user.getUserName());
+            userDTO.setRoles(Collections.singletonList(user.getRole()));
+            return Result.handleSuccess(userDTO);
+        }
+        return Result.ok();
+
     }
 }

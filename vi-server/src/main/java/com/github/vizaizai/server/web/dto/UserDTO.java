@@ -11,7 +11,7 @@ import java.util.List;
 public class UserDTO {
     private String id;
     private String userName;
-    private List<String> roles = Arrays.asList("admin");
+    private List<Integer> roles;
 
     public String getId() {
         return id;
@@ -29,11 +29,11 @@ public class UserDTO {
         this.userName = userName;
     }
 
-    public List<String> getRoles() {
+    public List<Integer> getRoles() {
         return roles;
     }
 
-    public void setRoles(List<String> roles) {
+    public void setRoles(List<Integer> roles) {
         this.roles = roles;
     }
 }

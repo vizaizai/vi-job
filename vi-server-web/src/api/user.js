@@ -22,3 +22,26 @@ export function logout() {
     method: 'post'
   })
 }
+export function addSysUser(data) {
+  return request({
+    url: '/user/addSysUser',
+    method: 'post',
+    data
+  })
+}
+
+export function page(params) {
+  return request({
+    url: '/user/page',
+    method: 'get',
+    params: params
+  })
+}
+
+export function remove(data) {
+  return request({
+    url: '/user/remove',
+    method: 'post',
+    data
+  })
+}

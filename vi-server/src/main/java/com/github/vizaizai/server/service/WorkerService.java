@@ -5,6 +5,7 @@ import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.server.web.co.RegisterCO;
 import com.github.vizaizai.server.web.co.WorkerQueryCO;
 import com.github.vizaizai.server.web.co.WorkerUpdateCO;
+import com.github.vizaizai.server.web.dto.RegistryDTO;
 import com.github.vizaizai.server.web.dto.WorkerDTO;
 
 import java.util.List;
@@ -35,6 +36,13 @@ public interface WorkerService {
      * @return
      */
     Result<Void> removeWorker(Integer id);
+
+    /**
+     * 根据执行器id查询节点列表
+     * @param workerId 执行器id
+     * @return
+     */
+    Result<List<RegistryDTO>> listWorkerNodes(Integer workerId);
     /**
      * 注册执行器
      * @param registerCO

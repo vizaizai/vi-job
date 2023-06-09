@@ -7,13 +7,16 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.vizaizai.common.contants.BizCode;
 import com.github.vizaizai.common.contants.ExecuteStatus;
 import com.github.vizaizai.common.model.Result;
-import com.github.vizaizai.common.model.TaskTriggerParam;
 import com.github.vizaizai.common.model.TaskResult;
-import com.github.vizaizai.common.contants.BizCode;
+import com.github.vizaizai.common.model.TaskTriggerParam;
 import com.github.vizaizai.retry.util.Assert;
-import com.github.vizaizai.server.constant.*;
+import com.github.vizaizai.server.constant.Commons;
+import com.github.vizaizai.server.constant.DispatchStatus;
+import com.github.vizaizai.server.constant.JobStatus;
+import com.github.vizaizai.server.constant.TriggerType;
 import com.github.vizaizai.server.dao.DispatchLogMapper;
 import com.github.vizaizai.server.dao.JobMapper;
 import com.github.vizaizai.server.dao.dataobject.DispatchLogDO;
@@ -102,7 +105,8 @@ public class JobServiceImpl implements JobService {
     public Result<IPage<JobDTO>> pageJobs(JobQueryCO jobQueryCO) {
         LambdaQueryWrapper<JobDO> queryWrapper = Wrappers.<JobDO>lambdaQuery()
                 .eq(jobQueryCO.getId() != null, JobDO::getId, jobQueryCO.getId())
-                .like(jobQueryCO.getName() != null, JobDO::getName, jobQueryCO.getName());
+                .like(jobQueryCO.getName() != null, JobDO::getName, jobQueryCO.getName())
+                .orderByDesc(JobDO::getCreateTime);
         return Result.handleSuccess(BeanUtils.toPageBean(jobMapper.selectPage(jobQueryCO.toPage(), queryWrapper), JobDTO::new));
     }
 

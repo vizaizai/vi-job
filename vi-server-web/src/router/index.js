@@ -115,7 +115,7 @@ export const constantRoutes = [
     children: [
       {
         path: 'index',
-        component: () => import('@/views/guide/index'),
+        component: () => import('@/views/worker/index'),
         name: 'Worker',
         meta: { title: '执行器管理', icon: 'guide', noCache: true }
       }
@@ -128,9 +128,9 @@ export const constantRoutes = [
     children: [
       {
         path: 'index',
-        component: () => import('@/views/guide/index'),
+        component: () => import('@/views/user/index'),
         name: 'User',
-        meta: { title: '用户管理', icon: 'guide', noCache: true }
+        meta: { title: '用户管理', icon: 'user', noCache: true }
       }
     ]
   },

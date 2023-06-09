@@ -42,6 +42,7 @@ public class UserUtils {
         Map<String, Object> payload = new HashMap<>();
         payload.put("id", user.getId());
         payload.put("userName", user.getUserName());
+        payload.put("role", user.getRole());
         payload.put(RegisteredPayload.ISSUED_AT, new Date());
         payload.put(RegisteredPayload.NOT_BEFORE, new Date());
         payload.put(RegisteredPayload.EXPIRES_AT, new Date(new Date().getTime() + 1000 * 60 * 60 * 24) );

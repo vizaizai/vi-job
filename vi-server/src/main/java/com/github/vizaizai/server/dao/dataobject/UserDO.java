@@ -22,6 +22,10 @@ public class UserDO {
     private String password;
 
     private String passwordSalt;
+    /**
+     * 角色 1-管理员 2-普通用户
+     */
+    private Integer role;
 
     private String creater;
 

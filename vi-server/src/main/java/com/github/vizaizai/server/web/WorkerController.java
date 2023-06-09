@@ -3,12 +3,17 @@ package com.github.vizaizai.server.web;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.server.service.WorkerService;
-import com.github.vizaizai.server.web.co.*;
+import com.github.vizaizai.server.web.co.NumberIdCO;
+import com.github.vizaizai.server.web.co.RegisterCO;
+import com.github.vizaizai.server.web.co.WorkerQueryCO;
+import com.github.vizaizai.server.web.co.WorkerUpdateCO;
+import com.github.vizaizai.server.web.dto.RegistryDTO;
 import com.github.vizaizai.server.web.dto.WorkerDTO;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * 执行器接口
@@ -29,8 +34,12 @@ public class WorkerController {
     }
 
     @GetMapping("/page")
-    public Result<IPage<WorkerDTO>> pageWorkers(WorkerQueryCO workerUpdateCO) {
-        return workerService.pageWorkers(workerUpdateCO);
+    public Result<IPage<WorkerDTO>> pageWorkers(WorkerQueryCO workerQueryCO) {
+        return workerService.pageWorkers(workerQueryCO);
+    }
+    @GetMapping("/nodes")
+    public Result<List<RegistryDTO>> listWorkerNodes(@RequestParam Integer workerId) {
+        return workerService.listWorkerNodes(workerId);
     }
 
     @PostMapping("/remove")

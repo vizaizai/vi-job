@@ -16,6 +16,7 @@ import com.github.vizaizai.server.utils.UserUtils;
 import com.github.vizaizai.server.web.co.RegisterCO;
 import com.github.vizaizai.server.web.co.WorkerQueryCO;
 import com.github.vizaizai.server.web.co.WorkerUpdateCO;
+import com.github.vizaizai.server.web.dto.RegistryDTO;
 import com.github.vizaizai.server.web.dto.WorkerDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -49,6 +50,7 @@ public class WorkerServiceImpl implements WorkerService {
             // 应用名称禁止修改
             worker.setAppName(null);
             workerMapper.updateById(worker);
+            return Result.ok("操作成功");
         }
         WorkerDO workerTemp = workerMapper.selectOne(Wrappers.<WorkerDO>lambdaQuery().eq(WorkerDO::getAppName, updateCO.getAppName()));
         if (workerTemp != null) {
@@ -57,7 +59,7 @@ public class WorkerServiceImpl implements WorkerService {
         if (StringUtils.isBlank(worker.getName()) ) {
             return Result.handleFailure("执行器名称不能为空");
         }
-        if (StringUtils.isBlank(worker.getAppName()) ) {
+        if (StringUtils.isBlank(worker.getAppName())) {
             return Result.handleFailure("应用名称不能为空");
         }
         worker.setCreater(UserUtils.getUserName());
@@ -67,7 +69,9 @@ public class WorkerServiceImpl implements WorkerService {
 
     @Override
     public Result<IPage<WorkerDTO>> pageWorkers(WorkerQueryCO queryCO) {
-        LambdaQueryWrapper<WorkerDO> wrapper = Wrappers.<WorkerDO>lambdaQuery().eq(queryCO.getAppName() != null, WorkerDO::getAppName, queryCO.getAppName());
+        LambdaQueryWrapper<WorkerDO> wrapper = Wrappers.<WorkerDO>lambdaQuery()
+                .eq(queryCO.getAppName() != null, WorkerDO::getAppName, queryCO.getAppName())
+                .orderByDesc(WorkerDO::getCreateTime);
         Page<WorkerDO> workerPage = workerMapper.selectPage(queryCO.toPage(), wrapper);
         return Result.handleSuccess(BeanUtils.toPageBean(workerPage,WorkerDTO::new));
     }
@@ -80,6 +84,13 @@ public class WorkerServiceImpl implements WorkerService {
             return Result.handleFailure("删除执行器失败");
         }
         return Result.ok("移除执行器成功");
+    }
+
+    @Override
+    public Result<List<RegistryDTO>> listWorkerNodes(Integer workerId) {
+        List<RegistryDO> registries = registryMapper.selectList(Wrappers.<RegistryDO>lambdaQuery().eq(RegistryDO::getWorkerId, workerId));
+        return Result.handleSuccess(BeanUtils.toBeans(registries, RegistryDTO::new));
+
     }
 
     @Transactional
