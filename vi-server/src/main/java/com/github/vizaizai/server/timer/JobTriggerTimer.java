@@ -116,6 +116,21 @@ public class JobTriggerTimer {
         }
     }
 
+    /**
+     * 直接运行
+     * @param job
+     */
+    public void directRun(Job job) {
+        invokeExecutor.execute(() -> {
+            try {
+                JobService jobService = ContextUtil.getBean(JobService.class);
+                // 调度
+                jobService.invoke(job);
+            }catch (Exception e) {
+                log.error("Job execute error.", e);
+            }
+        });
+    }
 
     private void invoke(Job job) {
         job.setLastTriggerTime(System.currentTimeMillis());
@@ -134,8 +149,6 @@ public class JobTriggerTimer {
                 log.error("Job execute error.", e);
             }
         });
-
-
     }
 
     public HashedWheelTimer getSlowHashedWheelTimer() {

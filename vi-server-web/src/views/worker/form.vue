@@ -21,7 +21,7 @@
 export default {
   data() {
     return {
-      dialog: false, formData: {}, title: '', handler: function() {}, tableDialog: false, edit: false,
+      dialog: false, formData: {}, title: '', handler: function() {}, edit: false,
       rules: {
         name: [{ required: true, message: '请输入执行器名称', trigger: 'blur' }],
         appName: [{ required: true, message: '请输入应用名称', trigger: 'blur' }]
@@ -50,6 +50,7 @@ export default {
             if (res.code === 200) {
               this.$parent.toQuery()
               this.dialog = false
+              this.$parent.okTips()
             } else {
               this.$parent.failTips(res.message)
             }

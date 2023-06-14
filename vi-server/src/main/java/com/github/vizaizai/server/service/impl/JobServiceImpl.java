@@ -12,6 +12,7 @@ import com.github.vizaizai.common.contants.ExecuteStatus;
 import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.common.model.TaskResult;
 import com.github.vizaizai.common.model.TaskTriggerParam;
+import com.github.vizaizai.remote.utils.Utils;
 import com.github.vizaizai.retry.util.Assert;
 import com.github.vizaizai.server.constant.Commons;
 import com.github.vizaizai.server.constant.DispatchStatus;
@@ -29,20 +30,17 @@ import com.github.vizaizai.server.timer.JobTriggerTimer;
 import com.github.vizaizai.server.utils.BeanUtils;
 import com.github.vizaizai.server.utils.RpcUtils;
 import com.github.vizaizai.server.utils.UserUtils;
-import com.github.vizaizai.server.web.co.JobQueryCO;
-import com.github.vizaizai.server.web.co.JobStatusUpdateCO;
-import com.github.vizaizai.server.web.co.JobUpdateCO;
-import com.github.vizaizai.server.web.co.StatusReportCO;
+import com.github.vizaizai.server.web.co.*;
 import com.github.vizaizai.server.web.dto.JobDTO;
+import com.github.vizaizai.server.web.dto.WorkerDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author liaochongwei
@@ -95,7 +93,7 @@ public class JobServiceImpl implements JobService {
 
     @Transactional
     @Override
-    public Result<Void> deleteJob(Long id) {
+    public Result<Void> removeJob(Long id) {
         jobMapper.deleteById(id);
         JobTriggerTimer.getInstance().remove(id);
         return Result.ok("删除成功");
@@ -106,8 +104,17 @@ public class JobServiceImpl implements JobService {
         LambdaQueryWrapper<JobDO> queryWrapper = Wrappers.<JobDO>lambdaQuery()
                 .eq(jobQueryCO.getId() != null, JobDO::getId, jobQueryCO.getId())
                 .like(jobQueryCO.getName() != null, JobDO::getName, jobQueryCO.getName())
+                .eq(jobQueryCO.getWorkerId() != null, JobDO::getWorkerId, jobQueryCO.getWorkerId())
                 .orderByDesc(JobDO::getCreateTime);
-        return Result.handleSuccess(BeanUtils.toPageBean(jobMapper.selectPage(jobQueryCO.toPage(), queryWrapper), JobDTO::new));
+        IPage<JobDTO> jobPage = BeanUtils.toPageBean(jobMapper.selectPage(jobQueryCO.toPage(), queryWrapper), JobDTO::new);
+        if (Utils.isNotEmpty(jobPage.getRecords())) {
+            Set<Integer> set = jobPage.getRecords().stream().map(JobDTO::getWorkerId).collect(Collectors.toSet());
+            Map<Integer, String> map = workerService.listByIds(set).stream().collect(Collectors.toMap(WorkerDTO::getId, WorkerDTO::getName));
+            for (JobDTO jobDTO : jobPage.getRecords()) {
+                jobDTO.setWorkerName(map.get(jobDTO.getWorkerId()));
+            }
+        }
+        return Result.handleSuccess(jobPage);
     }
 
     @Transactional
@@ -141,6 +148,21 @@ public class JobServiceImpl implements JobService {
             JobTriggerTimer.getInstance().addToTimer(job);
         }
         return Result.ok();
+    }
+
+    @Override
+    public Result<Void> run(JobRunCO jobRunCO) {
+        JobDO jobDO = jobMapper.selectById(jobRunCO.getId());
+        if (jobDO == null) {
+            return Result.handleFailure("任务不存在");
+        }
+        Job job = BeanUtils.toBean(jobDO, Job::new);
+        if (Objects.nonNull(jobRunCO.getJobParam())) {
+            job.setParam(jobRunCO.getJobParam());
+        }
+        job.setWorkerAddressList(workerService.getWorkerAddressList(job.getWorkerId()));
+        JobTriggerTimer.getInstance().directRun(job);
+        return Result.ok("运行成功");
     }
 
     @Override

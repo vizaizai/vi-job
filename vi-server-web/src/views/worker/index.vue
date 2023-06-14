@@ -20,15 +20,15 @@
       </span>
     </el-dialog>
     <!--工具栏-->
-    <div class="head-container">
-      <el-input v-model="query.appName" clearable size="small" placeholder="请输入应用名称" style="width: 200px;" class="filter-item" @keyup.enter.native="toQuery" />
-      <el-button class="filter-item" size="mini" type="success" icon="el-icon-search" @click="toQuery">搜索</el-button>
-      <el-button class="filter-item" size="mini" type="warning" icon="el-icon-refresh-left" @click="resetQuery()">重置</el-button>
-      <el-button type="primary" size="mini" icon="el-icon-plus" @click="toAdd">新增</el-button>
+    <div v-if="!dialog" class="head-container">
+      <el-input v-model="query.appName" clearable size="small" placeholder="请输入应用名称" style="width: 200px; margin-right: 5px" class="filter-item" @keyup.enter.native="toQuery" />
+      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="toQuery">搜索</el-button>
+      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-refresh-left" @click="resetQuery()">重置</el-button>
+      <el-button type="primary" size="mini" icon="el-icon-plus" @click="toAdd">新增执行器</el-button>
     </div>
     <div class="table-container">
       <!--表格-->
-      <el-table :data="data" width="100%">
+      <el-table :data="data" width="100%" :highlight-current-row="dialog" @current-change="handleCurrentChange">
         <el-table-column
           prop="id"
           label="id"
@@ -50,6 +50,7 @@
           label="创建时间"
         />
         <el-table-column
+          v-if="!dialog"
           label="操作"
           width="%100"
         >
@@ -83,14 +84,18 @@ export default {
   name: 'Worker',
   components: { eForm },
   mixins: [initData],
+  props: {
+    dialog: Boolean
+  },
   data() {
     return {
-      nodes: [{ id: '123', online: 1, address: '127.0.0.1:9019' }],
+      nodes: [],
       showCluster: false,
       invoke: page,
       query: {
         appName: null
-      }
+      },
+      currentRow: null
     }
   },
   created() {
@@ -121,6 +126,9 @@ export default {
           }
         })
       })
+    },
+    handleCurrentChange(row) {
+      this.$emit('change', row)
     }
   }
 }

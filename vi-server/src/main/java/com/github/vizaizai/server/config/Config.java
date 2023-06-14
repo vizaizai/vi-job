@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.github.vizaizai.server.raft.RaftNodeOptions;
 import com.github.vizaizai.server.raft.RaftServer;
+import com.github.vizaizai.server.web.interceptor.PermInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +21,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.servlet.Filter;
 import java.util.List;
@@ -34,7 +38,15 @@ import java.util.Objects;
 @EnableScheduling
 @Configuration
 @MapperScan("com.github.vizaizai.server.dao")
-public class Config {
+public class Config implements WebMvcConfigurer {
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+		// 注册AuthorizationInterceptor 类
+        InterceptorRegistration registration = registry.addInterceptor(new PermInterceptor());
+        // 所有的路径都要
+        registration.addPathPatterns("/**");
+    }
+
     @Bean
     public FilterRegistrationBean<Filter> corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

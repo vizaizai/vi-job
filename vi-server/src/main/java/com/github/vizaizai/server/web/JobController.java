@@ -36,14 +36,19 @@ public class JobController {
         return jobService.updateJob(jobUpdateCO);
     }
 
-    @PostMapping("/delete")
-    public Result<Void> delete(@RequestBody @Validated IdCO idCO) {
-        return jobService.deleteJob(Long.valueOf(idCO.getId()));
+    @PostMapping("/remove")
+    public Result<Void> remove(@RequestBody @Validated IdCO idCO) {
+        return jobService.removeJob(Long.valueOf(idCO.getId()));
     }
 
     @PostMapping("/updateStatus")
     public Result<Void> updateStatus(@RequestBody @Validated JobStatusUpdateCO jobStatusUpdateCO) {
         return jobService.updateJobStatus(jobStatusUpdateCO);
+    }
+
+    @PostMapping("/run")
+    public Result<Void> run(@RequestBody @Validated JobRunCO jobRunCO) {
+        return jobService.run(jobRunCO);
     }
 
     @PostMapping("/statusReport")

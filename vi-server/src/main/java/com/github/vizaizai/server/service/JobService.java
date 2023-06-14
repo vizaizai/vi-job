@@ -4,10 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.server.dao.dataobject.JobDO;
 import com.github.vizaizai.server.entity.Job;
-import com.github.vizaizai.server.web.co.JobQueryCO;
-import com.github.vizaizai.server.web.co.JobStatusUpdateCO;
-import com.github.vizaizai.server.web.co.JobUpdateCO;
-import com.github.vizaizai.server.web.co.StatusReportCO;
+import com.github.vizaizai.server.web.co.*;
 import com.github.vizaizai.server.web.dto.JobDTO;
 
 import java.util.List;
@@ -38,7 +35,7 @@ public interface JobService {
      * @param id 任务id
      * @return
      */
-    Result<Void> deleteJob(Long id);
+    Result<Void> removeJob(Long id);
 
     /**
      * 分页查询任务
@@ -46,7 +43,6 @@ public interface JobService {
      * @return
      */
     Result<IPage<JobDTO>> pageJobs(JobQueryCO jobQueryCO);
-
     /**
      * 更新任务状态
      * @param jobStatusUpdateCO
@@ -54,11 +50,18 @@ public interface JobService {
      */
     Result<Void> updateJobStatus(JobStatusUpdateCO jobStatusUpdateCO);
     /**
+     * 参数运行
+     * @param jobRunCO
+     * @return
+     */
+    Result<Void> run(JobRunCO jobRunCO);
+    /**
      * 查询所有等待触发的任务
      * @param maxTime 最大时间
      * @return
      */
     List<JobDO> listWaitingJobs(long maxTime);
+
     /**
      * 执行任务
      * @param job 任务

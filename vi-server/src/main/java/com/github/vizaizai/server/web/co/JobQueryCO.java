@@ -17,6 +17,10 @@ public class JobQueryCO extends PageQueryCO {
      * 任务名称
      */
     private String name;
+    /**
+     * 执行器id
+     */
+    private String workerId;
 
 
 }

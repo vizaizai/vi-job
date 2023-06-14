@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Collections;
+import java.util.Objects;
 
 /**
  * @author liaochongwei
@@ -62,6 +63,9 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public Result<Void> remove(String id) {
+        if (Objects.equals(UserUtils.getUserId(), id)) {
+            return Result.handleFailure("您不能删除自己");
+        }
         userMapper.deleteById(id);
         return Result.ok();
     }

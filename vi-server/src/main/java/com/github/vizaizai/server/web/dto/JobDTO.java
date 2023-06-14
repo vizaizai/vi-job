@@ -28,6 +28,10 @@ public class JobDTO {
      * 执行器id
      */
     private Integer workerId;
+    /**
+     * 执行器id
+     */
+    private String workerName;
 
     /**
      * 生命周期开始
@@ -53,7 +57,6 @@ public class JobDTO {
      * 处理器
      */
     private String processor;
-
     /**
      * 任务参数
      */

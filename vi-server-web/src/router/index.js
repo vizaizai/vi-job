@@ -84,13 +84,13 @@ export const constantRoutes = [
     ]
   },
   {
-    path: '/documentation',
+    path: '/job',
     component: Layout,
     children: [
       {
         path: 'index',
-        component: () => import('@/views/documentation/index'),
-        name: 'Documentation',
+        component: () => import('@/views/job/index'),
+        name: 'Job',
         meta: { title: '任务管理', icon: 'documentation', affix: true }
       }
     ]

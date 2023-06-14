@@ -1,6 +1,7 @@
 package com.github.vizaizai.server.web;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.vizaizai.server.constant.Commons;
 import com.github.vizaizai.server.web.co.IdCO;
 import com.github.vizaizai.server.web.co.LoginCO;
 import com.github.vizaizai.server.web.co.UserAddCO;
@@ -9,6 +10,7 @@ import com.github.vizaizai.server.web.co.UserQueryCO;
 import com.github.vizaizai.server.web.dto.UserDTO;
 import com.github.vizaizai.server.service.UserService;
 import com.github.vizaizai.server.web.dto.UserListDTO;
+import com.github.vizaizai.server.web.interceptor.HasRole;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +27,7 @@ public class UserController {
     @Resource
     private UserService userService;
 
+    @HasRole("admin")
     @PostMapping("/addSysUser")
     public Result<Void> addSysUser(@RequestBody @Validated UserAddCO addCO) {
         return userService.addSysUser(addCO);
@@ -40,6 +43,7 @@ public class UserController {
         return userService.page(queryCO);
     }
 
+    @HasRole("admin")
     @PostMapping("/remove")
     public Result<Void> remove(@RequestBody @Validated IdCO idCO) {
         return userService.remove(idCO.getId());

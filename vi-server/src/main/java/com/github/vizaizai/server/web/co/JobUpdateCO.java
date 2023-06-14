@@ -3,6 +3,7 @@ package com.github.vizaizai.server.web.co;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.github.vizaizai.server.constant.Commons;
 import lombok.Data;
+import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -82,20 +83,20 @@ public class JobUpdateCO {
     @NotNull(message = "路由策略必须")
     private Integer routeType;
     /**
-     * 任务失败重试次数(-1:不限制)
+     * 任务失败重试次数
      */
     @NotNull(message = "任务失败重试次数必须")
+    @Range(message = "重试次数参数错误")
     private Integer retryCount;
     /**
-     * 任务超时时间(-1:不限制)
+     * 任务超时时间
      */
-    @NotNull(message = "任务超时时间必须")
-    private Integer timeoutS = -1;
+    @Range(min = 0, message = "任务超时时间参数错误")
+    private Integer timeoutS;
     /**
      * 任务超时处理策略 1-标记 2-中断
      */
-    @NotNull(message = "任务超时时间必须")
-    private Integer timeoutHandleType = 1;
+    private Integer timeoutHandleType;
     /**
      * 新建人
      */

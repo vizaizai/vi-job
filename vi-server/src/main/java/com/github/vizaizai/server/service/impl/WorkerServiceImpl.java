@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.vizaizai.common.contants.BizCode;
 import com.github.vizaizai.common.model.Result;
+import com.github.vizaizai.remote.codec.RpcResponse;
 import com.github.vizaizai.remote.utils.Utils;
 import com.github.vizaizai.server.dao.RegistryMapper;
 import com.github.vizaizai.server.dao.WorkerMapper;
@@ -12,6 +14,7 @@ import com.github.vizaizai.server.dao.dataobject.RegistryDO;
 import com.github.vizaizai.server.dao.dataobject.WorkerDO;
 import com.github.vizaizai.server.service.WorkerService;
 import com.github.vizaizai.server.utils.BeanUtils;
+import com.github.vizaizai.server.utils.RpcUtils;
 import com.github.vizaizai.server.utils.UserUtils;
 import com.github.vizaizai.server.web.co.RegisterCO;
 import com.github.vizaizai.server.web.co.WorkerQueryCO;
@@ -26,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -111,6 +115,12 @@ public class WorkerServiceImpl implements WorkerService {
         if (Utils.isEmpty(registries)) {
             RegistryDO registryDO = BeanUtils.toBean(registerCO, RegistryDO::new);
             registryDO.setWorkerId(worker.getId());
+            RpcResponse pingResp = RpcUtils.call(registerCO.getAddress(), BizCode.BEAT, "ping");
+            if (pingResp.getSuccess()) {
+                registryDO.setOnline(1);
+            }else {
+                registryDO.setOnline(0);
+            }
             registryMapper.insert(registryDO);
         }
 
@@ -140,5 +150,13 @@ public class WorkerServiceImpl implements WorkerService {
             return Collections.emptyList();
         }
         return registries.stream().map(RegistryDO::getAddress).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<WorkerDTO> listByIds(Set<Integer> ids) {
+        if (Utils.isEmpty(ids)) {
+            return Collections.emptyList();
+        }
+        return BeanUtils.toBeans(workerMapper.selectBatchIds(ids), WorkerDTO.class);
     }
 }

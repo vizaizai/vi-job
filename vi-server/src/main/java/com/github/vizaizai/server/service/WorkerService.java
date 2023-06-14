@@ -9,6 +9,7 @@ import com.github.vizaizai.server.web.dto.RegistryDTO;
 import com.github.vizaizai.server.web.dto.WorkerDTO;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 执行器业务接口
@@ -63,5 +64,6 @@ public interface WorkerService {
      */
     List<String> getWorkerAddressList(Integer workerId);
 
+    List<WorkerDTO> listByIds(Set<Integer> ids);
     
 }

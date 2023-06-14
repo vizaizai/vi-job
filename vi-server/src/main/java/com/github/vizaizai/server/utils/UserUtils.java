@@ -31,12 +31,16 @@ public class UserUtils {
         JWT jwt = JWTUtil.parseToken(token);
         return jwt.getPayloads().toBean(UserDO.class);
     }
+
     public static String getUserName() {
         UserDO user = getUser();
         return user == null ? null : user.getUserName();
     }
 
-
+    public static String getUserId() {
+        UserDO user = getUser();
+        return user == null ? null : user.getId();
+    }
 
     public static String createToken(UserDO user) {
         Map<String, Object> payload = new HashMap<>();

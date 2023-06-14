@@ -104,7 +104,6 @@ public class Job {
      */
     private List<String> workerAddressList;
 
-
     // private static final Set<String> delayedJobSet = Collections.synchronizedSet(new HashSet<>());
     /**
      * 计算下一次触发时间

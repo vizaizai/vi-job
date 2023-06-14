@@ -38,10 +38,11 @@ export default {
         value: 2,
         label: '普通用户'
       }],
-      dialog: false, formData: {}, title: '', handler: function() {}, tableDialog: false, edit: false,
+      dialog: false, formData: {}, title: '', handler: function() {}, edit: false,
       rules: {
-        name: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-        appName: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+        userName: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+        password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+        role: [{ required: true, message: '请选择角色', trigger: 'blur' }]
       }
     }
   },
@@ -67,6 +68,7 @@ export default {
             if (res.code === 200) {
               this.$parent.toQuery()
               this.dialog = false
+              this.$parent.okTips()
             } else {
               this.$parent.failTips(res.message)
             }
