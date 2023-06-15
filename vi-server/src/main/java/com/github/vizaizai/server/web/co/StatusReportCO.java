@@ -17,7 +17,7 @@ public class StatusReportCO {
      * 调度id
      */
     @NotNull(message = "调度id必须")
-    private String dispatchId;
+    private Long dispatchId;
 
     /**
      * 执行状态 0-失败 1-执行中 2-执行成功 3-执行成功（超时） 4-超时中断 5-主动中断

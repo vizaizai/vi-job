@@ -16,7 +16,7 @@ public class DispatchLogDTO {
     /**
      * id
      */
-    private String id;
+    private Long id;
     /**
      * 任务id
      */
@@ -45,7 +45,7 @@ public class DispatchLogDTO {
     private String workerAddress;
 
     /**
-     * 调度状态 0-失败 1-调度中 2-调度成功
+     * 调度状态 0-失败 1-成功
      */
     private Integer dispatchStatus;
 

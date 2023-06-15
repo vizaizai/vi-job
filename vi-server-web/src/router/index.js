@@ -96,14 +96,14 @@ export const constantRoutes = [
     ]
   },
   {
-    path: '/guide',
+    path: '/log',
     component: Layout,
-    redirect: '/guide/index',
+    redirect: '/log/index',
     children: [
       {
         path: 'index',
-        component: () => import('@/views/guide/index'),
-        name: 'Guide',
+        component: () => import('@/views/log/index'),
+        name: 'Log',
         meta: { title: '调度日志', icon: 'guide', noCache: true }
       }
     ]

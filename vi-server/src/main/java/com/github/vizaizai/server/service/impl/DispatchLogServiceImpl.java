@@ -57,7 +57,7 @@ public class DispatchLogServiceImpl implements DispatchLogService {
             for (DispatchLogDTO record : records) {
                 JobDO jobDO = jobMapper.selectById(record.getJobId());
                 if (Objects.nonNull(jobDO)) {
-                    record.setJobName(record.getJobName());
+                    record.setJobName(jobDO.getName());
                     record.setWorkerName(map.get(record.getWorkerId()));
                 }
 

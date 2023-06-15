@@ -20,7 +20,7 @@ public class TaskTriggerParam implements Serializable {
     /**
      * 任务调度id
      */
-    private String jobDispatchId;
+    private Long jobDispatchId;
     /**
      * 任务参数
      */
@@ -53,11 +53,11 @@ public class TaskTriggerParam implements Serializable {
         this.jobName = jobName;
     }
 
-    public String getJobDispatchId() {
+    public Long getJobDispatchId() {
         return jobDispatchId;
     }
 
-    public void setJobDispatchId(String jobDispatchId) {
+    public void setJobDispatchId(Long jobDispatchId) {
         this.jobDispatchId = jobDispatchId;
     }
 

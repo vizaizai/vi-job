@@ -47,3 +47,11 @@ export function run(data) {
     data
   })
 }
+
+export function pageLogs(params) {
+  return request({
+    url: '/dispatch/page',
+    method: 'get',
+    params: params
+  })
+}

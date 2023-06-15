@@ -19,8 +19,8 @@ public class DispatchLogDO {
     /**
      * id
      */
-    @TableId(type = IdType.ASSIGN_ID)
-    private String id;
+    @TableId(type = IdType.AUTO)
+    private Long id;
 
     /**
      * 任务id
@@ -42,7 +42,7 @@ public class DispatchLogDO {
     private String workerAddress;
 
     /**
-     * 调度状态 0-失败 1-调度中 2-调度成功
+     * 调度状态 0-失败 1-成功
      */
     private Integer dispatchStatus;
 
@@ -83,7 +83,9 @@ public class DispatchLogDO {
     public DispatchLogDO setErrorMsg(String errorMsg) {
         if (Utils.isNotBlank(errorMsg) && errorMsg.length() > 1024) {
             this.errorMsg = errorMsg.substring(0, 1023);
+            return this;
         }
+        this.errorMsg = errorMsg;
         return this;
     }
 }

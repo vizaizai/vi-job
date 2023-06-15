@@ -14,8 +14,7 @@ public class StatusReportParam {
     /**
      * 调度id
      */
-    private String dispatchId;
-
+    private Long dispatchId;
     /**
      * 执行状态 0-失败 1-执行中 2-执行成功 3-执行成功（超时） 4-超时中断 5-主动中断
      */
@@ -37,11 +36,11 @@ public class StatusReportParam {
         this.jobId = jobId;
     }
 
-    public String getDispatchId() {
+    public Long getDispatchId() {
         return dispatchId;
     }
 
-    public void setDispatchId(String dispatchId) {
+    public void setDispatchId(Long dispatchId) {
         this.dispatchId = dispatchId;
     }
 
