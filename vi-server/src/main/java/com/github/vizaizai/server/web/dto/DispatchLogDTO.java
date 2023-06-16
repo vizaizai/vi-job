@@ -50,7 +50,7 @@ public class DispatchLogDTO {
     private Integer dispatchStatus;
 
     /**
-     * 执行状态 0-失败 1-执行中 2-执行成功 3-执行成功（超时） 4-超时中断 5-主动中断
+     * 执行状态 0-执行失败 1-执行中 2-执行成功 3-执行成功（超时） 4-超时中断 5-主动中断
      */
     private Integer executeStatus;
     /**

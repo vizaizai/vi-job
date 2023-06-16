@@ -6,7 +6,7 @@ package com.github.vizaizai.common.contants;
  * @date 2023/5/19 15:02
  */
 public enum ExecuteStatus {
-    FAIL(0,"失败"),
+    FAIL(0,"执行失败"),
     ING(1,"执行中"),
     OK(2,"执行成功"),
     OK_TIMEOUT(3,"执行成功（超时）"),

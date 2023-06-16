@@ -21,7 +21,7 @@
     </el-dialog>
     <!--工具栏-->
     <div v-if="!dialog" class="head-container">
-      <el-input v-model="query.appName" clearable size="small" placeholder="请输入应用名称" style="width: 200px; margin-right: 5px" class="filter-item" @keyup.enter.native="toQuery" />
+      <el-input v-model="query.appName" clearable size="mini" placeholder="请输入应用名称" style="width: 200px; margin-right: 5px" class="filter-item" @keyup.enter.native="toQuery" />
       <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="toQuery">搜索</el-button>
       <el-button class="filter-item" size="mini" type="primary" icon="el-icon-refresh-left" @click="resetQuery()">重置</el-button>
       <el-button type="primary" size="mini" icon="el-icon-plus" @click="toAdd">新增执行器</el-button>

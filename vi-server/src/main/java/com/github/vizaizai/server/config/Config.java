@@ -91,7 +91,7 @@ public class Config implements WebMvcConfigurer {
             log.error("ID生成参数设置错误:", e);
         }
 
-        log.info("ID生成参数分配成功，workerId：{}，dataCenterId：{}", workerId, dataCenterId);
+        log.debug("ID生成参数分配成功，workerId：{}，dataCenterId：{}", workerId, dataCenterId);
         return new DefaultIdentifierGenerator(workerId, dataCenterId);
     }
     @Bean

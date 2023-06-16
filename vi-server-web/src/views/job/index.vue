@@ -6,8 +6,8 @@
     <e-run ref="run" />
     <!--工具栏-->
     <div class="head-container">
-      <el-input v-model="query.name" clearable size="small" placeholder="请输入任务名称" style="width: 200px;" class="filter-item" @keyup.enter.native="toQuery" />
-      <worker ref="worker" @select="selectWorker" />
+      <el-input v-model="query.name" clearable size="mini" placeholder="请输入任务名称" style="width: 200px;" class="filter-item" @keyup.enter.native="toQuery" />
+      <worker ref="worker" style="margin: 0 10px" @select="selectWorker" />
       <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="toQuery">搜索</el-button>
       <el-button class="filter-item" size="mini" type="primary" icon="el-icon-refresh-left" @click="resetQuery()">重置</el-button>
       <el-button type="primary" size="mini" icon="el-icon-plus" @click="toAdd">新增任务</el-button>
@@ -84,7 +84,7 @@
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item class="dropdown-item"><span @click="toEdit(scope.row)">编辑</span></el-dropdown-item>
                   <el-dropdown-item class="dropdown-item"><span @click="toRun(scope.row)">运行</span></el-dropdown-item>
-                  <el-dropdown-item class="dropdown-item">日志</el-dropdown-item>
+                  <el-dropdown-item class="dropdown-item"><span @click="toRecord(scope.row)">调度记录</span></el-dropdown-item>
                   <el-dropdown-item class="dropdown-item"><span @click="toCopy(scope.row)">复制</span></el-dropdown-item>
                   <el-dropdown-item divided class="dropdown-item"><span @click="toDel(scope.row)">删除</span></el-dropdown-item>
                 </el-dropdown-menu>
@@ -163,6 +163,12 @@ export default {
     },
     toAdd() {
       this.$refs.form.addOps(add)
+    },
+    toRecord(row) {
+      this.$router.push({
+        name: 'Record',
+        query: { jobId: row.id }
+      })
     },
     toDel(row) {
       const data = { id: row.id }

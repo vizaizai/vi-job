@@ -1,5 +1,5 @@
 <template>
-  <span style="margin: 0 10px">
+  <span>
     <el-button size="mini" icon="el-icon-right" plain @click="dialog = true">
       <span v-if="selectRow">{{ selectRow.name }}</span>
       <span v-else style="color: #C0C4CC">选择执行器</span>

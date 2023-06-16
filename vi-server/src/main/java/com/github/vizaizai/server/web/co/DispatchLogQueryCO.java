@@ -1,8 +1,8 @@
 package com.github.vizaizai.server.web.co;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.github.vizaizai.server.constant.Commons;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
@@ -33,12 +33,12 @@ public class DispatchLogQueryCO extends PageQueryCO {
     /**
      * 触发开始时间
      */
-    @JsonFormat(pattern = Commons.DT_PATTERN)
+    @DateTimeFormat(pattern = Commons.DT_PATTERN)
     private LocalDateTime triggerStartTime;
     /**
      * 触发结束时间
      */
-    @JsonFormat(pattern = Commons.DT_PATTERN)
+    @DateTimeFormat(pattern = Commons.DT_PATTERN)
     private LocalDateTime triggerEndTime;
 
 
