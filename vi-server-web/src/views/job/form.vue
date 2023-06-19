@@ -153,10 +153,10 @@ export default {
         this.$refs.worker.init({ id: data.workerId, name: data.workerName })
       })
     },
-    editOps(data, handler) {
+    editOps(data, handler, title) {
       this.dialog = true
       this.handler = handler
-      this.title = '编辑任务'
+      this.title = title || '编辑任务'
       this.disabled = false
       this.formData = { ...data }
       if (data.startTime && data.endTime) {

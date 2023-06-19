@@ -82,11 +82,11 @@
                   更多<i class="el-icon-arrow-down el-icon--right" />
                 </span>
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item class="dropdown-item"><span @click="toEdit(scope.row)">编辑</span></el-dropdown-item>
-                  <el-dropdown-item class="dropdown-item"><span @click="toRun(scope.row)">运行</span></el-dropdown-item>
-                  <el-dropdown-item class="dropdown-item"><span @click="toRecord(scope.row)">调度记录</span></el-dropdown-item>
-                  <el-dropdown-item class="dropdown-item"><span @click="toCopy(scope.row)">复制</span></el-dropdown-item>
-                  <el-dropdown-item divided class="dropdown-item"><span @click="toDel(scope.row)">删除</span></el-dropdown-item>
+                  <el-dropdown-item class="dropdown-item" @click.native="toEdit(scope.row)">编辑</el-dropdown-item>
+                  <el-dropdown-item class="dropdown-item" @click.native="toRun(scope.row)">运行</el-dropdown-item>
+                  <el-dropdown-item class="dropdown-item" @click.native="toRecord(scope.row)">调度记录</el-dropdown-item>
+                  <el-dropdown-item class="dropdown-item" @click.native="toCopy(scope.row)">复制</el-dropdown-item>
+                  <el-dropdown-item divided class="dropdown-item" @click.native="toDel(scope.row)">删除</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
             </span>
@@ -156,7 +156,7 @@ export default {
     toCopy(row) {
       const job = { ...row }
       delete job.id
-      this.$refs.form.editOps(job, add)
+      this.$refs.form.editOps(job, add, '新增任务')
     },
     toEdit(row) {
       this.$refs.form.editOps(row, update)
