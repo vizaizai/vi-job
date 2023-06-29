@@ -61,7 +61,7 @@
         </el-table-column>
         <el-table-column
           label="触发状态"
-          width="180"
+          width="100"
         >
           <template v-slot="{ row }">
             <el-tooltip class="item" effect="dark" :content="row.errorMsg" placement="top">
@@ -73,11 +73,11 @@
         <el-table-column
           prop="triggerTime"
           label="触发时间"
-          width="180"
+          width="160"
         />
         <el-table-column
           label="执行状态"
-          width="180"
+          width="100"
         >
           <template v-slot="{ row }">
             <el-tag v-if="row.executeStatus === 0" type="danger">执行失败</el-tag>
@@ -90,7 +90,7 @@
         </el-table-column>
         <el-table-column
           label="执行时间"
-          width="230"
+          width="330"
         >
           <template v-slot="{ row }">
             {{ row.executeStartTime }} - {{ row.executeEndTime }}

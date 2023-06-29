@@ -1,5 +1,6 @@
 package com.github.vizaizai.server.service.impl;
 
+import cn.hutool.core.date.LocalDateTimeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -8,6 +9,7 @@ import com.github.vizaizai.common.contants.BizCode;
 import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.remote.codec.RpcResponse;
 import com.github.vizaizai.remote.utils.Utils;
+import com.github.vizaizai.server.constant.Commons;
 import com.github.vizaizai.server.dao.RegistryMapper;
 import com.github.vizaizai.server.dao.WorkerMapper;
 import com.github.vizaizai.server.dao.dataobject.RegistryDO;
@@ -27,8 +29,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -92,8 +96,14 @@ public class WorkerServiceImpl implements WorkerService {
 
     @Override
     public Result<List<RegistryDTO>> listWorkerNodes(Integer workerId) {
-        List<RegistryDO> registries = registryMapper.selectList(Wrappers.<RegistryDO>lambdaQuery().eq(RegistryDO::getWorkerId, workerId));
-        return Result.handleSuccess(BeanUtils.toBeans(registries, RegistryDTO::new));
+        List<RegistryDTO> registries = BeanUtils.toBeans(registryMapper.selectList(Wrappers.<RegistryDO>lambdaQuery().eq(RegistryDO::getWorkerId, workerId)), RegistryDTO::new);
+        for (RegistryDTO registry : registries) {
+            RpcResponse response = RpcUtils.call(registry.getAddress(), BizCode.BEAT, "ping");
+            if (response.getSuccess() && Objects.equals(response.getResult(),"pong")) {
+                registry.setOnline(1);
+            }
+        }
+        return Result.handleSuccess(registries);
 
     }
 
@@ -103,26 +113,26 @@ public class WorkerServiceImpl implements WorkerService {
         if (registerCO.getAddress().split(":").length != 2) {
             return Result.handleFailure("注册地址格式错误（ip:port）");
         }
+
+        //是否存在
+        List<RegistryDO> registries = registryMapper.selectList(Wrappers.<RegistryDO>lambdaQuery()
+                .eq(RegistryDO::getAddress, registerCO.getAddress()));
+        // 注册已存在则更新时间
+        if (Utils.isNotEmpty(registries)) {
+            registryMapper.update(null, Wrappers.<RegistryDO>lambdaUpdate()
+                    .eq(RegistryDO::getAddress, registerCO.getAddress())
+                    .set(RegistryDO::getUpdateTime, LocalDateTimeUtil.now()));
+            return Result.ok("更新成功");
+        }
+
         // 查询执行器
         WorkerDO worker = workerMapper.selectOne(Wrappers.<WorkerDO>lambdaQuery().eq(WorkerDO::getAppName, registerCO.getAppName()));
         if (worker == null) {
             return Result.handleFailure("执行器[" + registerCO.getAppName() + "]未创建，注册失败");
         }
-        //是否存在
-        List<RegistryDO> registries = registryMapper.selectList(Wrappers.<RegistryDO>lambdaQuery().eq(RegistryDO::getWorkerId, worker.getId())
-                .eq(RegistryDO::getAddress, registerCO.getAddress()));
-
-        if (Utils.isEmpty(registries)) {
-            RegistryDO registryDO = BeanUtils.toBean(registerCO, RegistryDO::new);
-            registryDO.setWorkerId(worker.getId());
-            RpcResponse pingResp = RpcUtils.call(registerCO.getAddress(), BizCode.BEAT, "ping");
-            if (pingResp.getSuccess()) {
-                registryDO.setOnline(1);
-            }else {
-                registryDO.setOnline(0);
-            }
-            registryMapper.insert(registryDO);
-        }
+        RegistryDO registryDO = BeanUtils.toBean(registerCO, RegistryDO::new);
+        registryDO.setWorkerId(worker.getId());
+        registryMapper.insert(registryDO);
 
         return Result.ok("注册成功");
     }
@@ -133,13 +143,14 @@ public class WorkerServiceImpl implements WorkerService {
         if (registerCO.getAddress().split(":").length != 2) {
             return Result.handleFailure("地址格式错误（ip:port）");
         }
+
         // 查询执行器
         WorkerDO worker = workerMapper.selectOne(Wrappers.<WorkerDO>lambdaQuery().eq(WorkerDO::getAppName, registerCO.getAppName()));
         if (worker == null) {
             return Result.handleFailure("执行器[" + registerCO.getAppName() + "]未创建，注册失败");
         }
-        registryMapper.delete(Wrappers.<RegistryDO>lambdaQuery().eq(RegistryDO::getWorkerId, worker.getId())
-                .eq(RegistryDO::getAddress, registerCO.getAddress()));
+
+        this.removeRegistry(worker.getId(), registerCO.getAddress());
         return Result.ok("注册移除成功");
     }
 
@@ -158,5 +169,21 @@ public class WorkerServiceImpl implements WorkerService {
             return Collections.emptyList();
         }
         return BeanUtils.toBeans(workerMapper.selectBatchIds(ids), WorkerDTO.class);
+    }
+
+    @Transactional
+    @Override
+    public void removeRegistry(Integer workerId, String address) {
+        if (workerId == null || address == null) {
+            return;
+        }
+        registryMapper.delete(Wrappers.<RegistryDO>lambdaQuery().eq(RegistryDO::getWorkerId, workerId)
+                .eq(RegistryDO::getAddress, address));
+    }
+
+    @Override
+    public List<RegistryDO> listDeadRegistries() {
+        LocalDateTime expireTime = LocalDateTimeUtil.now().minusSeconds(Commons.REG_EXPIRED_S);
+        return registryMapper.selectList(Wrappers.<RegistryDO>lambdaQuery().lt(RegistryDO::getUpdateTime, expireTime));
     }
 }

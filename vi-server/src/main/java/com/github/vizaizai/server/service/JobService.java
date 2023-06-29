@@ -8,6 +8,7 @@ import com.github.vizaizai.server.web.co.*;
 import com.github.vizaizai.server.web.dto.JobDTO;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 任务接口
@@ -61,7 +62,12 @@ public interface JobService {
      * @return
      */
     List<JobDO> listWaitingJobs(long maxTime);
-
+    /**
+     * id列表查询
+     * @param ids id列表
+     * @return
+     */
+    List<JobDO> listByIds(Set<Long> ids);
     /**
      * 执行任务
      * @param job 任务
@@ -75,13 +81,13 @@ public interface JobService {
      * @param nextTriggerTime 下次触发时间
      */
     void refreshTriggerTime(Long jobId, Long lastTriggerTime, Long nextTriggerTime);
-
     /**
      * 状态上报
      * @param statusReportCO
      * @return
      */
     Result<Void> statusReport(StatusReportCO statusReportCO);
+
 
 
 }

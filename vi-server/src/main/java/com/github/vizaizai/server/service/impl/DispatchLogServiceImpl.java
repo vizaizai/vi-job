@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.remote.utils.Utils;
+import com.github.vizaizai.server.constant.DispatchStatus;
 import com.github.vizaizai.server.dao.DispatchLogMapper;
 import com.github.vizaizai.server.dao.JobMapper;
 import com.github.vizaizai.server.dao.dataobject.DispatchLogDO;
@@ -44,6 +45,7 @@ public class DispatchLogServiceImpl implements DispatchLogService {
         queryWrapper.eq(queryCO.getJobId() != null, DispatchLogDO::getJobId, queryCO.getJobId())
                 .eq(queryCO.getWorkerId() != null, DispatchLogDO::getWorkerId, queryCO.getWorkerId())
                 .eq(queryCO.getDispatchStatus() != null, DispatchLogDO::getDispatchStatus, queryCO.getDispatchStatus())
+                .in(queryCO.getDispatchStatus() == null, DispatchLogDO::getDispatchStatus, DispatchStatus.codes())
                 .eq(queryCO.getExecuteStatus() != null, DispatchLogDO::getExecuteStatus, queryCO.getExecuteStatus())
                 .between(queryCO.getTriggerStartTime() != null && queryCO.getTriggerEndTime() != null,
                         DispatchLogDO::getTriggerTime, queryCO.getTriggerStartTime(), queryCO.getTriggerEndTime())

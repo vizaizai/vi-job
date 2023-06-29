@@ -2,6 +2,7 @@ package com.github.vizaizai.server.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.vizaizai.common.model.Result;
+import com.github.vizaizai.server.dao.dataobject.RegistryDO;
 import com.github.vizaizai.server.web.co.RegisterCO;
 import com.github.vizaizai.server.web.co.WorkerQueryCO;
 import com.github.vizaizai.server.web.co.WorkerUpdateCO;
@@ -59,11 +60,24 @@ public interface WorkerService {
 
     /**
      * 获取在线地址列表
-     * @param workerId
+     * @param workerId 执行器id
      * @return
      */
     List<String> getWorkerAddressList(Integer workerId);
 
     List<WorkerDTO> listByIds(Set<Integer> ids);
+
+    /**
+     * 移除注册表
+     * @param workerId 执行器id
+     * @param address 地址
+     */
+    void removeRegistry(Integer workerId, String address);
+
+    /**
+     * 查询失效的注册表
+     * @return
+     */
+    List<RegistryDO> listDeadRegistries();
     
 }

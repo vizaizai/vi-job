@@ -13,10 +13,11 @@ spring:
 
 
 vi-job:
-  mode: cluster
+  #mode: cluster
+  mode: standalone
   dataDir: /tmp/server1
   inetutils:
     ip-address: 127.0.0.1
   cluster:
-    nodes: 127.0.0.1:2141,127.0.0.1:2142,127.0.0.1:2143
+    nodes: 127.0.0.1:1141,127.0.0.1:1142,127.0.0.1:1143
 

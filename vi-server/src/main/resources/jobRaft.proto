@@ -1,0 +1,45 @@
+syntax = "proto2";
+
+package jraft;
+
+option java_package = "com.github.vizaizai.server.raft.proto";
+option java_outer_classname = "JobProto";
+
+message PutRequest {
+  required int64 jobId = 1;
+}
+
+message RmRequest {
+  optional int64 jobId = 1;
+}
+
+message Response {
+  required bool success = 1;
+  optional string errorMsg = 2;
+  optional string data = 3;
+}
+
+message PushIntoTimerRequest {
+  required int64 jobId = 1;
+  optional string name = 2;
+  optional int32 workerId = 3;
+  optional int64 startTime = 4;
+  optional int64 endTime = 5;
+  optional int32 processorType = 6;
+  optional string processor = 7;
+  optional string param = 8;
+  optional int32 triggerType = 9;
+  optional string cron = 10;
+  optional int32 speedS = 11;
+  optional int32 delayedS = 12;
+  optional int32 routeType = 13;
+  optional int32 retryCount = 14;
+  optional int32 timeoutS = 15;
+  optional int32 timeoutHandleType = 16;
+  optional int64 lastTriggerTime = 17;
+  optional int64 lastExecuteEndTime = 18;
+}
+
+message RemoveFromTimerRequest {
+  required int64 jobId = 1;
+}

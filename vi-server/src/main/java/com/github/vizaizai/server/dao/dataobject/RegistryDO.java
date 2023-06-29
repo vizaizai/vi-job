@@ -24,11 +24,7 @@ public class RegistryDO {
      * 注册地址
      */
     private String address;
-    /**
-     * 在线状态 1-是 0-否
-     */
-    private Integer online;
 
     @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
 }

@@ -1,6 +1,5 @@
 package com.github.vizaizai.server.config;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.core.incrementer.DefaultIdentifierGenerator;
@@ -28,6 +27,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import javax.servlet.Filter;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author liaochongwei
@@ -39,6 +41,16 @@ import java.util.Objects;
 @Configuration
 @MapperScan("com.github.vizaizai.server.dao")
 public class Config implements WebMvcConfigurer {
+
+    @Bean("executor")
+    public ThreadPoolExecutor jobExecutor() {
+        ThreadPoolExecutor  executor = new ThreadPoolExecutor(0,200,
+                60L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(500));
+        // 设置拒绝策略 对拒绝任务直接无声抛弃，没有异常信息。
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
+        return executor;
+    }
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
 		// 注册AuthorizationInterceptor 类
@@ -104,19 +116,5 @@ public class Config implements WebMvcConfigurer {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
         return interceptor;
-    }
-
-    //@Bean
-    public RaftServer raftServer(ServerProperties serverProperties, @Value("${server.port}") Integer port) {
-        RaftServer raftServer = new RaftServer();
-        if (Objects.equals(serverProperties.getMode(),"cluster")) {
-            RaftNodeOptions options = new RaftNodeOptions();
-            options.setGroupId("vi-server");
-            options.setDataPath(serverProperties.getDataDir());
-            options.setServerAddress(serverProperties.getInetutils().getIpAddress() + ":" + (port + 1000));
-            options.setInitialServerAddressList(CollUtil.join(serverProperties.getCluster().getNodes(),","));
-            raftServer.init(options);
-        }
-        return raftServer;
     }
 }

@@ -36,39 +36,42 @@ CREATE TABLE `registry` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
     `worker_id` bigint(20) DEFAULT NULL COMMENT '执行器id',
     `address` varchar(64) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '注册地址',
-    `online` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否在线 1-是 0-否',
-    `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-    PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='注册表';
+    `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    KEY `registry_address_idx` (`address`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='注册表';
 
 
 drop table if exists `job`;
+-- vi_job.job definition
+
 CREATE TABLE `job` (
-    `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-    `name` varchar(128) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '任务名称',
-    `worker_id` bigint(20) NOT NULL COMMENT '执行器id',
-    `start_time` datetime DEFAULT NULL COMMENT '生命周期开始',
-    `end_time` datetime DEFAULT NULL COMMENT '生命周期结束',
-    `status` int(4) NOT NULL COMMENT '任务状态 0-停止 1-运行中',
-    `processor_type` int(4) NOT NULL COMMENT '处理器类型 1-Bean 2-HTTP',
-    `processor` varchar(128) COLLATE utf8mb4_bin NOT NULL COMMENT '处理器',
-    `param` varchar(1024) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '任务参数',
-    `trigger_type` int(4) NOT NULL COMMENT '触发类型 0-非主动触发 1-cron 2-固定频率（秒）3-固定延时（秒）',
-    `cron` varchar(64) COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'cron表达式',
-    `speed_s` int(4) DEFAULT NULL COMMENT '频率',
-    `delayed_s` int(4) DEFAULT NULL COMMENT '延时',
-    `route_type` int(4) NOT NULL COMMENT '路由策略',
-    `retry_count` int(4) NOT NULL COMMENT '任务失败重试次数',
-    `timeout_s` int(4) DEFAULT NULL COMMENT '任务超时时间',
-    `timeout_handle_type` int(4) DEFAULT NULL COMMENT '任务超时处理策略 1-标记 2-中断',
-    `last_trigger_time` bigint(20) DEFAULT NULL COMMENT '上次次触发时间',
-    `next_trigger_time` bigint(20) DEFAULT NULL COMMENT '下次触发时间',
-    `creater` varchar(64) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '新建人',
-    `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-    `updater` varchar(64) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '更新人',
-    `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-    PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='任务信息';
+   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+   `name` varchar(128) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '任务名称',
+   `worker_id` bigint(20) NOT NULL COMMENT '执行器id',
+   `start_time` datetime DEFAULT NULL COMMENT '生命周期开始',
+   `end_time` datetime DEFAULT NULL COMMENT '生命周期结束',
+   `status` int(4) NOT NULL COMMENT '任务状态 0-停止 1-运行中',
+   `processor_type` int(4) NOT NULL COMMENT '处理器类型 1-Bean 2-HTTP',
+   `processor` varchar(128) COLLATE utf8mb4_bin NOT NULL COMMENT '处理器',
+   `param` varchar(1024) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '任务参数',
+   `trigger_type` int(4) NOT NULL COMMENT '触发类型 0-非主动触发 1-cron 2-固定频率（秒）3-固定延时（秒）',
+   `cron` varchar(64) COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'cron表达式',
+   `speed_s` int(4) DEFAULT NULL COMMENT '频率',
+   `delayed_s` int(4) DEFAULT NULL COMMENT '延时',
+   `route_type` int(4) NOT NULL COMMENT '路由策略',
+   `retry_count` int(4) NOT NULL COMMENT '任务失败重试次数',
+   `timeout_s` int(4) DEFAULT NULL COMMENT '任务超时时间',
+   `timeout_handle_type` int(4) DEFAULT NULL COMMENT '任务超时处理策略 1-标记 2-中断',
+   `last_trigger_time` bigint(20) DEFAULT NULL COMMENT '上次次触发时间',
+   `next_trigger_time` bigint(20) DEFAULT NULL COMMENT '下次触发时间',
+   `creater` varchar(64) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '新建人',
+   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+   `updater` varchar(64) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '更新人',
+   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+   PRIMARY KEY (`id`),
+   KEY `job_next_trigger_time_idx` (`next_trigger_time`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='任务信息';
 
 
 drop table if exists `dispatch_log`;
@@ -78,7 +81,7 @@ CREATE TABLE `dispatch_log` (
     `job_param` varchar(1024) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '任务参数',
     `worker_id` bigint(20) NOT NULL COMMENT '执行器id',
     `worker_address` varchar(128) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '执行器地址',
-    `dispatch_status` int(4) NOT NULL COMMENT '调度状态 0-失败 1-调度中 2-成功',
+    `dispatch_status` int(4) DEFAULT NULL COMMENT '调度状态 0-失败 1-调度中 2-成功',
     `execute_status` int(4) DEFAULT NULL COMMENT '执行状态 0-失败 1-执行中 2-执行成功 3-超时执行 4-超时中断 5-主动中断',
     `error_msg` varchar(1024) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '错误消息',
     `processor_type` int(4) NOT NULL COMMENT '处理器类型 1-Bean 2-HTTP',
@@ -87,8 +90,11 @@ CREATE TABLE `dispatch_log` (
     `execute_start_time` datetime DEFAULT NULL COMMENT '执行开始时间',
     `execute_end_time` datetime DEFAULT NULL COMMENT '执行结束时间',
     `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-    PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度信息';
+    PRIMARY KEY (`id`),
+    KEY `dispatch_log_trigger_time_idx` (`trigger_time`) USING BTREE,
+    KEY `dispatch_log_job_id_idx` (`job_id`) USING BTREE,
+    KEY `dispatch_log_worker_id_idx` (`worker_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度信息';
 
 
 

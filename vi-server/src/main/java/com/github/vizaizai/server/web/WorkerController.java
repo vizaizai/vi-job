@@ -2,6 +2,7 @@ package com.github.vizaizai.server.web;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.github.vizaizai.common.model.Result;
+import com.github.vizaizai.server.service.GlobalJobGroupManager;
 import com.github.vizaizai.server.service.WorkerService;
 import com.github.vizaizai.server.web.co.NumberIdCO;
 import com.github.vizaizai.server.web.co.RegisterCO;
@@ -27,6 +28,20 @@ public class WorkerController {
     @Resource
     private WorkerService workerService;
 
+    @Resource
+    private GlobalJobGroupManager globalJobTriggerTimer;
+
+    @GetMapping("/foo")
+    public Result<Void> foo(@RequestParam Long jobId) {
+        globalJobTriggerTimer.elect(jobId);
+        return Result.ok();
+    }
+
+    @GetMapping("/bar")
+    public Result<Void> bar(@RequestParam Long jobId) {
+        globalJobTriggerTimer.remove(jobId);
+        return Result.ok();
+    }
 
     @PostMapping("/saveOrUpdate")
     public Result<Void> saveOrUpdateWorker(@Validated @RequestBody WorkerUpdateCO workerUpdateCO) {

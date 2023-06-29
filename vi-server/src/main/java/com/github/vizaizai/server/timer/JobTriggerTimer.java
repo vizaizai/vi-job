@@ -67,10 +67,10 @@ public class JobTriggerTimer {
 
 
     /**
-     * 将job添加到Timer
+     * 将job推入到Timer
      * @param job
      */
-    public synchronized void addToTimer(Job job) {
+    public synchronized void push(Job job) {
         Long triggerTime = job.getNextTriggerTime();
         if (triggerTime == null) {
             return;
@@ -87,7 +87,7 @@ public class JobTriggerTimer {
         // 等待时间大于最小时间->推入慢时间轮循环
         if (waitMs > Commons.TIMER_MIN) {
             Timeout timeout = slowHashedWheelTimer.newTimeout(()-> {
-                this.addToTimer(job);
+                this.push(job);
                 slowTimeouts.remove(job.getId());
             }, waitMs - Commons.TIMER_MIN, TimeUnit.MILLISECONDS);
             // 将Timeout缓存下来，用于中止任务
@@ -136,7 +136,7 @@ public class JobTriggerTimer {
         job.setLastTriggerTime(System.currentTimeMillis());
         // 若触发类型非固定延时,则重新推入timer中
         if (job.getTriggerType() != TriggerType.DELAYED.getCode()) {
-            addToTimer(job);
+            push(job);
         }
         invokeExecutor.execute(() -> {
             try {
@@ -174,5 +174,4 @@ public class JobTriggerTimer {
     public Map<Long, Timeout> getFastTimeouts() {
         return fastTimeouts;
     }
-
 }

@@ -2,7 +2,7 @@ package com.github.vizaizai.server.utils;
 
 import cn.hutool.json.JSONUtil;
 import com.github.vizaizai.common.model.TaskResult;
-import com.github.vizaizai.remote.client.NettyPoolClient;
+import com.github.vizaizai.remote.client.NettyClient;
 import com.github.vizaizai.remote.codec.RpcRequest;
 import com.github.vizaizai.remote.codec.RpcResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +36,7 @@ public class RpcUtils {
     public static RpcResponse call(String address, String bizCode, Object param) {
         RpcRequest request = RpcRequest.wrap(bizCode, param);
         try {
-            return NettyPoolClient.getInstance(address).request(request, 30000);
+            return NettyClient.getInstance(address).request(request, 30000);
         }catch (Exception e) {
             return RpcResponse.error(e.getMessage());
         }

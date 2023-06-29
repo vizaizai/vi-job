@@ -1,7 +1,14 @@
 
 package com.github.vizaizai.server.raft;
 
+import cn.hutool.core.collection.CollUtil;
 import com.alipay.sofa.jraft.option.NodeOptions;
+import com.github.vizaizai.remote.utils.NetUtils;
+import com.github.vizaizai.server.config.ServerProperties;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -20,8 +27,26 @@ public class RaftNodeOptions {
 
     public RaftNodeOptions() {
         this.nodeOptions = new NodeOptions();
-        this.nodeOptions.setElectionTimeoutMs(3000);
-        this.nodeOptions.setLeaderLeaseTimeRatio(3);
+        this.nodeOptions.setElectionTimeoutMs(30000);
+        this.nodeOptions.setSnapshotIntervalSecs(600);
+        this.setGroupId("vi-server");
+    }
+
+    public void initAddress(ServerProperties serverProperties, int port) {
+        // 数据文件夹
+        this.setDataPath(serverProperties.getDataDir());
+        // 节点地址
+        this.setServerAddress(serverProperties.getInetutils().getIpAddress() + ":" + (port + 1000));
+        // 初始化集群地址
+        List<String> nodes = serverProperties.getCluster().getNodes().stream().map(e -> {
+            Pair<String, Integer> pair = NetUtils.splitAddress2IpAndPort(e);
+            return pair.getKey() + ":" + (pair.getValue() + 1000);
+        }).collect(Collectors.toList());
+        // 当前节点地址必须在集群列表里
+        if (!nodes.contains(this.serverAddress)) {
+            throw new RuntimeException("当前节点地址必须在集群列表里");
+        }
+        this.setInitialServerAddressList(CollUtil.join(nodes, ","));
     }
 
     public String getDataPath() {

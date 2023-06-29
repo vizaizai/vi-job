@@ -22,5 +22,5 @@ public class RegistryDTO {
     /**
      * 在线状态 1-是 0-否
      */
-    private Integer online;
+    private Integer online = 0;
 }

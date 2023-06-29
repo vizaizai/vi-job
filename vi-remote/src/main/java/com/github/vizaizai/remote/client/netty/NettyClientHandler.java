@@ -1,7 +1,7 @@
 package com.github.vizaizai.remote.client.netty;
 
 import com.github.vizaizai.logging.LoggerFactory;
-import com.github.vizaizai.remote.client.idle.IdleEventListener;
+import com.github.vizaizai.remote.client.event.IdleEventListener;
 import com.github.vizaizai.remote.codec.RpcMessage;
 import com.github.vizaizai.remote.codec.RpcRequest;
 import com.github.vizaizai.remote.codec.RpcResponse;
@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 public class NettyClientHandler extends SimpleChannelInboundHandler<RpcMessage> {
     private static final Logger logger = LoggerFactory.getLogger(NettyClientHandler.class);
     private NettySender nettySender;
-    private IdleEventListener idleEventListener;
+    private final IdleEventListener idleEventListener;
     /**
      * 业务处理器
      */
@@ -49,9 +49,6 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<RpcMessage> 
                 throw new RuntimeException("vi-job, Netty processor-pool is exhausted!");
             });
 
-    public NettyClientHandler(Map<String, BizProcessor> bizProcessorMap) {
-        this.bizProcessorMap = bizProcessorMap;
-    }
     public NettyClientHandler(IdleEventListener idleEventListener, Map<String, BizProcessor> bizProcessorMap) {
         this.idleEventListener = idleEventListener;
         this.bizProcessorMap = bizProcessorMap;
@@ -118,6 +115,7 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<RpcMessage> 
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
         logger.warn("Channel[{}] inactive,remote: {}",ctx.channel().id(), ctx.channel().remoteAddress());
+
     }
 
     public NettySender getNettySender() {

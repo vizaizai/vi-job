@@ -69,7 +69,7 @@ public class NettyServer implements Server {
                 workerGroup.shutdownGracefully();
             }
         });
-        startThread.setName("Worker-server");
+        startThread.setName("Embedded-server");
         startThread.setDaemon(true);
         startThread.start();
     }

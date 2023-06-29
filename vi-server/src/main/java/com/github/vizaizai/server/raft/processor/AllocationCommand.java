@@ -3,11 +3,11 @@ package com.github.vizaizai.server.raft.processor;
 import java.io.Serializable;
 
 /**
- * 任务计划操作
+ * 分配命令
  * @author liaochongwei
  * @date 2023/5/18 14:18
  */
-public class JobPlanOpt implements Serializable {
+public class AllocationCommand implements Serializable {
     /**
      * put操作
      */
@@ -23,22 +23,22 @@ public class JobPlanOpt implements Serializable {
     /**
      * 任务id
      */
-    private Integer jobId;
+    private Long jobId;
     /**
      * 调度地址
      */
     private String address;
 
-    public static JobPlanOpt createPut(Integer jobId, String address) {
-        JobPlanOpt opt = new JobPlanOpt();
+    public static AllocationCommand createPut(Long jobId, String address) {
+        AllocationCommand opt = new AllocationCommand();
         opt.setOp(PUT);
         opt.setJobId(jobId);
         opt.setAddress(address);
         return opt;
     }
 
-    public static JobPlanOpt createRm(Integer jobId) {
-        JobPlanOpt opt = new JobPlanOpt();
+    public static AllocationCommand createRm(Long jobId) {
+        AllocationCommand opt = new AllocationCommand();
         opt.setOp(RM);
         opt.setJobId(jobId);
         return opt;
@@ -52,11 +52,11 @@ public class JobPlanOpt implements Serializable {
         this.op = op;
     }
 
-    public Integer getJobId() {
+    public Long getJobId() {
         return jobId;
     }
 
-    public void setJobId(Integer jobId) {
+    public void setJobId(Long jobId) {
         this.jobId = jobId;
     }
 

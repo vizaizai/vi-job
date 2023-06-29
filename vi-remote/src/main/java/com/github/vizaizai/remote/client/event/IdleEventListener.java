@@ -1,4 +1,4 @@
-package com.github.vizaizai.remote.client.idle;
+package com.github.vizaizai.remote.client.event;
 
 import com.github.vizaizai.remote.common.sender.Sender;
 

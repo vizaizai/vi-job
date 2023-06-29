@@ -17,4 +17,13 @@ public class Commons {
      * Timer执行等待时间-30s
      */
     public static final long TIMER_MIN = 1000L * 30;
+    /**
+     * 快照名
+     */
+    public static final String SNAPSHOT_NAME = "data";
+    /**
+     * 注册表失效失效（秒）
+     */
+    public static final long REG_EXPIRED_S = 120;
+
 }

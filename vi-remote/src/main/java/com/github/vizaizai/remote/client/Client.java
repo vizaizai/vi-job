@@ -13,8 +13,10 @@ import java.net.InetSocketAddress;
 public interface Client {
 
     RpcResponse request(RpcRequest request,long timeout);
-    void destroy();
+
     default InetSocketAddress getAddress(){
         return null;
     }
+
+    void destroy();
 }

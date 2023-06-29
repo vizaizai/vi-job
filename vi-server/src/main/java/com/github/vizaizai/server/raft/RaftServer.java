@@ -20,43 +20,68 @@ import com.alipay.sofa.jraft.Lifecycle;
 import com.alipay.sofa.jraft.Node;
 import com.alipay.sofa.jraft.RaftGroupService;
 import com.alipay.sofa.jraft.conf.Configuration;
+import com.alipay.sofa.jraft.core.NodeImpl;
 import com.alipay.sofa.jraft.entity.PeerId;
 import com.alipay.sofa.jraft.option.NodeOptions;
 import com.alipay.sofa.jraft.rpc.RaftRpcServerFactory;
+import com.alipay.sofa.jraft.rpc.RpcClient;
 import com.alipay.sofa.jraft.rpc.RpcServer;
-import com.alipay.sofa.jraft.util.RpcFactoryHelper;
+import com.alipay.sofa.jraft.rpc.impl.core.DefaultRaftClientService;
 import com.alipay.sofa.jraft.util.internal.ThrowUtil;
-import com.github.vizaizai.server.raft.processor.JobProtos;
-import com.github.vizaizai.server.raft.processor.SyncJobPlanProcessor;
+import com.github.vizaizai.server.config.ServerProperties;
+import com.github.vizaizai.server.raft.processor.JobPutRequestProcessor;
+import com.github.vizaizai.server.raft.processor.JobRmRequestProcessor;
+import com.github.vizaizai.server.raft.processor.PushIntoTimerRequestProcessor;
+import com.github.vizaizai.server.raft.processor.RemoveFromTimerRequestProcessor;
+import com.github.vizaizai.server.utils.ContextUtil;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
 
 /**
  *
  * @author jiachun.fjc
  */
+@Component
 public class RaftServer implements Lifecycle<RaftNodeOptions>, DisposableBean {
     private static final Logger LOG  = LoggerFactory.getLogger(RaftServer.class);
     private RaftGroupService raftGroupService;
     private Node node;
     private RaftStateMachine fsm;
     private boolean started;
+    private RaftNodeOptions raftNodeOptions;
+    @Resource
+    private ServerProperties serverProperties;
+    @Value("${server.port}")
+    private Integer port;
+
+    private final CountDownLatch countDownLatch = new CountDownLatch(1);
 
     @Override
     public boolean init(final RaftNodeOptions opts) {
         if (this.started) {
-            LOG.info("[ElectionNode: {}] already started.", opts.getServerAddress());
+            LOG.info("[RaftServer: {}] already started.", opts.getServerAddress());
             return true;
         }
+        if (!Objects.equals(serverProperties.getMode(), "cluster")) {
+            return false;
+        }
+        opts.initAddress(serverProperties, port);
+        this.raftNodeOptions = opts;
+
         // node options
         NodeOptions nodeOpts = opts.getNodeOptions();
-        this.fsm = new RaftStateMachine();
+        this.fsm = ContextUtil.getBean(RaftStateMachine.class);
         nodeOpts.setFsm(this.fsm);
         // 初始化配置
         final Configuration initialConf = new Configuration();
@@ -73,24 +98,27 @@ public class RaftServer implements Lifecycle<RaftNodeOptions>, DisposableBean {
         }
         nodeOpts.setLogUri(Paths.get(dataPath, "log").toString());
         nodeOpts.setRaftMetaUri(Paths.get(dataPath, "meta").toString());
+        nodeOpts.setSnapshotUri(Paths.get(dataPath, "snapshot").toString());
 
         final String groupId = opts.getGroupId();
         final PeerId serverId = new PeerId();
         if (!serverId.parse(opts.getServerAddress())) {
             throw new IllegalArgumentException("Fail to parse serverId: " + opts.getServerAddress());
         }
-        // 注入序列化类
-        RpcFactoryHelper.rpcFactory().registerProtobufSerializer(JobProtos.JobPlanPutRequest.class.getName(),
-                JobProtos.JobPlanPutRequest.getDefaultInstance());
 
         final RpcServer rpcServer = RaftRpcServerFactory.createRaftRpcServer(serverId.getEndpoint());
-        rpcServer.registerProcessor(new SyncJobPlanProcessor());
+        rpcServer.registerProcessor(ContextUtil.getBean(JobPutRequestProcessor.class));
+        rpcServer.registerProcessor(ContextUtil.getBean(JobRmRequestProcessor.class));
+        rpcServer.registerProcessor(new PushIntoTimerRequestProcessor());
+        rpcServer.registerProcessor(new RemoveFromTimerRequestProcessor());
 
         this.raftGroupService = new RaftGroupService(groupId, serverId, nodeOpts, rpcServer);
         this.node = this.raftGroupService.start();
         if (this.node != null) {
             this.started = true;
         }
+        countDownLatch.countDown();
+        LOG.info("[RaftServer: {}] started.", opts.getServerAddress());
         return this.started;
     }
     @Override
@@ -107,11 +135,15 @@ public class RaftServer implements Lifecycle<RaftNodeOptions>, DisposableBean {
             }
         }
         this.started = false;
-        LOG.info("[ElectionNode] shutdown successfully: {}.", this);
+        LOG.info("[RaftServer] shutdown successfully: {}.", this);
     }
 
     public Node getNode() {
         return node;
+    }
+
+    public RpcClient getRpcClient() {
+        return  ((DefaultRaftClientService)((NodeImpl) this.getNode()).getRpcService()).getRpcClient();
     }
 
     public RaftStateMachine getFsm() {
@@ -122,6 +154,31 @@ public class RaftServer implements Lifecycle<RaftNodeOptions>, DisposableBean {
         return started;
     }
 
+    /**
+     * 等待启动，会阻塞
+     */
+    public void waitingToStart() {
+        try {
+            if (isStarted()) {
+                return;
+            }
+            LOG.info("[RaftServer] starting");
+            countDownLatch.await();
+        }catch (InterruptedException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+    public boolean isCluster() {
+        return Objects.equals(serverProperties.getMode(), "cluster");
+    }
+
+    public String getCurrentNodeAddress() {
+        if (isCluster() && raftNodeOptions != null) {
+            return raftNodeOptions.getServerAddress();
+        }
+        return null;
+    }
+
     public boolean isLeader() {
         return this.fsm.isLeader();
     }
@@ -129,5 +186,9 @@ public class RaftServer implements Lifecycle<RaftNodeOptions>, DisposableBean {
     @Override
     public void destroy() throws Exception {
         this.shutdown();
+    }
+
+    public RaftNodeOptions getRaftNodeOptions() {
+        return raftNodeOptions;
     }
 }

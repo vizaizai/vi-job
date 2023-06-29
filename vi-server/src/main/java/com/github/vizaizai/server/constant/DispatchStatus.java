@@ -1,5 +1,9 @@
 package com.github.vizaizai.server.constant;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * 调度状态
  * @author liaochongwei
@@ -16,6 +20,9 @@ public enum DispatchStatus {
         this.msg = msg;
     }
 
+    public static List<Integer> codes() {
+        return Arrays.stream(DispatchStatus.values()).map(DispatchStatus::getCode).collect(Collectors.toList());
+    }
     public static DispatchStatus getInstance(int code) {
         for (DispatchStatus triggerType : DispatchStatus.values()) {
             if (triggerType.getCode() == code) {

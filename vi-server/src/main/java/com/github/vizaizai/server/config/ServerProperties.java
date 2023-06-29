@@ -22,7 +22,7 @@ public class ServerProperties {
     /**
      * 部署模式 standalone,cluster
      */
-    private String mode;
+    private String mode = "standalone";
     /**
      * 集群配置
      */

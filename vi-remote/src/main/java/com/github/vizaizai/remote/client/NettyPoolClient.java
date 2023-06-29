@@ -36,7 +36,6 @@ public class NettyPoolClient implements Client{
         return nettyPoolClient;
     }
 
-
     @Override
     public RpcResponse request(RpcRequest request, long timeout) {
         // 获取发送器
@@ -66,6 +65,6 @@ public class NettyPoolClient implements Client{
 
     @Override
     public InetSocketAddress getAddress(){
-            return this.inetSocketAddress;
+        return this.inetSocketAddress;
     }
 }

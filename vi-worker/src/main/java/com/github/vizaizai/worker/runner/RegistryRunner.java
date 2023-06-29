@@ -3,13 +3,15 @@ package com.github.vizaizai.worker.runner;
 import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.common.model.StatusCode;
 import com.github.vizaizai.logging.LoggerFactory;
-import com.github.vizaizai.remote.utils.Utils;
 import com.github.vizaizai.worker.utils.HttpUtils;
 import com.github.vizaizai.worker.utils.JSONUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -74,15 +76,14 @@ public class RegistryRunner extends Thread {
             for (String serverAddr : serverAddrList) {
                 boolean success = this.process(serverAddr + REGISTER_URL);
                 if (success) {
-                    logger.info(">>>>>>>>>>Worker register success.");
-                    stop = true;
-                    return;
+                    logger.debug(">>>>>>>>>>Worker register success.");
+                    break;
                 }
                 logger.warn("Worker register fail, serverAddr:{}", serverAddr);
             }
             try {
-                // 休眠30s
-                TimeUnit.SECONDS.sleep(30);
+                // 休眠60s
+                TimeUnit.SECONDS.sleep(60);
             }catch (Exception ignored) {
             }
         }

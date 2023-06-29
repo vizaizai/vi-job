@@ -5,11 +5,8 @@ import com.github.vizaizai.retry.mode.CronSequenceGenerator;
 import com.github.vizaizai.server.constant.TriggerType;
 import lombok.Data;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.*;
+import java.util.Date;
 
 /**
  * 任务实体
@@ -80,11 +77,11 @@ public class Job {
     private Integer routeType;
 
     /**
-     * 任务失败重试次数(-1:不限制)
+     * 任务失败重试次数
      */
     private Integer retryCount;
     /**
-     * 任务超时时间(-1:不限制)
+     * 任务超时时间
      */
     private Integer timeoutS;
     /**
@@ -99,12 +96,6 @@ public class Job {
      * 上一次执行结束时间
      */
     private Long lastExecuteEndTime;
-    /**
-     * 执行器地址列表
-     */
-    private List<String> workerAddressList;
-
-    // private static final Set<String> delayedJobSet = Collections.synchronizedSet(new HashSet<>());
     /**
      * 计算下一次触发时间
      * @return 时间戳
@@ -132,9 +123,13 @@ public class Job {
         }
         // cron
         if (triggerType == TriggerType.CRON.getCode()){
-            final CronSequenceGenerator cronSequenceGenerator = new CronSequenceGenerator(cron);
-            Date next = cronSequenceGenerator.next(new Date(dateTime));
-            return next.getTime();
+            try {
+                final CronSequenceGenerator cronSequenceGenerator = new CronSequenceGenerator(cron);
+                Date next = cronSequenceGenerator.next(new Date(dateTime));
+                return next.getTime();
+            }catch (Exception e) {
+                throw new RuntimeException("CRON表达式解析异常");
+            }
         }
         // 固定频率
         if (triggerType == TriggerType.SPEED.getCode()) {

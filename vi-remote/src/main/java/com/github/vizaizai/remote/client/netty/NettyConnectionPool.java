@@ -1,7 +1,7 @@
 package com.github.vizaizai.remote.client.netty;
 
 import com.github.vizaizai.logging.LoggerFactory;
-import com.github.vizaizai.remote.client.idle.IdleEventListener;
+import com.github.vizaizai.remote.client.event.IdleEventListener;
 import com.github.vizaizai.remote.server.processor.BizProcessor;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;

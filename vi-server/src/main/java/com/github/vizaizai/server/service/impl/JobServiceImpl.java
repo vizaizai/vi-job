@@ -24,6 +24,7 @@ import com.github.vizaizai.server.dao.dataobject.DispatchLogDO;
 import com.github.vizaizai.server.dao.dataobject.JobDO;
 import com.github.vizaizai.server.entity.Job;
 import com.github.vizaizai.server.router.RouteType;
+import com.github.vizaizai.server.service.GlobalJobGroupManager;
 import com.github.vizaizai.server.service.JobService;
 import com.github.vizaizai.server.service.WorkerService;
 import com.github.vizaizai.server.timer.JobTriggerTimer;
@@ -55,6 +56,8 @@ public class JobServiceImpl implements JobService {
     private DispatchLogMapper dispatchLogMapper;
     @Resource
     private WorkerService workerService;
+    @Resource
+    private GlobalJobGroupManager globalJobGroupHandler;
 
     @Override
     public Result<Void> addJob(JobUpdateCO jobUpdateCO) {
@@ -64,6 +67,8 @@ public class JobServiceImpl implements JobService {
         jobDO.setStatus(JobStatus.STOP.getCode());
         jobDO.setNextTriggerTime(BeanUtils.toBean(jobDO, Job::new).getNextTriggerTime());
         jobMapper.insert(jobDO);
+        // 全局任务分组
+        globalJobGroupHandler.elect(jobDO.getId());
         return Result.ok("新增成功");
     }
 
@@ -96,6 +101,7 @@ public class JobServiceImpl implements JobService {
     public Result<Void> removeJob(Long id) {
         jobMapper.deleteById(id);
         JobTriggerTimer.getInstance().remove(id);
+        globalJobGroupHandler.remove(id);
         return Result.ok("删除成功");
     }
 
@@ -144,8 +150,8 @@ public class JobServiceImpl implements JobService {
         Job job = BeanUtils.toBean(jobDO, Job::new);
         Long triggerTime = job.getNextTriggerTime();
         if (triggerTime != null && (triggerTime - System.currentTimeMillis()) <= Commons.TIMER_MAX) {
-            job.setWorkerAddressList(workerService.getWorkerAddressList(job.getWorkerId()));
-            JobTriggerTimer.getInstance().addToTimer(job);
+            // JobTriggerTimer.getInstance().push(job);
+            globalJobGroupHandler.pushIntoTimer(job);
         }
         return Result.ok();
     }
@@ -160,7 +166,6 @@ public class JobServiceImpl implements JobService {
         if (Objects.nonNull(jobRunCO.getJobParam())) {
             job.setParam(jobRunCO.getJobParam());
         }
-        job.setWorkerAddressList(workerService.getWorkerAddressList(job.getWorkerId()));
         JobTriggerTimer.getInstance().directRun(job);
         return Result.ok("运行成功");
     }
@@ -184,7 +189,13 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
+    public List<JobDO> listByIds(Set<Long> ids) {
+        return jobMapper.selectBatchIds(ids);
+    }
+
+    @Override
     public void invoke(Job job) {
+        List<String> workerAddressList = workerService.getWorkerAddressList(job.getWorkerId());
         RouteType routeType = RouteType.getInstance(job.getRouteType());
         Assert.notNull(routeType,"路由策略不支持");
 
@@ -193,22 +204,20 @@ public class JobServiceImpl implements JobService {
         DispatchLogDO dispatchLogDO = new DispatchLogDO();
         dispatchLogDO.setJobId(job.getId());
         dispatchLogDO.setWorkerId(job.getWorkerId());
-        dispatchLogDO.setDispatchStatus(DispatchStatus.OK.getCode());
         dispatchLogDO.setProcessorType(job.getProcessorType());
         dispatchLogDO.setProcessor(job.getProcessor());
         dispatchLogDO.setJobParam(job.getParam());
         dispatchLogDO.setTriggerTime(now);
 
+        log.debug(">>>>>>>>>>>Trigger start, jobId:{}", job.getId());
         // 路由worker地址
-        String workerAddress = routeType.getRouter().route(job, job.getWorkerAddressList());
+        String workerAddress = routeType.getRouter().route(job, workerAddressList);
         if (workerAddress == null) {
             dispatchLogDO.setDispatchStatus(DispatchStatus.FAIL.getCode());
             dispatchLogDO.setErrorMsg("No available worker");
             dispatchLogMapper.insert(dispatchLogDO);
             return;
         }
-        log.debug(">>>>>>>>>>>Trigger start, jobId:{}", job.getId());
-        dispatchLogDO.setExecuteStatus(ExecuteStatus.ING.getCode());
 
         for (String address : workerAddress.split(",")) {
             DispatchLogDO dispatchLogInsert = BeanUtils.toBean(dispatchLogDO,DispatchLogDO::new);
@@ -227,15 +236,12 @@ public class JobServiceImpl implements JobService {
 
             // 执行任务触发
             TaskResult taskResult = RpcUtils.toTaskResult(RpcUtils.call(address, BizCode.RUN, taskTriggerParam));
-            // 调度失败->更新调度日志
-            if (!taskResult.isSuccess()) {
-                DispatchLogDO dispatchLogUpdate = new DispatchLogDO()
-                        .setId(taskTriggerParam.getJobDispatchId())
-                        .setDispatchStatus(DispatchStatus.FAIL.getCode())
-                        .setExecuteStatus(ExecuteStatus.FAIL.getCode())
-                        .setErrorMsg(taskResult.getMsg());
-                dispatchLogMapper.updateById(dispatchLogUpdate);
-            }
+            DispatchLogDO dispatchLogUpdate = new DispatchLogDO()
+                    .setId(taskTriggerParam.getJobDispatchId())
+                    .setDispatchStatus(taskResult.isSuccess() ? DispatchStatus.OK.getCode(): DispatchStatus.FAIL.getCode())
+                    .setExecuteStatus(taskResult.isSuccess() ? ExecuteStatus.ING.getCode() : null)
+                    .setErrorMsg(taskResult.getMsg());
+            dispatchLogMapper.updateById(dispatchLogUpdate);
         }
 
     }
@@ -258,7 +264,7 @@ public class JobServiceImpl implements JobService {
     public Result<Void> statusReport(StatusReportCO statusReportCO) {
         DispatchLogDO dispatchLogDO = new DispatchLogDO();
         dispatchLogDO.setId(statusReportCO.getDispatchId());
-        dispatchLogDO.setDispatchStatus(statusReportCO.getExecuteStatus());
+        dispatchLogDO.setExecuteStatus(statusReportCO.getExecuteStatus());
         dispatchLogDO.setExecuteStartTime(LocalDateTimeUtil.of(statusReportCO.getExecuteStartTime()));
         dispatchLogDO.setExecuteEndTime(LocalDateTimeUtil.of(statusReportCO.getExecuteEndTime()));
         dispatchLogMapper.updateById(dispatchLogDO);
