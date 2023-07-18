@@ -33,7 +33,7 @@ public class WorkerController {
 
     @GetMapping("/foo")
     public Result<Void> foo(@RequestParam Long jobId) {
-        globalJobTriggerTimer.elect(jobId);
+        globalJobTriggerTimer.assign(jobId);
         return Result.ok();
     }
 

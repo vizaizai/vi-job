@@ -144,6 +144,7 @@ export default {
       this.title = '查询详情'
       this.disabled = true
       this.formData = { ...data }
+      this.optRangeTime = null
       if (data.startTime && data.endTime) {
         this.optRangeTime = []
         this.optRangeTime.push(data.startTime)

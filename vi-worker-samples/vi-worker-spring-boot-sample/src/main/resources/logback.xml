@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+    <contextName>vi-worker-springboot-demo</contextName>
+    <property name="log_dir" value="/logs/vi-worker-springboot-demo/" />
+
+    <!-- 配置自定义日志输出格式 -->
+    <property name="pattern" value="%d{yyyy:MM:dd HH:mm:ss.SSS} [%thread] %-5level %logger{35} - %msg %n"/>
+
+    <!-- 配置控制台输出器 -->
+    <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- 配置日志字体颜色，默认黑色（System.out），红色（System.err） -->
+        <target>System.out</target>
+        <!-- 配置日志输出格式 -->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!-- 引用自定义日志输出格式 -->
+            <pattern>${pattern}</pattern>
+        </encoder>
+    </appender>
+
+
+    <appender name="file_info" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <Pattern>${pattern}</Pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <FileNamePattern>${log_dir}%d{yyyy-MM-dd}.log</FileNamePattern>
+            <!-- keep N days' worth of history -->
+            <maxHistory>10</maxHistory>
+        </rollingPolicy>
+    </appender>
+    <appender name="file_error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <Pattern>${pattern}</Pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <FileNamePattern>${log_dir}%d{yyyy-MM-dd}-error.log</FileNamePattern>
+            <!-- keep N days' worth of history -->
+            <maxHistory>10</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="consoleAppender" />
+        <appender-ref ref="file_info" />
+        <appender-ref ref="file_error" />
+    </root>
+</configuration>

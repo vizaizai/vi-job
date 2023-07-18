@@ -1,12 +1,13 @@
 package com.github.vizaizai.worker.starter;
 
-import com.github.vizaizai.logging.LoggerFactory;
 import com.github.vizaizai.common.contants.BizCode;
+import com.github.vizaizai.logging.LoggerFactory;
 import com.github.vizaizai.remote.server.Server;
 import com.github.vizaizai.remote.server.netty.NettyServer;
 import com.github.vizaizai.remote.utils.NetUtils;
 import com.github.vizaizai.remote.utils.Utils;
 import com.github.vizaizai.worker.core.executor.IdleExecutor;
+import com.github.vizaizai.worker.core.executor.LogExecutor;
 import com.github.vizaizai.worker.core.executor.TaskExecutor;
 import com.github.vizaizai.worker.runner.JobProcessRunner;
 import com.github.vizaizai.worker.runner.RegistryRunner;
@@ -32,13 +33,17 @@ public class ViStarter {
      */
     private String serverAddr;
     /**
-     * 本地地址，默认由系统获取
+     * 地址，默认由系统获取
      */
     private String host;
     /**
-     * 本地服务端口号
+     * 服务端口号
      */
     private Integer port;
+    /**
+     * 日志路径
+     */
+    private String logBasePath = "/tmp/applogs";
 
     /**
      * 调度中心地址列表
@@ -88,6 +93,7 @@ public class ViStarter {
         Server server = new NettyServer(this.host, this.port);
         server.addBizProcessor(BizCode.RUN, new TaskExecutor());
         server.addBizProcessor(BizCode.IDlE, new IdleExecutor());
+        server.addBizProcessor(BizCode.LOG, new LogExecutor());
         server.start();
     }
 
@@ -106,6 +112,10 @@ public class ViStarter {
             throw new IllegalArgumentException("ServerAddr invalid");
         }
 
+        if (StringUtils.isBlank(logBasePath)) {
+            throw new IllegalArgumentException("LogBasePath invalid");
+        }
+
         String[] addrArray = serverAddr.split(",");
         for (String addr : addrArray) {
             addr = addr.trim();
@@ -121,6 +131,7 @@ public class ViStarter {
         if (Utils.isEmpty(this.severAddrList)) {
             throw new IllegalArgumentException("ServerAddr invalid");
         }
+        System.setProperty(PropsKeys.LOG_BASE_PATH, logBasePath);
     }
 
 
@@ -143,5 +154,13 @@ public class ViStarter {
 
     public List<String> getSeverAddrList() {
         return severAddrList;
+    }
+
+    public String getLogBasePath() {
+        return logBasePath;
+    }
+
+    public void setLogBasePath(String logBasePath) {
+        this.logBasePath = logBasePath;
     }
 }

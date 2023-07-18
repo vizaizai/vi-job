@@ -10,11 +10,11 @@ public class Commons {
 
     public static final String DT_PATTERN = "yyyy-MM-dd HH:mm:ss";
     /**
-     * Timer最大等待时间-5min
+     * Timer最大等待时间5min
      */
     public static final long TIMER_MAX = 1000L * 60 * 5;
     /**
-     * Timer执行等待时间-30s
+     * Timer执行等待时间30s
      */
     public static final long TIMER_MIN = 1000L * 30;
     /**
@@ -25,5 +25,12 @@ public class Commons {
      * 注册表失效失效（秒）
      */
     public static final long REG_EXPIRED_S = 120;
-
+    /**
+     * job分配信息key
+     */
+    public static final String JOB_ASSIGN_KEY = "job:assign:info";
+    /**
+     * 执行器节点信息key
+     */
+    public static final String WORKER_NODE_KEY = "worker:node:info:";
 }

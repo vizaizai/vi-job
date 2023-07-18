@@ -2,12 +2,13 @@ package com.github.vizaizai.server.service;
 
 import cn.hutool.core.date.LocalDateTimeUtil;
 import com.alipay.sofa.jraft.JRaftUtils;
-import com.alipay.sofa.jraft.Node;
 import com.alipay.sofa.jraft.entity.PeerId;
 import com.github.vizaizai.remote.utils.Utils;
 import com.github.vizaizai.server.entity.Job;
 import com.github.vizaizai.server.raft.RaftServer;
 import com.github.vizaizai.server.raft.proto.JobProto;
+import com.github.vizaizai.server.raft.proto.ResponseProto;
+import com.github.vizaizai.server.service.apply.JobAssignApplyService;
 import com.github.vizaizai.server.timer.JobTriggerTimer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -26,27 +27,30 @@ public class GlobalJobGroupManager {
     @Resource
     private RaftServer raftServer;
     @Resource
-    private JobAllocationService jobAllocationService;
+    private JobAssignApplyService jobAssignApplyService;
     private final JobTriggerTimer triggerTimer = JobTriggerTimer.getInstance();
     /**
-     * 节点选择
+     * 任务分配
      * @param jobId 任务id
      */
-    public void elect(Long jobId) {
+    public String assign(Long jobId) {
         // 单机模式无需分组
         if (!raftServer.isCluster()) {
-            return;
+            return null;
         }
-        PeerId leaderId = this.getLeader();
-        JobProto.PutRequest request = JobProto.PutRequest.newBuilder().setJobId(jobId).build();
+        PeerId leaderId = raftServer.getLeader();
+        JobProto.AssignRequest request = JobProto.AssignRequest.newBuilder().setJobId(jobId).build();
         try {
-            JobProto.Response response = (JobProto.Response) raftServer.getRpcClient()
+            ResponseProto.Response response = (ResponseProto.Response) raftServer.getRpcClient()
                     .invokeSync(leaderId.getEndpoint(), request, 3000);
             if (!response.getSuccess()) {
-                throw new RuntimeException("任务节点选择失败");
+                throw new RuntimeException(response.getErrorMsg());
             }
+            String data = response.getData();
+            log.info("任务分配结果：{}->{}",jobId, data);
+            return data;
         }catch (Exception e) {
-            log.error("节点选择错误: {}",e.getMessage());
+            log.error("任务分配失败: {}",e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
     }
@@ -61,10 +65,10 @@ public class GlobalJobGroupManager {
         if (!raftServer.isCluster()) {
             return;
         }
-        PeerId leaderId = this.getLeader();
+        PeerId leaderId = raftServer.getLeader();
         JobProto.RmRequest request = JobProto.RmRequest.newBuilder().setJobId(jobId).build();
         try {
-            JobProto.Response response = (JobProto.Response) raftServer
+            ResponseProto.Response response = (ResponseProto.Response) raftServer
                     .getRpcClient().invokeSync(leaderId.getEndpoint(), request, 3000);
             if (!response.getSuccess()) {
                 throw new RuntimeException("任务摘除失败");
@@ -78,13 +82,13 @@ public class GlobalJobGroupManager {
      * 将任务推入Timer
      * @param job
      */
-    public void pushIntoTimer(Job job) {
+    public void  pushIntoTimer(Job job) {
         if (!raftServer.isCluster()) {
             triggerTimer.push(job);
             return;
         }
 
-        String nodeAddress = jobAllocationService.get(job.getId());
+        String nodeAddress = jobAssignApplyService.get(job.getId(), true);
         if (Utils.isBlank(nodeAddress)) {
             throw new RuntimeException("任务未分配，请稍等");
         }
@@ -111,7 +115,9 @@ public class GlobalJobGroupManager {
             builder.setParam(job.getParam());
         }
         builder.setTriggerType(job.getTriggerType());
-        builder.setCron(job.getCron());
+        if (job.getCron() != null) {
+            builder.setCron(job.getCron());
+        }
         if (job.getSpeedS() != null) {
             builder.setSpeedS(job.getSpeedS());
         }
@@ -126,8 +132,8 @@ public class GlobalJobGroupManager {
         if (job.getTimeoutHandleType() != null) {
             builder.setTimeoutHandleType(job.getTimeoutHandleType());
         }
-        if (job.getLastTriggerTime() != null) {
-            builder.setLastTriggerTime(job.getLastTriggerTime());
+        if (job.getNextTriggerTime() != null) {
+            builder.setNextTriggerTime(job.getNextTriggerTime());
         }
         if (job.getLastExecuteEndTime() != null) {
             builder.setLastExecuteEndTime(job.getLastExecuteEndTime());
@@ -135,7 +141,7 @@ public class GlobalJobGroupManager {
 
         JobProto.PushIntoTimerRequest request = builder.build();
         try {
-            JobProto.Response response = (JobProto.Response) raftServer.getRpcClient()
+            ResponseProto.Response response = (ResponseProto.Response) raftServer.getRpcClient()
                     .invokeSync(JRaftUtils.getEndPoint(nodeAddress), request, 3000);
             if (!response.getSuccess()) {
                 throw new RuntimeException("推入定时器失败");
@@ -145,17 +151,37 @@ public class GlobalJobGroupManager {
         }
     }
 
+    /**
+     * 从定时器中移除
+     * @param jobId 任务id
+     */
+    public void removeFormTimer(Long jobId) {
+        if (!raftServer.isCluster()) {
+            triggerTimer.remove(jobId);
+            return;
+        }
 
-    private PeerId getLeader() {
-        // 集群模式
-        Node node =  raftServer.getNode();
-        if (node == null) {
-            throw new RuntimeException("JRaft服务未启动");
+        String nodeAddress = jobAssignApplyService.get(jobId, false);
+        if (Utils.isBlank(nodeAddress)) {
+            throw new RuntimeException("任务未分配，请稍等");
         }
-        PeerId leaderId = node.getLeaderId();
-        if (leaderId == null) {
-            throw new RuntimeException("集群未就绪");
+        // 执行调度地址为当前地址，则直接remove，无需网络请求
+        if (Objects.equals(raftServer.getCurrentNodeAddress(), nodeAddress)) {
+            triggerTimer.remove(jobId);
+            return;
         }
-        return leaderId;
+        JobProto.RemoveFromTimerRequest.Builder builder = JobProto.RemoveFromTimerRequest.newBuilder();
+        builder.setJobId(jobId);
+        JobProto.RemoveFromTimerRequest request = builder.build();
+        try {
+            ResponseProto.Response response = (ResponseProto.Response) raftServer.getRpcClient()
+                    .invokeSync(JRaftUtils.getEndPoint(nodeAddress), request, 3000);
+            if (!response.getSuccess()) {
+                throw new RuntimeException("从定时器移除失败");
+            }
+        }catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
+
 }

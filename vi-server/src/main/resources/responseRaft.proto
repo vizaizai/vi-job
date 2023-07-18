@@ -1,0 +1,12 @@
+syntax = "proto2";
+
+package jraft;
+
+option java_package = "com.github.vizaizai.server.raft.proto";
+option java_outer_classname = "ResponseProto";
+message Response {
+  required bool success = 1;
+  optional string errorMsg = 2;
+  optional string data = 3;
+}
+

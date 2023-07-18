@@ -6,6 +6,8 @@ import com.github.vizaizai.common.model.TaskTriggerParam;
 import com.github.vizaizai.logging.LoggerFactory;
 import com.github.vizaizai.worker.core.TaskContext;
 import com.github.vizaizai.worker.core.processor.BasicProcessor;
+import com.github.vizaizai.worker.log.impl.JobLogger;
+import com.github.vizaizai.worker.utils.DateUtils;
 import org.slf4j.Logger;
 
 import java.util.Map;
@@ -29,6 +31,10 @@ public class JobProcessRunner extends Thread{
      * jobId
      */
     private Long jobId;
+    /**
+     * 任务日志记录器
+     */
+    private JobLogger jobLogger;
     /**
      * 处理器
      */
@@ -92,11 +98,27 @@ public class JobProcessRunner extends Thread{
                    this.running = true;
                    long st = System.currentTimeMillis();
                    TaskTriggerParam triggerParam = taskContext.getTriggerParam();
+
                    // 构建上报参数
                    StatusReportParam reportParam = new StatusReportParam();
                    reportParam.setJobId(triggerParam.getJobId());
                    reportParam.setDispatchId(triggerParam.getJobDispatchId());
                    reportParam.setExecuteStartTime(st);
+
+                   // 设置日志记录器
+                   JobLogger logger = JobLogger.getInstance(jobId, DateUtils.parse(triggerParam.getTriggerTime()).toLocalDate(), true);
+                   taskContext.setLogger(logger);
+                   if (jobLogger == null) {
+                       this.jobLogger = logger;
+                   }else {
+                       // 日志记录器已过期
+                       if (!this.jobLogger.equals(logger)) {
+                           this.jobLogger.close();
+                           this.jobLogger = logger;
+                       }
+                   }
+                   // 标记日志位置
+                   logger.resetPos(triggerParam.getJobDispatchId());
                    try {
                        // 执行处理器
                        this.processor.execute(taskContext);
@@ -125,10 +147,8 @@ public class JobProcessRunner extends Thread{
                    // 空闲30s停止运行器
                    if ((System.currentTimeMillis() - startTime) / 1000 >= 30
                            && waitingTask.size() == 0) {
-                       stop = true;
-                       runners.remove(this.jobId);
                        logger.info("Thead[{}] idle 30s", this.getName());
-                       this.interrupt();
+                       this.shutdown();
                    }
                }
            }catch (Exception e) {
@@ -143,14 +163,17 @@ public class JobProcessRunner extends Thread{
     /**
      * 停止
      */
-    public void shutdown() {
+    private void shutdown() {
         try {
+            this.waitingTask.clear();
+            stop = true;
+            running = false;
+            jobLogger.close();
+            runners.remove(this.jobId);
+
             if (!this.isInterrupted()) {
                 this.interrupt();
             }
-            stop = true;
-            running = false;
-            this.waitingTask.clear();
         }catch (Exception e) {
             logger.error("Shutdown JobProcessRunner error,", e);
         }

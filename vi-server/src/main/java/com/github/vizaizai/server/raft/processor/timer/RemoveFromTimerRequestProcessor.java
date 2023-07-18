@@ -1,8 +1,9 @@
-package com.github.vizaizai.server.raft.processor;
+package com.github.vizaizai.server.raft.processor.timer;
 
 import com.alipay.sofa.jraft.rpc.RpcContext;
 import com.alipay.sofa.jraft.rpc.RpcProcessor;
 import com.github.vizaizai.server.raft.proto.JobProto;
+import com.github.vizaizai.server.raft.proto.ResponseProto;
 import com.github.vizaizai.server.timer.JobTriggerTimer;
 
 /**
@@ -15,7 +16,7 @@ public class RemoveFromTimerRequestProcessor implements RpcProcessor<JobProto.Re
     @Override
     public void handleRequest(RpcContext rpcContext, JobProto.RemoveFromTimerRequest request) {
         JobTriggerTimer.getInstance().remove(request.getJobId());
-        rpcContext.sendResponse(JobProto.Response.newBuilder().setSuccess(true).build());
+        rpcContext.sendResponse(ResponseProto.Response.newBuilder().setSuccess(true).build());
     }
 
     @Override

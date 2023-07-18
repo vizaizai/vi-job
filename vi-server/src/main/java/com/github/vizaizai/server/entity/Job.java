@@ -89,35 +89,46 @@ public class Job {
      */
     private Integer timeoutHandleType;
     /**
-     * 上一次触发时间
+     * 下次触发时间
      */
-    private Long lastTriggerTime;
+    private Long nextTriggerTime;
     /**
      * 上一次执行结束时间
      */
     private Long lastExecuteEndTime;
     /**
+     * 基准时间
+     */
+    private Long baseTime;
+
+    public void resetNextTriggerTime() {
+        this.nextTriggerTime = this.initNextTriggerTime();
+    }
+
+    /**
      * 计算下一次触发时间
      * @return 时间戳
      */
-    public Long getNextTriggerTime() {
-        long now = System.currentTimeMillis();
-        LocalDateTime nowDateTime = LocalDateTimeUtil.of(now);
+    public Long initNextTriggerTime() {
+        if (baseTime == null) {
+            this.baseTime = System.currentTimeMillis();
+        }
+        LocalDateTime baseLocalTime = LocalDateTimeUtil.of(this.baseTime);
         // 未开始
-        if (startTime != null && nowDateTime.isBefore(startTime)) {
-            return getNextTriggerTime0(LocalDateTimeUtil.toEpochMilli(startTime));
+        if (startTime != null && baseLocalTime.isBefore(startTime)) {
+            return initNextTriggerTime0(LocalDateTimeUtil.toEpochMilli(startTime));
         }
         // 已结束
-        if (endTime != null && nowDateTime.isAfter(endTime)) {
+        if (endTime != null && baseLocalTime.isAfter(endTime)) {
             return null;
         }
-        return getNextTriggerTime0(now);
+        return initNextTriggerTime0(this.baseTime);
     }
     /**
      * 计算下一次触发时间
      * @return 时间戳
      */
-    public Long getNextTriggerTime0(Long dateTime) {
+    public Long initNextTriggerTime0(long dateTime) {
         if (triggerType == TriggerType.NON.getCode()) {
             return null;
         }
@@ -133,14 +144,13 @@ public class Job {
         }
         // 固定频率
         if (triggerType == TriggerType.SPEED.getCode()) {
-            Long time = lastTriggerTime != null ? lastTriggerTime : dateTime;
-            return time + speedS * 1000;
+            return dateTime + speedS * 1000;
         }
+
         // 固定延时，需要基于上一次执行完成时间
         if (triggerType == TriggerType.DELAYED.getCode()) {
-            Long time = lastTriggerTime != null ? lastTriggerTime : dateTime;
             if (lastExecuteEndTime == null) {
-                return time + delayedS  * 1000;
+                return dateTime + delayedS  * 1000;
             }
             // 上一次未执行完成
             return lastExecuteEndTime + delayedS * 1000;

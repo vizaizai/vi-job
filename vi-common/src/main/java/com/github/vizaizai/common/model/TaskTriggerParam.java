@@ -26,6 +26,10 @@ public class TaskTriggerParam implements Serializable {
      */
     private String jobParams;
     /**
+     * 触发时间
+     */
+    private Long triggerTime;
+    /**
      * 任务超时时间（单位：秒）
      */
     private Integer executeTimeout;
@@ -33,8 +37,6 @@ public class TaskTriggerParam implements Serializable {
      * 任务超时处理策略 1-标记 2-中断
      */
     private Integer timeoutHandleType = 1;
-
-
 
 
     public Long getJobId() {
@@ -69,6 +71,14 @@ public class TaskTriggerParam implements Serializable {
         this.jobParams = jobParams;
     }
 
+    public Long getTriggerTime() {
+        return triggerTime;
+    }
+
+    public void setTriggerTime(Long triggerTime) {
+        this.triggerTime = triggerTime;
+    }
+
     public Integer getExecuteTimeout() {
         return executeTimeout;
     }
@@ -85,15 +95,5 @@ public class TaskTriggerParam implements Serializable {
         this.timeoutHandleType = timeoutHandleType;
     }
 
-    @Override
-    public String toString() {
-        return "TaskContext{" +
-                "jobId='" + jobId + '\'' +
-                ", jobName='" + jobName + '\'' +
-                ", jobDispatchId='" + jobDispatchId + '\'' +
-                ", jobParams='" + jobParams + '\'' +
-                ", executeTimeout=" + executeTimeout +
-                ", timeoutHandleType=" + timeoutHandleType +
-                '}';
-    }
+
 }

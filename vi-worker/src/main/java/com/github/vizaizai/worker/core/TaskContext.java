@@ -3,6 +3,7 @@ package com.github.vizaizai.worker.core;
 import com.github.vizaizai.common.model.StatusReportParam;
 import com.github.vizaizai.common.model.TaskTriggerParam;
 import com.github.vizaizai.remote.common.sender.Sender;
+import com.github.vizaizai.worker.log.Logger;
 
 /**
  * 任务上下文
@@ -22,6 +23,10 @@ public class TaskContext {
      * 状态上报参数
      */
     private StatusReportParam reportParam;
+    /**
+     * 日志记录器
+     */
+    private Logger logger;
 
     public TaskContext(TaskTriggerParam triggerParam, Sender sender) {
         this.triggerParam = triggerParam;
@@ -42,5 +47,13 @@ public class TaskContext {
 
     public void setReportParam(StatusReportParam reportParam) {
         this.reportParam = reportParam;
+    }
+
+    public Logger getLogger() {
+        return logger;
+    }
+
+    public void setLogger(Logger logger) {
+        this.logger = logger;
     }
 }

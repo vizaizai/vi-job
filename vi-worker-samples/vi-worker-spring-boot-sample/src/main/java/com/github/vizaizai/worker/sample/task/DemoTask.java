@@ -1,6 +1,7 @@
 package com.github.vizaizai.worker.sample.task;
 
 import com.github.vizaizai.logging.LoggerFactory;
+import com.github.vizaizai.worker.core.TaskContext;
 import com.github.vizaizai.worker.core.annotation.Job;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -26,11 +27,22 @@ public class DemoTask {
 
     }
     @Job("demoTask2")
-    public void bar() {
-
+    public void bar(TaskContext context) {
         logger.info("开始执行定时任务bar...");
         try {
+            context.getLogger().info("demoTask2开始执行咯");
             Thread.sleep(1000 * 2);
+            for (int i = 0; i < 1000; i++) {
+                context.getLogger().info("demoTask2执行中打印: {}", i);
+            }
+            context.getLogger().info("demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯");
+            context.getLogger().info("demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯");
+            context.getLogger().info("demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯");
+            context.getLogger().info("demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯");
+            context.getLogger().info("demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯");
+            context.getLogger().info("demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯demoTask2执行完毕咯");
+            context.getLogger().info("demoTask2执行完毕咯");
+            context.getLogger().info("demoTask2执行完毕咯");
         }catch (Exception e) {
 
         }

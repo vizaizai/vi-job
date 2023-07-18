@@ -24,6 +24,10 @@ public class BizCode {
      * 空闲检测
      */
     public static final String IDlE = "idle";
+    /**
+     * 执行日志查询
+     */
+    public static final String LOG = "exe_log";
 
     /*==================================调度中心==================================*/
     /**

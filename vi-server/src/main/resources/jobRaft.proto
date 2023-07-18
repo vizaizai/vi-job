@@ -5,7 +5,7 @@ package jraft;
 option java_package = "com.github.vizaizai.server.raft.proto";
 option java_outer_classname = "JobProto";
 
-message PutRequest {
+message AssignRequest {
   required int64 jobId = 1;
 }
 
@@ -36,7 +36,7 @@ message PushIntoTimerRequest {
   optional int32 retryCount = 14;
   optional int32 timeoutS = 15;
   optional int32 timeoutHandleType = 16;
-  optional int64 lastTriggerTime = 17;
+  optional int64 nextTriggerTime = 17;
   optional int64 lastExecuteEndTime = 18;
 }
 

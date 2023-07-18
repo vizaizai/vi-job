@@ -2,6 +2,8 @@ package com.github.vizaizai.common.model;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Objects;
+
 /**
  * @author liaochongwei
  * @date 2023/5/16 17:15
@@ -119,5 +121,9 @@ public class Result<T> {
         ret.code  = code;
         ret.msg = msg;
         return ret;
+    }
+
+    public boolean isSuccess() {
+        return Objects.equals(StatusCode.SUCCESS.getCode(), this.code);
     }
 }

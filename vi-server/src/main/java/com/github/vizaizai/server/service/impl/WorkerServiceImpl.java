@@ -16,6 +16,7 @@ import com.github.vizaizai.server.dao.dataobject.RegistryDO;
 import com.github.vizaizai.server.dao.dataobject.WorkerDO;
 import com.github.vizaizai.server.service.WorkerService;
 import com.github.vizaizai.server.utils.BeanUtils;
+import com.github.vizaizai.server.utils.KVUtils;
 import com.github.vizaizai.server.utils.RpcUtils;
 import com.github.vizaizai.server.utils.UserUtils;
 import com.github.vizaizai.server.web.co.RegisterCO;
@@ -30,11 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
 /**
  * @author liaochongwei
@@ -46,7 +43,6 @@ public class WorkerServiceImpl implements WorkerService {
 
     @Resource
     private WorkerMapper workerMapper;
-
     @Resource
     private RegistryMapper registryMapper;
 
@@ -133,7 +129,8 @@ public class WorkerServiceImpl implements WorkerService {
         RegistryDO registryDO = BeanUtils.toBean(registerCO, RegistryDO::new);
         registryDO.setWorkerId(worker.getId());
         registryMapper.insert(registryDO);
-
+        // 新增缓存
+        KVUtils.stAdd(Commons.WORKER_NODE_KEY + worker.getId(), registerCO.getAddress());
         return Result.ok("注册成功");
     }
 
@@ -143,7 +140,6 @@ public class WorkerServiceImpl implements WorkerService {
         if (registerCO.getAddress().split(":").length != 2) {
             return Result.handleFailure("地址格式错误（ip:port）");
         }
-
         // 查询执行器
         WorkerDO worker = workerMapper.selectOne(Wrappers.<WorkerDO>lambdaQuery().eq(WorkerDO::getAppName, registerCO.getAppName()));
         if (worker == null) {
@@ -156,11 +152,7 @@ public class WorkerServiceImpl implements WorkerService {
 
     @Override
     public List<String> getWorkerAddressList(Integer workerId) {
-        List<RegistryDO> registries = registryMapper.selectList(Wrappers.<RegistryDO>lambdaQuery().eq(RegistryDO::getWorkerId, workerId));
-        if (Utils.isEmpty(registries)) {
-            return Collections.emptyList();
-        }
-        return registries.stream().map(RegistryDO::getAddress).collect(Collectors.toList());
+        return new ArrayList<>(KVUtils.stMembers(Commons.WORKER_NODE_KEY + workerId));
     }
 
     @Override
@@ -179,6 +171,9 @@ public class WorkerServiceImpl implements WorkerService {
         }
         registryMapper.delete(Wrappers.<RegistryDO>lambdaQuery().eq(RegistryDO::getWorkerId, workerId)
                 .eq(RegistryDO::getAddress, address));
+        // 移除缓存
+        KVUtils.stRemove(Commons.WORKER_NODE_KEY + workerId, address);
+
     }
 
     @Override

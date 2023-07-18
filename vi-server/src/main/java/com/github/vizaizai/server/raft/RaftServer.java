@@ -29,10 +29,11 @@ import com.alipay.sofa.jraft.rpc.RpcServer;
 import com.alipay.sofa.jraft.rpc.impl.core.DefaultRaftClientService;
 import com.alipay.sofa.jraft.util.internal.ThrowUtil;
 import com.github.vizaizai.server.config.ServerProperties;
-import com.github.vizaizai.server.raft.processor.JobPutRequestProcessor;
-import com.github.vizaizai.server.raft.processor.JobRmRequestProcessor;
-import com.github.vizaizai.server.raft.processor.PushIntoTimerRequestProcessor;
-import com.github.vizaizai.server.raft.processor.RemoveFromTimerRequestProcessor;
+import com.github.vizaizai.server.raft.processor.assign.JobAssignRequestProcessor;
+import com.github.vizaizai.server.raft.processor.assign.JobRmRequestProcessor;
+import com.github.vizaizai.server.raft.processor.kv.KVSetRequestProcessor;
+import com.github.vizaizai.server.raft.processor.timer.PushIntoTimerRequestProcessor;
+import com.github.vizaizai.server.raft.processor.timer.RemoveFromTimerRequestProcessor;
 import com.github.vizaizai.server.utils.ContextUtil;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -47,6 +48,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -107,8 +109,9 @@ public class RaftServer implements Lifecycle<RaftNodeOptions>, DisposableBean {
         }
 
         final RpcServer rpcServer = RaftRpcServerFactory.createRaftRpcServer(serverId.getEndpoint());
-        rpcServer.registerProcessor(ContextUtil.getBean(JobPutRequestProcessor.class));
+        rpcServer.registerProcessor(ContextUtil.getBean(JobAssignRequestProcessor.class));
         rpcServer.registerProcessor(ContextUtil.getBean(JobRmRequestProcessor.class));
+        rpcServer.registerProcessor(ContextUtil.getBean(KVSetRequestProcessor.class));
         rpcServer.registerProcessor(new PushIntoTimerRequestProcessor());
         rpcServer.registerProcessor(new RemoveFromTimerRequestProcessor());
 
@@ -163,7 +166,10 @@ public class RaftServer implements Lifecycle<RaftNodeOptions>, DisposableBean {
                 return;
             }
             LOG.info("[RaftServer] starting");
-            countDownLatch.await();
+            boolean await = countDownLatch.await(10, TimeUnit.SECONDS);
+            if (!await) {
+                throw new RuntimeException("Wait timeout");
+            }
         }catch (InterruptedException e) {
             throw new RuntimeException(e.getMessage());
         }
@@ -181,6 +187,21 @@ public class RaftServer implements Lifecycle<RaftNodeOptions>, DisposableBean {
 
     public boolean isLeader() {
         return this.fsm.isLeader();
+    }
+
+    /**
+     * 获取Leader
+     * @return PeerId
+     */
+    public PeerId getLeader() {
+        if (node == null) {
+            throw new RuntimeException("JRaft服务未启动");
+        }
+        PeerId leaderId = node.getLeaderId();
+        if (leaderId == null) {
+            throw new RuntimeException("集群未就绪");
+        }
+        return leaderId;
     }
 
     @Override

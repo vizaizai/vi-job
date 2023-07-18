@@ -6,9 +6,7 @@ import com.github.vizaizai.server.dao.dataobject.JobDO;
 import com.github.vizaizai.server.entity.Job;
 import com.github.vizaizai.server.raft.RaftServer;
 import com.github.vizaizai.server.service.GlobalJobGroupManager;
-import com.github.vizaizai.server.service.JobAllocationService;
 import com.github.vizaizai.server.service.JobService;
-import com.github.vizaizai.server.timer.JobTriggerTimer;
 import com.github.vizaizai.server.utils.BeanUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * job计划任务
@@ -32,44 +30,39 @@ public class JobScheduleTask {
     @Resource
     private RaftServer raftServer;
     @Resource
-    private JobAllocationService jobAllocationService;
-    @Resource
     private GlobalJobGroupManager globalJobGroupManager;
+    /**
+     * 是否首次执行
+     */
+    private static boolean firstExecute = true;
     /**
      * 3分钟执行一次,将5分钟内触发的任务添加到触发Timer中
      */
     @Scheduled(fixedDelay = 1000 * 60 * 3)
-    public void load() {
+    public void schedule() {
+        if (raftServer.isCluster()) {
+            // 集群环境首次执行延时5秒，避免快照数据未加载导致获取不到数据
+            if (firstExecute) {
+                try {
+                    TimeUnit.SECONDS.sleep(5);
+                }catch (Exception ignored) {
+                }
+                firstExecute = false;
+            }
+            raftServer.waitingToStart();
+            if (!raftServer.isLeader()) {
+                return;
+            }
+        }
         List<JobDO> jobs = jobService.listWaitingJobs(System.currentTimeMillis() + Commons.TIMER_MAX);
         if (Utils.isEmpty(jobs)) {
             return;
         }
-        JobTriggerTimer jobTriggerTimer = JobTriggerTimer.getInstance();
         for (JobDO jobDO : jobs) {
-            boolean flag = false;
-            if (!raftServer.isCluster()) {
-                flag = true;
-            }else {
-                raftServer.waitingToStart();
-                String nodeAddress = jobAllocationService.get(jobDO.getId());
-                // 任务分组缺失
-                if (nodeAddress == null) {
-                    try {
-                        log.info("任务【{}】分组缺失，执行选择",jobDO.getId());
-                        globalJobGroupManager.elect(jobDO.getId());
-                    }catch (Exception ignored) {
-                    }
-                }
-                if (Objects.equals(raftServer.getCurrentNodeAddress(), nodeAddress)) {
-                    flag = true;
-                }
-            }
-            if (!flag) {
-                continue;
-            }
-            Job job = BeanUtils.toBean(jobDO, Job::new);
-            if (jobTriggerTimer.getTimeout(job.getId()) == null) {
-                jobTriggerTimer.push(job);
+            try {
+                globalJobGroupManager.pushIntoTimer(BeanUtils.toBean(jobDO, Job::new));
+            }catch (Exception e) {
+                log.error("任务【{}】推入定时器失败：",jobDO.getId(), e);
             }
         }
     }

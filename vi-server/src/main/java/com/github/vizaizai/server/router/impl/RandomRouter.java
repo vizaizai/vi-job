@@ -14,6 +14,9 @@ import java.util.List;
 public class RandomRouter implements NodeRouter {
     @Override
     public String route(Job job, List<String> addressList) {
+        if (addressList.size() == 0) {
+            return null;
+        }
         return addressList.get(RandomUtil.randomInt(0, addressList.size()));
     }
 }

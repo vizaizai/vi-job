@@ -68,7 +68,7 @@ public class JobTriggerTimer {
 
     /**
      * 将job推入到Timer
-     * @param job
+     * @param job 任务实体
      */
     public synchronized void push(Job job) {
         Long triggerTime = job.getNextTriggerTime();
@@ -87,21 +87,27 @@ public class JobTriggerTimer {
         // 等待时间大于最小时间->推入慢时间轮循环
         if (waitMs > Commons.TIMER_MIN) {
             Timeout timeout = slowHashedWheelTimer.newTimeout(()-> {
-                this.push(job);
                 slowTimeouts.remove(job.getId());
+                // 推入快时间轮中
+                this.push(job);
             }, waitMs - Commons.TIMER_MIN, TimeUnit.MILLISECONDS);
             // 将Timeout缓存下来，用于中止任务
             slowTimeouts.put(job.getId(),timeout);
         }else if (waitMs > 50L) {
             Timeout timeout = fastHashedWheelTimer.newTimeout(()->{
+                fastTimeouts.remove(job.getId());
                 // 调度任务
                 this.invoke(job);
-                fastTimeouts.remove(job.getId());
             }, waitMs, TimeUnit.MILLISECONDS);
             fastTimeouts.put(job.getId(),timeout);
-        }else {
+        }else if (waitMs >= 0){
             // 直接触发
             this.invoke(job);
+        }else {
+            // 任务过期，计算下次调度时间
+            job.resetNextTriggerTime();
+            this.push(job);
+
         }
     }
 
@@ -110,7 +116,12 @@ public class JobTriggerTimer {
      * @param jobId 任务id
      */
     public synchronized void remove(Long jobId) {
-        Timeout timeout = this.getTimeout(jobId);
+        Timeout timeout;
+        timeout = slowTimeouts.remove(jobId);
+        if (timeout != null) {
+            timeout.cancel();
+        }
+        timeout = fastTimeouts.remove(jobId);
         if (timeout != null) {
             timeout.cancel();
         }
@@ -133,18 +144,21 @@ public class JobTriggerTimer {
     }
 
     private void invoke(Job job) {
-        job.setLastTriggerTime(System.currentTimeMillis());
-        // 若触发类型非固定延时,则重新推入timer中
-        if (job.getTriggerType() != TriggerType.DELAYED.getCode()) {
-            push(job);
-        }
         invokeExecutor.execute(() -> {
+            // 重新基准时间
+            job.setBaseTime(job.getNextTriggerTime());
+            // 重置触发时间
+            job.resetNextTriggerTime();
+            // 若触发类型非固定延时,则重新推入timer中
+            if (job.getTriggerType() != TriggerType.DELAYED.getCode()) {
+                this.push(job);
+            }
             try {
                 JobService jobService = ContextUtil.getBean(JobService.class);
                 // 调度
                 jobService.invoke(job);
                 // 刷新触发时间
-                jobService.refreshTriggerTime(job.getId(), job.getLastTriggerTime(), job.getNextTriggerTime());
+                jobService.refreshTriggerTime(job.getId(), job.getBaseTime(), job.getNextTriggerTime());
             }catch (Exception e) {
                 log.error("Job execute error.", e);
             }
@@ -160,11 +174,11 @@ public class JobTriggerTimer {
     }
 
     public Timeout getTimeout(Long jobId) {
-        if (slowTimeouts.containsKey(jobId)) {
-            return slowTimeouts.get(jobId);
+        Timeout timeout = slowTimeouts.get(jobId);
+        if (timeout != null) {
+            return timeout;
         }
         return fastTimeouts.get(jobId);
-
     }
 
     public Map<Long, Timeout> getSlowTimeouts() {

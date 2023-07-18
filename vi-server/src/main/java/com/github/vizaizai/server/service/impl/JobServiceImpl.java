@@ -14,7 +14,6 @@ import com.github.vizaizai.common.model.TaskResult;
 import com.github.vizaizai.common.model.TaskTriggerParam;
 import com.github.vizaizai.remote.utils.Utils;
 import com.github.vizaizai.retry.util.Assert;
-import com.github.vizaizai.server.constant.Commons;
 import com.github.vizaizai.server.constant.DispatchStatus;
 import com.github.vizaizai.server.constant.JobStatus;
 import com.github.vizaizai.server.constant.TriggerType;
@@ -65,10 +64,10 @@ public class JobServiceImpl implements JobService {
         JobDO jobDO = BeanUtils.toBean(jobUpdateCO, JobDO::new);
         jobDO.setCreater(UserUtils.getUserName());
         jobDO.setStatus(JobStatus.STOP.getCode());
-        jobDO.setNextTriggerTime(BeanUtils.toBean(jobDO, Job::new).getNextTriggerTime());
+        jobDO.setNextTriggerTime(BeanUtils.toBean(jobDO, Job::new).initNextTriggerTime());
         jobMapper.insert(jobDO);
         // 全局任务分组
-        globalJobGroupHandler.elect(jobDO.getId());
+        globalJobGroupHandler.assign(jobDO.getId());
         return Result.ok("新增成功");
     }
 
@@ -87,7 +86,7 @@ public class JobServiceImpl implements JobService {
         jobDO.setId(null);
         jobDO.setCreater(UserUtils.getUserName());
         jobDO.setStatus(JobStatus.STOP.getCode());
-        jobDO.setNextTriggerTime(BeanUtils.toBean(jobDO, Job::new).getNextTriggerTime());
+        jobDO.setNextTriggerTime(BeanUtils.toBean(jobDO, Job::new).initNextTriggerTime());
 
         int updateCount = jobMapper.update(jobDO, lambdaUpdate);
         if (updateCount <= 0) {
@@ -142,17 +141,13 @@ public class JobServiceImpl implements JobService {
         }
         // 取消任务执行
         if (Objects.equals(jobStatusUpdateCO.getStatus(),JobStatus.STOP.getCode())) {
-            JobTriggerTimer.getInstance().remove(jobStatusUpdateCO.getId());
+            globalJobGroupHandler.removeFormTimer(jobStatusUpdateCO.getId());
             return Result.ok();
         }
 
         // 将任务推入调度timer
         Job job = BeanUtils.toBean(jobDO, Job::new);
-        Long triggerTime = job.getNextTriggerTime();
-        if (triggerTime != null && (triggerTime - System.currentTimeMillis()) <= Commons.TIMER_MAX) {
-            // JobTriggerTimer.getInstance().push(job);
-            globalJobGroupHandler.pushIntoTimer(job);
-        }
+        globalJobGroupHandler.pushIntoTimer(job);
         return Result.ok();
     }
 
@@ -209,7 +204,7 @@ public class JobServiceImpl implements JobService {
         dispatchLogDO.setJobParam(job.getParam());
         dispatchLogDO.setTriggerTime(now);
 
-        log.debug(">>>>>>>>>>>Trigger start, jobId:{}", job.getId());
+        log.info(">>>>>>>>>>>Trigger start, jobId:{}", job.getId());
         // 路由worker地址
         String workerAddress = routeType.getRouter().route(job, workerAddressList);
         if (workerAddress == null) {
@@ -231,6 +226,7 @@ public class JobServiceImpl implements JobService {
             taskTriggerParam.setJobName(job.getProcessor());
             taskTriggerParam.setJobDispatchId(dispatchLogInsert.getId());
             taskTriggerParam.setJobParams(job.getParam());
+            taskTriggerParam.setTriggerTime(LocalDateTimeUtil.toEpochMilli(dispatchLogDO.getTriggerTime()));
             taskTriggerParam.setExecuteTimeout(job.getTimeoutS());
             taskTriggerParam.setTimeoutHandleType(job.getTimeoutHandleType());
 

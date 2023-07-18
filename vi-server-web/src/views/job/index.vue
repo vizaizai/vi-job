@@ -40,10 +40,10 @@
         </el-table-column>
         <el-table-column
           label="触发类型"
-          width="120"
+          width="180"
         >
           <template v-slot="{ row }">
-            {{ getTriggerType(row.triggerType) }}
+            {{ getTriggerType(row) }}
           </template>
         </el-table-column>
         <el-table-column
@@ -183,16 +183,16 @@ export default {
         })
       })
     },
-    getTriggerType(type) {
-      switch (type) {
+    getTriggerType(row) {
+      switch (row.triggerType) {
         case 0:
           return '非主动触发'
         case 1:
-          return 'CRON'
+          return 'CRON（' + row.cron + '）'
         case 2:
-          return '固定频率'
+          return '固定频率（' + row.speedS + 's）'
         case 3:
-          return '固定延时'
+          return '固定延时（' + row.delayedS + 's）'
         default:
           return ''
       }

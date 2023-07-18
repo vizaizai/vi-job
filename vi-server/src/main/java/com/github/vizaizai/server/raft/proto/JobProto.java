@@ -14,8 +14,8 @@ public final class JobProto {
     registerAllExtensions(
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
-  public interface PutRequestOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:jraft.PutRequest)
+  public interface AssignRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:jraft.AssignRequest)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -30,38 +30,38 @@ public final class JobProto {
     long getJobId();
   }
   /**
-   * Protobuf type {@code jraft.PutRequest}
+   * Protobuf type {@code jraft.AssignRequest}
    */
-  public static final class PutRequest extends
+  public static final class AssignRequest extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:jraft.PutRequest)
-      PutRequestOrBuilder {
+      // @@protoc_insertion_point(message_implements:jraft.AssignRequest)
+      AssignRequestOrBuilder {
   private static final long serialVersionUID = 0L;
-    // Use PutRequest.newBuilder() to construct.
-    private PutRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+    // Use AssignRequest.newBuilder() to construct.
+    private AssignRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private PutRequest() {
+    private AssignRequest() {
     }
 
     @Override
     @SuppressWarnings({"unused"})
     protected Object newInstance(
         UnusedPrivateParameter unused) {
-      return new PutRequest();
+      return new AssignRequest();
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return JobProto.internal_static_jraft_PutRequest_descriptor;
+      return JobProto.internal_static_jraft_AssignRequest_descriptor;
     }
 
     @Override
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return JobProto.internal_static_jraft_PutRequest_fieldAccessorTable
+      return JobProto.internal_static_jraft_AssignRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              PutRequest.class, Builder.class);
+              AssignRequest.class, Builder.class);
     }
 
     private int bitField0_;
@@ -128,10 +128,10 @@ public final class JobProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof PutRequest)) {
+      if (!(obj instanceof AssignRequest)) {
         return super.equals(obj);
       }
-      PutRequest other = (PutRequest) obj;
+      AssignRequest other = (AssignRequest) obj;
 
       if (hasJobId() != other.hasJobId()) return false;
       if (hasJobId()) {
@@ -159,44 +159,44 @@ public final class JobProto {
       return hash;
     }
 
-    public static PutRequest parseFrom(
+    public static AssignRequest parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static PutRequest parseFrom(
+    public static AssignRequest parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static PutRequest parseFrom(
+    public static AssignRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static PutRequest parseFrom(
+    public static AssignRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static PutRequest parseFrom(byte[] data)
+    public static AssignRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static PutRequest parseFrom(
+    public static AssignRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static PutRequest parseFrom(java.io.InputStream input)
+    public static AssignRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static PutRequest parseFrom(
+    public static AssignRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -204,26 +204,26 @@ public final class JobProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static PutRequest parseDelimitedFrom(java.io.InputStream input)
+    public static AssignRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
 
-    public static PutRequest parseDelimitedFrom(
+    public static AssignRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static PutRequest parseFrom(
+    public static AssignRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static PutRequest parseFrom(
+    public static AssignRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -236,7 +236,7 @@ public final class JobProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(PutRequest prototype) {
+    public static Builder newBuilder(AssignRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @Override
@@ -252,26 +252,26 @@ public final class JobProto {
       return builder;
     }
     /**
-     * Protobuf type {@code jraft.PutRequest}
+     * Protobuf type {@code jraft.AssignRequest}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:jraft.PutRequest)
-        PutRequestOrBuilder {
+        // @@protoc_insertion_point(builder_implements:jraft.AssignRequest)
+        AssignRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return JobProto.internal_static_jraft_PutRequest_descriptor;
+        return JobProto.internal_static_jraft_AssignRequest_descriptor;
       }
 
       @Override
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return JobProto.internal_static_jraft_PutRequest_fieldAccessorTable
+        return JobProto.internal_static_jraft_AssignRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                PutRequest.class, Builder.class);
+                AssignRequest.class, Builder.class);
       }
 
-      // Construct using com.github.vizaizai.server.raft.proto.JobProto.PutRequest.newBuilder()
+      // Construct using com.github.vizaizai.server.raft.proto.JobProto.AssignRequest.newBuilder()
       private Builder() {
 
       }
@@ -292,17 +292,17 @@ public final class JobProto {
       @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return JobProto.internal_static_jraft_PutRequest_descriptor;
+        return JobProto.internal_static_jraft_AssignRequest_descriptor;
       }
 
       @Override
-      public PutRequest getDefaultInstanceForType() {
-        return PutRequest.getDefaultInstance();
+      public AssignRequest getDefaultInstanceForType() {
+        return AssignRequest.getDefaultInstance();
       }
 
       @Override
-      public PutRequest build() {
-        PutRequest result = buildPartial();
+      public AssignRequest build() {
+        AssignRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -310,14 +310,14 @@ public final class JobProto {
       }
 
       @Override
-      public PutRequest buildPartial() {
-        PutRequest result = new PutRequest(this);
+      public AssignRequest buildPartial() {
+        AssignRequest result = new AssignRequest(this);
         if (bitField0_ != 0) { buildPartial0(result); }
         onBuilt();
         return result;
       }
 
-      private void buildPartial0(PutRequest result) {
+      private void buildPartial0(AssignRequest result) {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) != 0)) {
@@ -329,16 +329,16 @@ public final class JobProto {
 
       @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof PutRequest) {
-          return mergeFrom((PutRequest)other);
+        if (other instanceof AssignRequest) {
+          return mergeFrom((AssignRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(PutRequest other) {
-        if (other == PutRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(AssignRequest other) {
+        if (other == AssignRequest.getDefaultInstance()) return this;
         if (other.hasJobId()) {
           setJobId(other.getJobId());
         }
@@ -445,23 +445,23 @@ public final class JobProto {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:jraft.PutRequest)
+      // @@protoc_insertion_point(builder_scope:jraft.AssignRequest)
     }
 
-    // @@protoc_insertion_point(class_scope:jraft.PutRequest)
-    private static final PutRequest DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:jraft.AssignRequest)
+    private static final AssignRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new PutRequest();
+      DEFAULT_INSTANCE = new AssignRequest();
     }
 
-    public static PutRequest getDefaultInstance() {
+    public static AssignRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    @Deprecated public static final com.google.protobuf.Parser<PutRequest>
-        PARSER = new com.google.protobuf.AbstractParser<PutRequest>() {
+    @Deprecated public static final com.google.protobuf.Parser<AssignRequest>
+        PARSER = new com.google.protobuf.AbstractParser<AssignRequest>() {
       @Override
-      public PutRequest parsePartialFrom(
+      public AssignRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
@@ -480,17 +480,17 @@ public final class JobProto {
       }
     };
 
-    public static com.google.protobuf.Parser<PutRequest> parser() {
+    public static com.google.protobuf.Parser<AssignRequest> parser() {
       return PARSER;
     }
 
     @Override
-    public com.google.protobuf.Parser<PutRequest> getParserForType() {
+    public com.google.protobuf.Parser<AssignRequest> getParserForType() {
       return PARSER;
     }
 
     @Override
-    public PutRequest getDefaultInstanceForType() {
+    public AssignRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -2012,15 +2012,15 @@ public final class JobProto {
     int getTimeoutHandleType();
 
     /**
-     * <code>optional int64 lastTriggerTime = 17;</code>
-     * @return Whether the lastTriggerTime field is set.
+     * <code>optional int64 nextTriggerTime = 17;</code>
+     * @return Whether the nextTriggerTime field is set.
      */
-    boolean hasLastTriggerTime();
+    boolean hasNextTriggerTime();
     /**
-     * <code>optional int64 lastTriggerTime = 17;</code>
-     * @return The lastTriggerTime.
+     * <code>optional int64 nextTriggerTime = 17;</code>
+     * @return The nextTriggerTime.
      */
-    long getLastTriggerTime();
+    long getNextTriggerTime();
 
     /**
      * <code>optional int64 lastExecuteEndTime = 18;</code>
@@ -2497,23 +2497,23 @@ public final class JobProto {
       return timeoutHandleType_;
     }
 
-    public static final int LASTTRIGGERTIME_FIELD_NUMBER = 17;
-    private long lastTriggerTime_ = 0L;
+    public static final int NEXTTRIGGERTIME_FIELD_NUMBER = 17;
+    private long nextTriggerTime_ = 0L;
     /**
-     * <code>optional int64 lastTriggerTime = 17;</code>
-     * @return Whether the lastTriggerTime field is set.
+     * <code>optional int64 nextTriggerTime = 17;</code>
+     * @return Whether the nextTriggerTime field is set.
      */
     @Override
-    public boolean hasLastTriggerTime() {
+    public boolean hasNextTriggerTime() {
       return ((bitField0_ & 0x00010000) != 0);
     }
     /**
-     * <code>optional int64 lastTriggerTime = 17;</code>
-     * @return The lastTriggerTime.
+     * <code>optional int64 nextTriggerTime = 17;</code>
+     * @return The nextTriggerTime.
      */
     @Override
-    public long getLastTriggerTime() {
-      return lastTriggerTime_;
+    public long getNextTriggerTime() {
+      return nextTriggerTime_;
     }
 
     public static final int LASTEXECUTEENDTIME_FIELD_NUMBER = 18;
@@ -2602,7 +2602,7 @@ public final class JobProto {
         output.writeInt32(16, timeoutHandleType_);
       }
       if (((bitField0_ & 0x00010000) != 0)) {
-        output.writeInt64(17, lastTriggerTime_);
+        output.writeInt64(17, nextTriggerTime_);
       }
       if (((bitField0_ & 0x00020000) != 0)) {
         output.writeInt64(18, lastExecuteEndTime_);
@@ -2678,7 +2678,7 @@ public final class JobProto {
       }
       if (((bitField0_ & 0x00010000) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(17, lastTriggerTime_);
+          .computeInt64Size(17, nextTriggerTime_);
       }
       if (((bitField0_ & 0x00020000) != 0)) {
         size += com.google.protobuf.CodedOutputStream
@@ -2779,10 +2779,10 @@ public final class JobProto {
         if (getTimeoutHandleType()
             != other.getTimeoutHandleType()) return false;
       }
-      if (hasLastTriggerTime() != other.hasLastTriggerTime()) return false;
-      if (hasLastTriggerTime()) {
-        if (getLastTriggerTime()
-            != other.getLastTriggerTime()) return false;
+      if (hasNextTriggerTime() != other.hasNextTriggerTime()) return false;
+      if (hasNextTriggerTime()) {
+        if (getNextTriggerTime()
+            != other.getNextTriggerTime()) return false;
       }
       if (hasLastExecuteEndTime() != other.hasLastExecuteEndTime()) return false;
       if (hasLastExecuteEndTime()) {
@@ -2867,10 +2867,10 @@ public final class JobProto {
         hash = (37 * hash) + TIMEOUTHANDLETYPE_FIELD_NUMBER;
         hash = (53 * hash) + getTimeoutHandleType();
       }
-      if (hasLastTriggerTime()) {
-        hash = (37 * hash) + LASTTRIGGERTIME_FIELD_NUMBER;
+      if (hasNextTriggerTime()) {
+        hash = (37 * hash) + NEXTTRIGGERTIME_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-            getLastTriggerTime());
+            getNextTriggerTime());
       }
       if (hasLastExecuteEndTime()) {
         hash = (37 * hash) + LASTEXECUTEENDTIME_FIELD_NUMBER;
@@ -3024,7 +3024,7 @@ public final class JobProto {
         retryCount_ = 0;
         timeoutS_ = 0;
         timeoutHandleType_ = 0;
-        lastTriggerTime_ = 0L;
+        nextTriggerTime_ = 0L;
         lastExecuteEndTime_ = 0L;
         return this;
       }
@@ -3125,7 +3125,7 @@ public final class JobProto {
           to_bitField0_ |= 0x00008000;
         }
         if (((from_bitField0_ & 0x00010000) != 0)) {
-          result.lastTriggerTime_ = lastTriggerTime_;
+          result.nextTriggerTime_ = nextTriggerTime_;
           to_bitField0_ |= 0x00010000;
         }
         if (((from_bitField0_ & 0x00020000) != 0)) {
@@ -3203,8 +3203,8 @@ public final class JobProto {
         if (other.hasTimeoutHandleType()) {
           setTimeoutHandleType(other.getTimeoutHandleType());
         }
-        if (other.hasLastTriggerTime()) {
-          setLastTriggerTime(other.getLastTriggerTime());
+        if (other.hasNextTriggerTime()) {
+          setNextTriggerTime(other.getNextTriggerTime());
         }
         if (other.hasLastExecuteEndTime()) {
           setLastExecuteEndTime(other.getLastExecuteEndTime());
@@ -3319,7 +3319,7 @@ public final class JobProto {
                 break;
               } // case 128
               case 136: {
-                lastTriggerTime_ = input.readInt64();
+                nextTriggerTime_ = input.readInt64();
                 bitField0_ |= 0x00010000;
                 break;
               } // case 136
@@ -4145,42 +4145,42 @@ public final class JobProto {
         return this;
       }
 
-      private long lastTriggerTime_ ;
+      private long nextTriggerTime_ ;
       /**
-       * <code>optional int64 lastTriggerTime = 17;</code>
-       * @return Whether the lastTriggerTime field is set.
+       * <code>optional int64 nextTriggerTime = 17;</code>
+       * @return Whether the nextTriggerTime field is set.
        */
       @Override
-      public boolean hasLastTriggerTime() {
+      public boolean hasNextTriggerTime() {
         return ((bitField0_ & 0x00010000) != 0);
       }
       /**
-       * <code>optional int64 lastTriggerTime = 17;</code>
-       * @return The lastTriggerTime.
+       * <code>optional int64 nextTriggerTime = 17;</code>
+       * @return The nextTriggerTime.
        */
       @Override
-      public long getLastTriggerTime() {
-        return lastTriggerTime_;
+      public long getNextTriggerTime() {
+        return nextTriggerTime_;
       }
       /**
-       * <code>optional int64 lastTriggerTime = 17;</code>
-       * @param value The lastTriggerTime to set.
+       * <code>optional int64 nextTriggerTime = 17;</code>
+       * @param value The nextTriggerTime to set.
        * @return This builder for chaining.
        */
-      public Builder setLastTriggerTime(long value) {
+      public Builder setNextTriggerTime(long value) {
 
-        lastTriggerTime_ = value;
+        nextTriggerTime_ = value;
         bitField0_ |= 0x00010000;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 lastTriggerTime = 17;</code>
+       * <code>optional int64 nextTriggerTime = 17;</code>
        * @return This builder for chaining.
        */
-      public Builder clearLastTriggerTime() {
+      public Builder clearNextTriggerTime() {
         bitField0_ = (bitField0_ & ~0x00010000);
-        lastTriggerTime_ = 0L;
+        nextTriggerTime_ = 0L;
         onChanged();
         return this;
       }
@@ -4771,10 +4771,10 @@ public final class JobProto {
   }
 
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_jraft_PutRequest_descriptor;
+    internal_static_jraft_AssignRequest_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_jraft_PutRequest_fieldAccessorTable;
+      internal_static_jraft_AssignRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_jraft_RmRequest_descriptor;
   private static final 
@@ -4804,32 +4804,32 @@ public final class JobProto {
       descriptor;
   static {
     String[] descriptorData = {
-      "\n\rjobRaft.proto\022\005jraft\"\033\n\nPutRequest\022\r\n\005" +
-      "jobId\030\001 \002(\003\"\032\n\tRmRequest\022\r\n\005jobId\030\001 \001(\003\"" +
-      ";\n\010Response\022\017\n\007success\030\001 \002(\010\022\020\n\010errorMsg" +
-      "\030\002 \001(\t\022\014\n\004data\030\003 \001(\t\"\360\002\n\024PushIntoTimerRe" +
-      "quest\022\r\n\005jobId\030\001 \002(\003\022\014\n\004name\030\002 \001(\t\022\020\n\010wo" +
-      "rkerId\030\003 \001(\005\022\021\n\tstartTime\030\004 \001(\003\022\017\n\007endTi" +
-      "me\030\005 \001(\003\022\025\n\rprocessorType\030\006 \001(\005\022\021\n\tproce" +
-      "ssor\030\007 \001(\t\022\r\n\005param\030\010 \001(\t\022\023\n\013triggerType" +
-      "\030\t \001(\005\022\014\n\004cron\030\n \001(\t\022\016\n\006speedS\030\013 \001(\005\022\020\n\010" +
-      "delayedS\030\014 \001(\005\022\021\n\trouteType\030\r \001(\005\022\022\n\nret" +
-      "ryCount\030\016 \001(\005\022\020\n\010timeoutS\030\017 \001(\005\022\031\n\021timeo" +
-      "utHandleType\030\020 \001(\005\022\027\n\017lastTriggerTime\030\021 " +
-      "\001(\003\022\032\n\022lastExecuteEndTime\030\022 \001(\003\"\'\n\026Remov" +
-      "eFromTimerRequest\022\r\n\005jobId\030\001 \002(\003B1\n%com." +
-      "github.vizaizai.server.raft.protoB\010JobPr" +
-      "oto"
+      "\n\rjobRaft.proto\022\005jraft\"\036\n\rAssignRequest\022" +
+      "\r\n\005jobId\030\001 \002(\003\"\032\n\tRmRequest\022\r\n\005jobId\030\001 \001" +
+      "(\003\";\n\010Response\022\017\n\007success\030\001 \002(\010\022\020\n\010error" +
+      "Msg\030\002 \001(\t\022\014\n\004data\030\003 \001(\t\"\360\002\n\024PushIntoTime" +
+      "rRequest\022\r\n\005jobId\030\001 \002(\003\022\014\n\004name\030\002 \001(\t\022\020\n" +
+      "\010workerId\030\003 \001(\005\022\021\n\tstartTime\030\004 \001(\003\022\017\n\007en" +
+      "dTime\030\005 \001(\003\022\025\n\rprocessorType\030\006 \001(\005\022\021\n\tpr" +
+      "ocessor\030\007 \001(\t\022\r\n\005param\030\010 \001(\t\022\023\n\013triggerT" +
+      "ype\030\t \001(\005\022\014\n\004cron\030\n \001(\t\022\016\n\006speedS\030\013 \001(\005\022" +
+      "\020\n\010delayedS\030\014 \001(\005\022\021\n\trouteType\030\r \001(\005\022\022\n\n" +
+      "retryCount\030\016 \001(\005\022\020\n\010timeoutS\030\017 \001(\005\022\031\n\021ti" +
+      "meoutHandleType\030\020 \001(\005\022\027\n\017nextTriggerTime" +
+      "\030\021 \001(\003\022\032\n\022lastExecuteEndTime\030\022 \001(\003\"\'\n\026Re" +
+      "moveFromTimerRequest\022\r\n\005jobId\030\001 \002(\003B1\n%c" +
+      "om.github.vizaizai.server.raft.protoB\010Jo" +
+      "bProto"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
         });
-    internal_static_jraft_PutRequest_descriptor =
+    internal_static_jraft_AssignRequest_descriptor =
       getDescriptor().getMessageTypes().get(0);
-    internal_static_jraft_PutRequest_fieldAccessorTable = new
+    internal_static_jraft_AssignRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_jraft_PutRequest_descriptor,
+        internal_static_jraft_AssignRequest_descriptor,
         new String[] { "JobId", });
     internal_static_jraft_RmRequest_descriptor =
       getDescriptor().getMessageTypes().get(1);
@@ -4848,7 +4848,7 @@ public final class JobProto {
     internal_static_jraft_PushIntoTimerRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_jraft_PushIntoTimerRequest_descriptor,
-        new String[] { "JobId", "Name", "WorkerId", "StartTime", "EndTime", "ProcessorType", "Processor", "Param", "TriggerType", "Cron", "SpeedS", "DelayedS", "RouteType", "RetryCount", "TimeoutS", "TimeoutHandleType", "LastTriggerTime", "LastExecuteEndTime", });
+        new String[] { "JobId", "Name", "WorkerId", "StartTime", "EndTime", "ProcessorType", "Processor", "Param", "TriggerType", "Cron", "SpeedS", "DelayedS", "RouteType", "RetryCount", "TimeoutS", "TimeoutHandleType", "NextTriggerTime", "LastExecuteEndTime", });
     internal_static_jraft_RemoveFromTimerRequest_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_jraft_RemoveFromTimerRequest_fieldAccessorTable = new

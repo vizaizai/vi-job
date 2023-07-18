@@ -1,8 +1,10 @@
 package com.github.vizaizai.server.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.vizaizai.common.model.LogInfo;
 import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.server.web.co.DispatchLogQueryCO;
+import com.github.vizaizai.server.web.co.LogQueryCO;
 import com.github.vizaizai.server.web.dto.DispatchLogDTO;
 
 /**
@@ -17,4 +19,18 @@ public interface DispatchLogService {
      * @return
      */
     Result<IPage<DispatchLogDTO>> pageDispatchLogs(DispatchLogQueryCO queryCO);
+
+    /**
+     * 查询执行日志
+     * @param logQueryCO
+     * @return
+     */
+    Result<LogInfo> getLog(LogQueryCO logQueryCO);
+
+    /**
+     * 中断执行
+     * @param id
+     * @return
+     */
+    Result<Void> kill(Long id);
 }

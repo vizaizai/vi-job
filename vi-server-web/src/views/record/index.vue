@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div ref="container" class="app-container">
     <!--工具栏-->
     <div v-if="!dialog" class="head-container">
       <el-input v-model="query.jobId" clearable size="mini" placeholder="请输入任务ID" style="width: 200px" class="filter-item" @keyup.enter.native="toQuery" />
@@ -60,7 +60,7 @@
           </template>
         </el-table-column>
         <el-table-column
-          label="触发状态"
+          label="调度状态"
           width="100"
         >
           <template v-slot="{ row }">
@@ -102,7 +102,7 @@
         >
           <template v-slot="scope">
             <el-button v-if="scope.row.executeStatus === 1" type="text" size="small" @click="toKill(scope.row)">中断执行</el-button>
-            <el-button type="text" size="small" @click="toLog(scope.row)">执行日志</el-button>
+            <el-button v-if="scope.row.dispatchStatus === 1" type="text" size="small" @click="toLog(scope.row)">执行日志</el-button>
             <el-button type="text" size="small" @click="toDel(scope.row)">删除</el-button>
           </template>
         </el-table-column>
@@ -119,6 +119,46 @@
       @size-change="sizeChangeHandler"
       @current-change="pageChangeHandler"
     />
+    <!-- 日志 -->
+    <el-drawer
+      ref="logDrawer"
+      title="执行日志"
+      :visible.sync="logDrawer.show"
+      :modal="false"
+      :close-on-press-escape="false"
+      :wrapper-closable="false"
+      :show-close="true"
+      :size="sizePercent"
+      direction="btt"
+      @opened="logDrawerOpened"
+      @closed="logDrawerClosed"
+    >
+      <div slot="title">
+        <div ref="drawerBar" class="drawer-top" />
+      </div>
+      <div style="height: 100%">
+        <el-tabs v-model="logDrawer.logTab" type="card" closable @tab-remove="removeLogTab">
+          <el-tab-pane
+            v-for="(item) in logDrawer.logTabs"
+            :key="item.name"
+            :label="item.title"
+            :name="item.name"
+          >
+            <el-container :style="{ 'margin-left': '10px', 'height': logContentHeight }">
+              <el-main>
+                <el-scrollbar :ref="'logScroll_' + item.name" style="height: 100%">
+                  <span v-for="(content, index) in item.contents" :key="index" style="color: black; white-space: pre-line; font-size: 15px; line-height: 13px">{{ content }}</span>
+                </el-scrollbar>
+              </el-main>
+              <el-footer height="30px">
+                <el-button style="position: absolute; right: 90px" size="mini" type="primary" @click="scrollToBottom">回到底部</el-button>
+                <el-button style="position: absolute; right: 10px" size="mini" type="primary" @click="queryLog">刷新</el-button>
+              </el-footer>
+            </el-container>
+          </el-tab-pane>
+        </el-tabs>
+      </div>
+    </el-drawer>
   </div>
 </template>
 <script>
@@ -126,6 +166,7 @@ import { getLog, kill, page, remove } from '@/api/dispatch'
 import { formatDateTime } from '@/utils'
 import initData from '@/mixins/initData'
 import worker from '../worker/wrap'
+
 const format = 'yyyy-MM-dd HH:mm:ss'
 export default {
   name: 'Record',
@@ -136,6 +177,14 @@ export default {
   },
   data() {
     return {
+      logDrawer: {
+        show: false,
+        isDown: false,
+        radio: 0.5,
+        logTab: '',
+        logTabs: [],
+        timeoutId: null
+      },
       rangeTime: this.getInitTime(),
       invoke: page,
       query: {
@@ -169,6 +218,15 @@ export default {
       }]
     }
   },
+  computed: {
+    sizePercent() {
+      return this.logDrawer.radio * 100 + '%'
+    },
+    logContentHeight() {
+      return this.logDrawer.radio * document.body.clientHeight - 158 + 'px'
+    }
+
+  },
   created() {
     if (this.$route.query.jobId) {
       this.query.jobId = this.$route.query.jobId
@@ -178,7 +236,6 @@ export default {
   methods: {
     beforeInit() {
       if (this.rangeTime && this.rangeTime.length === 2) {
-        console.log(this.rangeTime)
         this.query.triggerStartTime = this.rangeTime[0]
         this.query.triggerEndTime = this.rangeTime[1]
       }
@@ -203,13 +260,24 @@ export default {
       })
     },
     toLog(row) {
-      getLog({ id: row.id }).then(res => {
-        if (res.code === 200) {
-          console.log(res)
-        } else {
-          this.failTips(res.message)
+      this.logDrawer.show = true
+      const title = row.jobName + '_' + row.id
+      const id = row.id.toString()
+      this.logDrawer.logTab = id
+      for (const tab of this.logDrawer.logTabs) {
+        if (tab.name === id) {
+          return
         }
-      })
+      }
+      this.logDrawer.logTabs.push(
+        {
+          title: title,
+          name: id,
+          pos: 0,
+          contents: []
+        }
+      )
+      this.queryLog()
     },
     toDel(row) {
       this.confirm('确认删除?', { id: row.id }, (data) => {
@@ -223,6 +291,38 @@ export default {
         })
       })
     },
+    queryLog() {
+      const tab = this.logDrawer.logTabs.find((e) => {
+        if (e.name === this.logDrawer.logTab) {
+          return e
+        }
+      })
+      if (tab) {
+        getLog({ id: parseInt(this.logDrawer.logTab), maxLines: 50, startPos: tab.pos }).then(res => {
+          if (res.code === 200) {
+            if (res.data && res.data.data) {
+              // 追加显示数据
+              if (!tab.contents.find(e => e === res.data.data)) {
+                tab.contents.push(res.data.data)
+              }
+              tab.pos = res.data.endPos
+              // 滚动条到底
+              this.scrollToBottom()
+              // 继续查询
+              this.logDrawer.timeoutId = setTimeout(this.queryLog, 1000)
+            }
+          } else {
+            this.failTips(res.message)
+          }
+        })
+      }
+    },
+    scrollToBottom() {
+      this.$nextTick(() => {
+        const logScroll = this.$refs['logScroll_' + this.logDrawer.logTab][0]
+        logScroll.wrap.scrollTop = logScroll.wrap.scrollHeight
+      })
+    },
     selectWorker(e) {
       this.query.workerId = e.id
       this.toQuery()
@@ -232,13 +332,79 @@ export default {
       const start = new Date()
       start.setTime(start.getTime() - 3600 * 1000 * 24 * 30)
       return [formatDateTime(start, format), formatDateTime(end, format)]
+    },
+    removeLogTab(targetName) {
+      const tabs = this.logDrawer.logTabs
+      let activeName = this.logDrawer.logTab
+      if (activeName === targetName) {
+        tabs.forEach((tab, index) => {
+          if (tab.name === targetName) {
+            const nextTab = tabs[index + 1] || tabs[index - 1]
+            if (nextTab) {
+              activeName = nextTab.name
+            }
+          }
+        })
+      }
+      this.logDrawer.logTab = activeName
+      this.logDrawer.logTabs = tabs.filter(tab => tab.name !== targetName)
+      if (this.logDrawer.logTabs.length === 0) {
+        this.logDrawer.show = false
+      }
+    },
+    isMoveBar(clientX, clientY) {
+      const { top, bottom, left, right } = this.$refs.drawerBar.getBoundingClientRect()
+      return clientX >= left && clientX <= right && clientY >= top && clientY <= bottom
+    },
+    logDrawerOpened() {
+      const container = this.$refs.container
+      container.addEventListener('mousedown', this.barMousedown)
+      container.addEventListener('mouseup', this.barMouseup)
+      var element = document.querySelector('.el-drawer')
+      element.style.pointerEvents = 'auto'
+      element.parentNode.style.pointerEvents = 'none'
+      element.parentNode.parentNode.style.pointerEvents = 'none'
+    },
+    logDrawerClosed() {
+      const container = this.$refs.container
+      container.removeEventListener('mousedown', this.barMousedown)
+      container.removeEventListener('mousemove', this.barMousemove)
+      container.removeEventListener('mouseup', this.barMouseup)
+      if (this.logDrawer.timeoutId) {
+        clearTimeout(this.logDrawer.timeoutId)
+      }
+    },
+    barMousedown({ clientX, clientY }) {
+      if (this.isMoveBar(clientX, clientY)) {
+        this.logDrawer.isDown = true
+        const container = this.$refs.container
+        container.addEventListener('mousemove', this.barMousemove)
+      }
+    },
+    barMousemove({ clientY }) {
+      if (this.logDrawer.isDown) {
+        const height = document.body.clientHeight
+        const radio = (height - (clientY - 32)) / height
+        this.logDrawer.radio = radio.toFixed(2)
+      }
+    },
+    barMouseup(e) {
+      this.logDrawer.isDown = false
     }
   }
 }
 </script>
 
 <style scoped>
-.head-container,.table-container{
+.head-container,.table-container {
   margin-top: 30px;
+}
+.drawer-top {
+  width: 100px;
+  height: 5px;
+  background-color: darkgray;
+  margin: 0 auto;
+  border-radius: 3px;
+  cursor: ns-resize;
 }
 </style>

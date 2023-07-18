@@ -24,6 +24,8 @@ public class WorkerProperties {
      */
     private Integer port = 3923;
 
+    private String logBasePath = "/data/vi-job";
+
     public String getAppName() {
         return appName;
     }
@@ -46,5 +48,13 @@ public class WorkerProperties {
 
     public void setPort(Integer port) {
         this.port = port;
+    }
+
+    public String getLogBasePath() {
+        return logBasePath;
+    }
+
+    public void setLogBasePath(String logBasePath) {
+        this.logBasePath = logBasePath;
     }
 }

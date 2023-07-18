@@ -24,6 +24,7 @@ public class ViJobAutoConfiguration {
         starter.setAppName(workerProperties.getAppName());
         starter.setHost(workerProperties.getHost());
         starter.setPort(workerProperties.getPort());
+        starter.setLogBasePath(workerProperties.getLogBasePath());
         starter.start();
         return starter;
     }

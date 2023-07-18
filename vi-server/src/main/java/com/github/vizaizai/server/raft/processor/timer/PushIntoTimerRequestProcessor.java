@@ -1,4 +1,4 @@
-package com.github.vizaizai.server.raft.processor;
+package com.github.vizaizai.server.raft.processor.timer;
 
 import cn.hutool.core.date.LocalDateTimeUtil;
 import com.alipay.sofa.jraft.rpc.RpcContext;
@@ -6,6 +6,7 @@ import com.alipay.sofa.jraft.rpc.RpcProcessor;
 import com.github.vizaizai.remote.utils.Utils;
 import com.github.vizaizai.server.entity.Job;
 import com.github.vizaizai.server.raft.proto.JobProto;
+import com.github.vizaizai.server.raft.proto.ResponseProto;
 import com.github.vizaizai.server.timer.JobTriggerTimer;
 
 /**
@@ -39,14 +40,14 @@ public class PushIntoTimerRequestProcessor implements RpcProcessor<JobProto.Push
         job.setRetryCount(request.getRetryCount());
         job.setTimeoutS(request.getTimeoutS());
         job.setTimeoutHandleType(request.getTimeoutHandleType());
-        if (request.getLastTriggerTime() > 0L) {
-            job.setLastTriggerTime(request.getLastTriggerTime());
+        if (request.getNextTriggerTime() > 0L) {
+            job.setNextTriggerTime(request.getNextTriggerTime());
         }
         if (request.getLastExecuteEndTime() > 0L) {
             job.setLastExecuteEndTime(request.getLastExecuteEndTime());
         }
         JobTriggerTimer.getInstance().push(job);
-        rpcContext.sendResponse(JobProto.Response.newBuilder().setSuccess(true).build());
+        rpcContext.sendResponse(ResponseProto.Response.newBuilder().setSuccess(true).build());
     }
 
     @Override
