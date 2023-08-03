@@ -9,9 +9,8 @@ public enum ExecuteStatus {
     FAIL(0,"执行失败"),
     ING(1,"执行中"),
     OK(2,"执行成功"),
-    OK_TIMEOUT(3,"执行成功（超时）"),
-    OFF_TIMEOUT(4,"超时中断"),
-    OFF(5,"主动中断");
+    EXEC_TIMEOUT(3,"执行超时"),
+    EXEC_CANCEL(4,"取消");
     private final int code;
     private final String msg;
 

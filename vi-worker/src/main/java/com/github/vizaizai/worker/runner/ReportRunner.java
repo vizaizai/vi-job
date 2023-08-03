@@ -2,14 +2,14 @@ package com.github.vizaizai.worker.runner;
 
 import com.github.vizaizai.common.contants.BizCode;
 import com.github.vizaizai.common.model.Result;
-import com.github.vizaizai.common.model.StatusReportParam;
 import com.github.vizaizai.logging.LoggerFactory;
-import com.github.vizaizai.remote.codec.RpcMessage;
 import com.github.vizaizai.remote.codec.RpcRequest;
 import com.github.vizaizai.remote.codec.RpcResponse;
 import com.github.vizaizai.remote.common.sender.Sender;
+import com.github.vizaizai.worker.core.HttpSender;
 import com.github.vizaizai.worker.core.TaskContext;
 import com.github.vizaizai.worker.utils.JSONUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import java.util.concurrent.BlockingQueue;
@@ -64,7 +64,6 @@ public class ReportRunner extends Thread{
     }
 
 
-    @SuppressWarnings("all")
     @Override
     public void run() {
         long startTime = System.currentTimeMillis();
@@ -72,20 +71,11 @@ public class ReportRunner extends Thread{
             try {
                 TaskContext taskContext = this.waitingReports.poll(5, TimeUnit.SECONDS);
                 if (taskContext != null) {
-                    StatusReportParam reportParam = taskContext.getReportParam();
                     try {
-                        Sender sender = taskContext.getSender();
-                        if (sender.available()) {
-                            RpcResponse response = (RpcResponse) sender.sendAndRevResponse(RpcRequest.wrap(BizCode.REPORT, reportParam), 30000);
-                            if (!response.getSuccess()) {
-                                return;
-                            }
-                            Result result = (Result) response.getResult();
-                            logger.info("上报结果: {}", JSONUtils.toJSONString(result));
-
-                        }
+                        this.doReport(taskContext);
                     }catch (Exception e) {
-                        logger.error("Report error, {}",e.getMessage());
+                        logger.warn("job#{} report fail, {}",taskContext.getTriggerParam().getJobName(), e.getMessage());
+                        this.waitingReports.put(taskContext);
                     }
                     // 重置时间
                     startTime = System.currentTimeMillis();
@@ -107,7 +97,30 @@ public class ReportRunner extends Thread{
         }
     }
 
+    @SuppressWarnings("rawtypes")
     private void doReport(TaskContext taskContext) {
+        Sender sender = taskContext.getSender();
+        if (sender != null && sender.available()) {
+            RpcResponse response = (RpcResponse) sender.sendAndRevResponse(RpcRequest.wrap(BizCode.REPORT, taskContext.getReportParam()), 30000);
+            if (!response.getSuccess()) {
+                throw new RuntimeException(response.getMsg());
+            }
+            Result result = (Result) response.getResult();
+            if (!result.isSuccess()) {
+                throw new RuntimeException(result.getMsg());
+            }
 
+        }else {
+            // http上报
+            sender = new HttpSender(STATUS_REPORT_URL);
+            String response = (String) sender.sendAndRevResponse(taskContext.getReportParam(), 30000);
+            if (StringUtils.isBlank(response)) {
+                throw new RuntimeException("http请求异常");
+            }
+            Result result = JSONUtils.parseObject(response, Result.class);
+            if (!result.isSuccess()) {
+                throw new RuntimeException(result.getMsg());
+            }
+        }
     }
 }

@@ -76,7 +76,7 @@ public class JobLogger implements Logger {
     /**
      * 是否单例
      */
-    private boolean singleton = true;
+    private final boolean singleton;
     /**
      * job-logger映射
      */
@@ -371,7 +371,7 @@ public class JobLogger implements Logger {
                 boolean breakFlag = false;
                 // 当前日志末端
                 if (remain < 0) {
-                    len = (int) (byteBuffer.capacity() + remain);
+                    len = (int) (Math.min(byteBuffer.capacity(), len) + remain);
                     breakFlag = true;
                 }
                 // 行数计数，并判断最大行数

@@ -16,9 +16,9 @@ export function getLog(params) {
   })
 }
 
-export function kill(data) {
+export function cancel(data) {
   return request({
-    url: '/dispatch/kill',
+    url: '/dispatch/cancel',
     method: 'post',
     data
   })

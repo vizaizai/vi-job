@@ -55,21 +55,25 @@
             />
           </el-select>
         </el-form-item>
+        <el-form-item prop="maxWaitNum" label="最大等待数量">
+          <el-tooltip class="item" effect="light" open-delay="500" content="同一个任务在同一个执行器节点上的执行是顺序阻塞的，当达到最大等待数量时，后续的调度将被丢弃" placement="bottom">
+            <el-input v-model.number="formData.maxWaitNum" style="width: 100%;" placeholder="单节点执行最大等待数量" />
+          </el-tooltip>
+        </el-form-item>
         <el-form-item prop="retryCount" label="重试次数">
-          <el-input v-model.number="formData.retryCount" style="width: 100%;" placeholder="任务失败重试次数" />
+          <el-tooltip class="item" effect="light" open-delay="500" content="任务执行失败重试次数，默认不重试" placement="bottom">
+            <el-input v-model.number="formData.retryCount" style="width: 100%;" placeholder="任务执行失败重试次数" />
+          </el-tooltip>
         </el-form-item>
         <el-form-item prop="timeoutS" label="任务超时时间">
-          <el-input v-model.number="formData.timeoutS" style="width: 100%;" placeholder="任务超时时间（单位：秒）" />
+          <el-tooltip class="item" effect="light" open-delay="500" content="任务执行超时后会将记录标记为超时状态" placement="bottom">
+            <el-input v-model.number="formData.timeoutS" style="width: 100%;" placeholder="任务超时时间（单位：秒）" />
+          </el-tooltip>
         </el-form-item>
-        <el-form-item v-if="formData.timeoutS != null" prop="timeoutHandleType" label="超时处理方式">
-          <el-select v-model="formData.timeoutHandleType" placeholder="处理方式选择" style="width: 27%">
-            <el-option
-              v-for="item in timeoutOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
+        <el-form-item prop="logAutoDelHours" label="自动清理时间">
+          <el-tooltip class="item" effect="light" open-delay="500" content="调度记录自动清理时间（小时），空表示永久不清理，默认360小时" placement="bottom">
+            <el-input v-model.number="formData.logAutoDelHours" style="width: 100%;" placeholder="调度记录自动清理时间（单位：小时）" />
+          </el-tooltip>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -128,13 +132,6 @@ export default {
       }, {
         value: 4,
         label: '广播'
-      }],
-      timeoutOptions: [{
-        value: 1,
-        label: '标记超时'
-      }, {
-        value: 2,
-        label: '中断执行'
       }]
     }
   },
@@ -160,6 +157,7 @@ export default {
       this.title = title || '编辑任务'
       this.disabled = false
       this.formData = { ...data }
+      this.optRangeTime = null
       if (data.startTime && data.endTime) {
         this.optRangeTime = []
         this.optRangeTime.push(data.startTime)
@@ -177,7 +175,7 @@ export default {
       this.title = '新增任务'
       this.disabled = false
       this.optRangeTime = null
-      this.formData = { retryCount: 0 }
+      this.formData = { retryCount: 0, logAutoDelHours: 15 * 24 }
       this.$nextTick(() => {
         this.$refs.worker.clear()
       })

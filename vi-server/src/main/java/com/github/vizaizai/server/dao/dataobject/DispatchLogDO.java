@@ -47,7 +47,7 @@ public class DispatchLogDO {
     private Integer dispatchStatus;
 
     /**
-     * 执行状态 0-失败 1-执行中 2-执行成功 3-执行成功（超时） 4-超时中断 5-主动中断
+     * 执行状态 0-失败 1-执行中 2-执行成功 3-执行超时 4-取消
      */
     private Integer executeStatus;
     /**
@@ -79,6 +79,10 @@ public class DispatchLogDO {
      */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
+    /**
+     * 预计删除时间
+     */
+    private LocalDateTime expectedDeleteTime;
 
     public DispatchLogDO setErrorMsg(String errorMsg) {
         if (Utils.isNotBlank(errorMsg) && errorMsg.length() > 1024) {

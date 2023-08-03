@@ -1,5 +1,6 @@
 package com.github.vizaizai.server.timer;
 
+import cn.hutool.core.date.LocalDateTimeUtil;
 import com.github.vizaizai.retry.timewheel.HashedWheelTimer;
 import com.github.vizaizai.retry.timewheel.Timeout;
 import com.github.vizaizai.server.constant.Commons;
@@ -71,6 +72,13 @@ public class JobTriggerTimer {
      * @param job 任务实体
      */
     public synchronized void push(Job job) {
+        // 生命周期检查
+        if (job.getEndTime() != null
+                && System.currentTimeMillis() > LocalDateTimeUtil.toEpochMilli(job.getEndTime())) {
+            ContextUtil.getBean(ExecutorService.class).execute(()-> ContextUtil.getBean(JobService.class).stop(job.getId()));
+            remove(job.getId());
+            return;
+        }
         Long triggerTime = job.getNextTriggerTime();
         if (triggerTime == null) {
             return;

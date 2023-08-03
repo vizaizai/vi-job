@@ -17,9 +17,9 @@ public class BizCode {
      */
     public static final String RUN = "run";
     /**
-     * 中断任务
+     * 取消待执行任务
      */
-    public static final String KILL = "kill";
+    public static final String CANCEL = "cancel";
     /**
      * 空闲检测
      */
@@ -28,6 +28,10 @@ public class BizCode {
      * 执行日志查询
      */
     public static final String LOG = "exe_log";
+    /**
+     * 查询执行状态
+     */
+    public static final String STATUS = "status";
 
     /*==================================调度中心==================================*/
     /**

@@ -1,12 +1,14 @@
 package com.github.vizaizai.common.model;
 
 
+import java.io.Serializable;
+
 /**
  * 状态上报
  * @author liaochongwei
  * @date 2023/6/1 14:49
  */
-public class StatusReportParam {
+public class StatusReportParam implements Serializable {
     /**
      * 任务id
      */
@@ -16,7 +18,7 @@ public class StatusReportParam {
      */
     private Long dispatchId;
     /**
-     * 执行状态 0-失败 1-执行中 2-执行成功 3-执行成功（超时） 4-超时中断 5-主动中断
+     * 执行状态 0-失败 1-执行中 2-执行成功 3-执行超时 4-取消
      */
     private Integer executeStatus;
     /**

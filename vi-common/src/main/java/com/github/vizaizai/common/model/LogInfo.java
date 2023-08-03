@@ -1,11 +1,13 @@
 package com.github.vizaizai.common.model;
 
+import java.io.Serializable;
+
 /**
  * 日志信息
  * @author liaochongwei
  * @date 2023/7/14 15:31
  */
-public class LogInfo {
+public class LogInfo implements Serializable {
     /**
      * 数据
      */

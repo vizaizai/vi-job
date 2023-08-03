@@ -81,6 +81,12 @@ public interface JobService {
      * @param nextTriggerTime 下次触发时间
      */
     void refreshTriggerTime(Long jobId, Long lastTriggerTime, Long nextTriggerTime);
+
+    /**
+     * 停止任务
+     * @param jobId 任务id
+     */
+    void stop(Long jobId);
     /**
      * 状态上报
      * @param statusReportCO

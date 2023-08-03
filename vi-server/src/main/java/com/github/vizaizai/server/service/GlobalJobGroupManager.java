@@ -129,8 +129,11 @@ public class GlobalJobGroupManager {
         if (job.getTimeoutS() != null) {
             builder.setTimeoutS(job.getTimeoutS());
         }
-        if (job.getTimeoutHandleType() != null) {
-            builder.setTimeoutHandleType(job.getTimeoutHandleType());
+        if (job.getMaxWaitNum() != null) {
+            builder.setMaxWaitNum(job.getMaxWaitNum());
+        }
+        if (job.getLogAutoDelHours() != null) {
+            builder.setLogAutoDelHours(job.getLogAutoDelHours());
         }
         if (job.getNextTriggerTime() != null) {
             builder.setNextTriggerTime(job.getNextTriggerTime());

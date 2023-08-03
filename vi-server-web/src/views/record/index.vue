@@ -64,8 +64,8 @@
           width="100"
         >
           <template v-slot="{ row }">
-            <el-tooltip class="item" effect="dark" :content="row.errorMsg" placement="top">
-              <el-tag v-if="row.dispatchStatus === 0" type="danger">调度失败</el-tag>
+            <el-tooltip v-if="row.dispatchStatus === 0" class="item" effect="dark" :content="row.errorMsg" placement="top">
+              <el-tag type="danger">调度失败</el-tag>
             </el-tooltip>
             <el-tag v-if="row.dispatchStatus === 1" type="success">调度成功</el-tag>
           </template>
@@ -77,15 +77,14 @@
         />
         <el-table-column
           label="执行状态"
-          width="100"
+          width="120"
         >
           <template v-slot="{ row }">
             <el-tag v-if="row.executeStatus === 0" type="danger">执行失败</el-tag>
-            <el-tag v-else-if="row.executeStatus === 1" type="">执行中</el-tag>
+            <el-tag v-else-if="row.executeStatus === 1" type="">执行中<span v-if="row.execStatus === 2">（等待）</span></el-tag>
             <el-tag v-else-if="row.executeStatus === 2" type="success">执行成功</el-tag>
-            <el-tag v-else-if="row.executeStatus === 3" type="warning">执行成功（超时）</el-tag>
-            <el-tag v-else-if="row.executeStatus === 4" type="warning">超时中断</el-tag>
-            <el-tag v-else-if="row.executeStatus === 5" type="warning">主动中断</el-tag>
+            <el-tag v-else-if="row.executeStatus === 3" type="warning">执行超时</el-tag>
+            <el-tag v-else-if="row.executeStatus === 4" type="info">执行取消</el-tag>
           </template>
         </el-table-column>
         <el-table-column
@@ -101,7 +100,7 @@
           width="%100"
         >
           <template v-slot="scope">
-            <el-button v-if="scope.row.executeStatus === 1" type="text" size="small" @click="toKill(scope.row)">中断执行</el-button>
+            <el-button v-if="scope.row.executeStatus === 1 && scope.row.execStatus === 2" type="text" size="small" @click="toCancel(scope.row)">取消</el-button>
             <el-button v-if="scope.row.dispatchStatus === 1" type="text" size="small" @click="toLog(scope.row)">执行日志</el-button>
             <el-button type="text" size="small" @click="toDel(scope.row)">删除</el-button>
           </template>
@@ -146,7 +145,7 @@
           >
             <el-container :style="{ 'margin-left': '10px', 'height': logContentHeight }">
               <el-main>
-                <el-scrollbar :ref="'logScroll_' + item.name" style="height: 100%">
+                <el-scrollbar :ref="'logScroll_' + item.name" style="height: 100%;">
                   <span v-for="(content, index) in item.contents" :key="index" style="color: black; white-space: pre-line; font-size: 15px; line-height: 13px">{{ content }}</span>
                 </el-scrollbar>
               </el-main>
@@ -162,7 +161,7 @@
   </div>
 </template>
 <script>
-import { getLog, kill, page, remove } from '@/api/dispatch'
+import { getLog, cancel, page, remove } from '@/api/dispatch'
 import { formatDateTime } from '@/utils'
 import initData from '@/mixins/initData'
 import worker from '../worker/wrap'
@@ -208,13 +207,10 @@ export default {
         label: '执行成功'
       }, {
         value: 3,
-        label: '执行成功（超时）'
+        label: '执行超时'
       }, {
         value: 4,
-        label: '超时中断'
-      }, {
-        value: 5,
-        label: '主动中断'
+        label: '执行取消'
       }]
     }
   },
@@ -247,11 +243,11 @@ export default {
       this.init()
       this.$refs.worker.clear()
     },
-    toKill(row) {
-      this.confirm('确认中断?', { id: row.id }, (data) => {
-        kill(data).then(res => {
+    toCancel(row) {
+      this.confirm('确认取消?', { id: row.id }, (data) => {
+        cancel(data).then(res => {
           if (res.code === 200) {
-            this.okTips('中断成功')
+            this.okTips('取消成功')
             this.toQuery()
           } else {
             this.failTips(res.message)
@@ -396,9 +392,11 @@ export default {
 </script>
 
 <style scoped>
-.head-container,.table-container {
+.head-container,
+.table-container {
   margin-top: 30px;
 }
+
 .drawer-top {
   width: 100px;
   height: 5px;
@@ -407,4 +405,9 @@ export default {
   border-radius: 3px;
   cursor: ns-resize;
 }
+
+/deep/ .el-scrollbar__wrap {
+  overflow-x: hidden;
+}
+
 </style>

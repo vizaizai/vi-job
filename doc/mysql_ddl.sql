@@ -62,19 +62,22 @@ CREATE TABLE `job` (
    `route_type` int(4) NOT NULL COMMENT '路由策略',
    `retry_count` int(4) NOT NULL COMMENT '任务失败重试次数',
    `timeout_s` int(4) DEFAULT NULL COMMENT '任务超时时间',
-   `timeout_handle_type` int(4) DEFAULT NULL COMMENT '任务超时处理策略 1-标记 2-中断',
+   `max_wait_num` int(11) DEFAULT NULL COMMENT '单节点最大等待数量',
    `last_trigger_time` bigint(20) DEFAULT NULL COMMENT '上次次触发时间',
    `next_trigger_time` bigint(20) DEFAULT NULL COMMENT '下次触发时间',
+   `log_auto_del_hours` int(11) DEFAULT NULL COMMENT '调度记录自动删除时间（小时）',
    `creater` varchar(64) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '新建人',
    `create_time` datetime DEFAULT NULL COMMENT '创建时间',
    `updater` varchar(64) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '更新人',
    `update_time` datetime DEFAULT NULL COMMENT '更新时间',
    PRIMARY KEY (`id`),
    KEY `job_next_trigger_time_idx` (`next_trigger_time`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='任务信息';
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='任务信息';
 
 
 drop table if exists `dispatch_log`;
+-- vi_job.dispatch_log definition
+
 CREATE TABLE `dispatch_log` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
     `job_id` bigint(20) NOT NULL COMMENT '任务id',
@@ -90,11 +93,13 @@ CREATE TABLE `dispatch_log` (
     `execute_start_time` datetime DEFAULT NULL COMMENT '执行开始时间',
     `execute_end_time` datetime DEFAULT NULL COMMENT '执行结束时间',
     `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+    `expected_delete_time` datetime DEFAULT NULL COMMENT '预计删除时间',
     PRIMARY KEY (`id`),
     KEY `dispatch_log_trigger_time_idx` (`trigger_time`) USING BTREE,
     KEY `dispatch_log_job_id_idx` (`job_id`) USING BTREE,
-    KEY `dispatch_log_worker_id_idx` (`worker_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度信息';
+    KEY `dispatch_log_worker_id_idx` (`worker_id`) USING BTREE,
+    KEY `dispatch_log_expected_delete_time_idx` (`expected_delete_time`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=2513 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度信息';
 
 
 

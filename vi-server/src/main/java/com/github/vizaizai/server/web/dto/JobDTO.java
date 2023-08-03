@@ -93,9 +93,14 @@ public class JobDTO {
      */
     private Integer timeoutS;
     /**
-     * 任务超时处理策略 1-标记 2-中断
+     * 最大等待数量
      */
-    private Integer timeoutHandleType;
+    private Integer maxWaitNum;
+
+    /**
+     * 调度记录自动删除时间（小时）
+     */
+    private Integer logAutoDelHours;
     /**
      * 创建时间
      */

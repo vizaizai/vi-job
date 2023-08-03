@@ -28,9 +28,22 @@ public interface DispatchLogService {
     Result<LogInfo> getLog(LogQueryCO logQueryCO);
 
     /**
-     * 中断执行
+     * 取消执行，只能取消已调度-待执行任务
      * @param id
      * @return
      */
-    Result<Void> kill(Long id);
+    Result<Void> cancel(Long id);
+
+    /**
+     * 删除调度日志
+     * @param id
+     * @return
+     */
+    Result<Void> remove(Long id);
+
+    /**
+     * 批量删除调度日志
+     * @return
+     */
+    int batchRemove();
 }

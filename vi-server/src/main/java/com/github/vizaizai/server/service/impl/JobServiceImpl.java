@@ -129,6 +129,12 @@ public class JobServiceImpl implements JobService {
         if (jobDO == null) {
             return Result.handleFailure("任务不存在");
         }
+        // 判断生命周期结束
+        if (Objects.equals(jobStatusUpdateCO.getStatus(),JobStatus.RUN.getCode())
+                && jobDO.getEndTime() != null
+                && System.currentTimeMillis() > LocalDateTimeUtil.toEpochMilli(jobDO.getEndTime())) {
+            return Result.handleFailure("任务生命周期已结束，无法开启");
+        }
         // 执行更新
         LambdaUpdateWrapper<JobDO> lambdaUpdate = Wrappers.lambdaUpdate();
         lambdaUpdate.eq(JobDO::getId,jobStatusUpdateCO.getId())
@@ -139,13 +145,13 @@ public class JobServiceImpl implements JobService {
         if (updateCount <= 0) {
             return Result.handleFailure("任务状态变更,请刷新重试");
         }
-        // 取消任务执行
+        // 停止->取消任务执行
         if (Objects.equals(jobStatusUpdateCO.getStatus(),JobStatus.STOP.getCode())) {
             globalJobGroupHandler.removeFormTimer(jobStatusUpdateCO.getId());
             return Result.ok();
         }
 
-        // 将任务推入调度timer
+        // 启动->将任务推入调度timer
         Job job = BeanUtils.toBean(jobDO, Job::new);
         globalJobGroupHandler.pushIntoTimer(job);
         return Result.ok();
@@ -203,6 +209,9 @@ public class JobServiceImpl implements JobService {
         dispatchLogDO.setProcessor(job.getProcessor());
         dispatchLogDO.setJobParam(job.getParam());
         dispatchLogDO.setTriggerTime(now);
+        if (job.getLogAutoDelHours() != null) {
+            dispatchLogDO.setExpectedDeleteTime(now.plusHours(job.getLogAutoDelHours()));
+        }
 
         log.info(">>>>>>>>>>>Trigger start, jobId:{}", job.getId());
         // 路由worker地址
@@ -228,7 +237,7 @@ public class JobServiceImpl implements JobService {
             taskTriggerParam.setJobParams(job.getParam());
             taskTriggerParam.setTriggerTime(LocalDateTimeUtil.toEpochMilli(dispatchLogDO.getTriggerTime()));
             taskTriggerParam.setExecuteTimeout(job.getTimeoutS());
-            taskTriggerParam.setTimeoutHandleType(job.getTimeoutHandleType());
+            taskTriggerParam.setMaxWaitNum(job.getMaxWaitNum());
 
             // 执行任务触发
             TaskResult taskResult = RpcUtils.toTaskResult(RpcUtils.call(address, BizCode.RUN, taskTriggerParam));
@@ -253,6 +262,15 @@ public class JobServiceImpl implements JobService {
         }catch (Exception e) {
             log.error("更新触发时间错误,{}",e.getMessage());
         }
+    }
+
+    @Transactional
+    @Override
+    public void stop(Long jobId) {
+        JobDO jobDO = new JobDO();
+        jobDO.setId(jobId);
+        jobDO.setStatus(JobStatus.STOP.getCode());
+        jobMapper.updateById(jobDO);
     }
 
     @Transactional

@@ -10,10 +10,7 @@ import com.github.vizaizai.server.web.co.LogQueryCO;
 import com.github.vizaizai.server.web.co.NumberIdCO;
 import com.github.vizaizai.server.web.dto.DispatchLogDTO;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
@@ -39,8 +36,13 @@ public class DispatchLogController {
         return dispatchLogService.getLog(queryCO);
     }
 
-    @PostMapping("/kill")
-    public Result<Void> kill(@Validated NumberIdCO idCO) {
-        return dispatchLogService.kill(idCO.getId());
+    @PostMapping("/cancel")
+    public Result<Void> cancel(@Validated @RequestBody NumberIdCO idCO) {
+        return dispatchLogService.cancel(idCO.getId());
+    }
+
+    @PostMapping("/remove")
+    public Result<Void> remove(@Validated @RequestBody NumberIdCO idCO) {
+        return dispatchLogService.remove(idCO.getId());
     }
 }

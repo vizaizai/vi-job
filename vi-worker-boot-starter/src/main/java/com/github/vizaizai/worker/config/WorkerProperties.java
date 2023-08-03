@@ -23,8 +23,14 @@ public class WorkerProperties {
      * 端口号，默认3923
      */
     private Integer port = 3923;
-
+    /**
+     * 日志基本路径
+     */
     private String logBasePath = "/data/vi-job";
+    /**
+     * 日志最大保留天数
+     */
+    private Integer logMaxHistory = 15;
 
     public String getAppName() {
         return appName;
@@ -56,5 +62,13 @@ public class WorkerProperties {
 
     public void setLogBasePath(String logBasePath) {
         this.logBasePath = logBasePath;
+    }
+
+    public Integer getLogMaxHistory() {
+        return logMaxHistory;
+    }
+
+    public void setLogMaxHistory(Integer logMaxHistory) {
+        this.logMaxHistory = logMaxHistory;
     }
 }

@@ -2001,34 +2001,45 @@ public final class JobProto {
     int getTimeoutS();
 
     /**
-     * <code>optional int32 timeoutHandleType = 16;</code>
-     * @return Whether the timeoutHandleType field is set.
+     * <code>optional int32 maxWaitNum = 16;</code>
+     * @return Whether the maxWaitNum field is set.
      */
-    boolean hasTimeoutHandleType();
+    boolean hasMaxWaitNum();
     /**
-     * <code>optional int32 timeoutHandleType = 16;</code>
-     * @return The timeoutHandleType.
+     * <code>optional int32 maxWaitNum = 16;</code>
+     * @return The maxWaitNum.
      */
-    int getTimeoutHandleType();
+    int getMaxWaitNum();
 
     /**
-     * <code>optional int64 nextTriggerTime = 17;</code>
+     * <code>optional int32 logAutoDelHours = 17;</code>
+     * @return Whether the logAutoDelHours field is set.
+     */
+    boolean hasLogAutoDelHours();
+    /**
+     * <code>optional int32 logAutoDelHours = 17;</code>
+     * @return The logAutoDelHours.
+     */
+    int getLogAutoDelHours();
+
+    /**
+     * <code>optional int64 nextTriggerTime = 18;</code>
      * @return Whether the nextTriggerTime field is set.
      */
     boolean hasNextTriggerTime();
     /**
-     * <code>optional int64 nextTriggerTime = 17;</code>
+     * <code>optional int64 nextTriggerTime = 18;</code>
      * @return The nextTriggerTime.
      */
     long getNextTriggerTime();
 
     /**
-     * <code>optional int64 lastExecuteEndTime = 18;</code>
+     * <code>optional int64 lastExecuteEndTime = 19;</code>
      * @return Whether the lastExecuteEndTime field is set.
      */
     boolean hasLastExecuteEndTime();
     /**
-     * <code>optional int64 lastExecuteEndTime = 18;</code>
+     * <code>optional int64 lastExecuteEndTime = 19;</code>
      * @return The lastExecuteEndTime.
      */
     long getLastExecuteEndTime();
@@ -2478,37 +2489,56 @@ public final class JobProto {
       return timeoutS_;
     }
 
-    public static final int TIMEOUTHANDLETYPE_FIELD_NUMBER = 16;
-    private int timeoutHandleType_ = 0;
+    public static final int MAXWAITNUM_FIELD_NUMBER = 16;
+    private int maxWaitNum_ = 0;
     /**
-     * <code>optional int32 timeoutHandleType = 16;</code>
-     * @return Whether the timeoutHandleType field is set.
+     * <code>optional int32 maxWaitNum = 16;</code>
+     * @return Whether the maxWaitNum field is set.
      */
     @Override
-    public boolean hasTimeoutHandleType() {
+    public boolean hasMaxWaitNum() {
       return ((bitField0_ & 0x00008000) != 0);
     }
     /**
-     * <code>optional int32 timeoutHandleType = 16;</code>
-     * @return The timeoutHandleType.
+     * <code>optional int32 maxWaitNum = 16;</code>
+     * @return The maxWaitNum.
      */
     @Override
-    public int getTimeoutHandleType() {
-      return timeoutHandleType_;
+    public int getMaxWaitNum() {
+      return maxWaitNum_;
     }
 
-    public static final int NEXTTRIGGERTIME_FIELD_NUMBER = 17;
+    public static final int LOGAUTODELHOURS_FIELD_NUMBER = 17;
+    private int logAutoDelHours_ = 0;
+    /**
+     * <code>optional int32 logAutoDelHours = 17;</code>
+     * @return Whether the logAutoDelHours field is set.
+     */
+    @Override
+    public boolean hasLogAutoDelHours() {
+      return ((bitField0_ & 0x00010000) != 0);
+    }
+    /**
+     * <code>optional int32 logAutoDelHours = 17;</code>
+     * @return The logAutoDelHours.
+     */
+    @Override
+    public int getLogAutoDelHours() {
+      return logAutoDelHours_;
+    }
+
+    public static final int NEXTTRIGGERTIME_FIELD_NUMBER = 18;
     private long nextTriggerTime_ = 0L;
     /**
-     * <code>optional int64 nextTriggerTime = 17;</code>
+     * <code>optional int64 nextTriggerTime = 18;</code>
      * @return Whether the nextTriggerTime field is set.
      */
     @Override
     public boolean hasNextTriggerTime() {
-      return ((bitField0_ & 0x00010000) != 0);
+      return ((bitField0_ & 0x00020000) != 0);
     }
     /**
-     * <code>optional int64 nextTriggerTime = 17;</code>
+     * <code>optional int64 nextTriggerTime = 18;</code>
      * @return The nextTriggerTime.
      */
     @Override
@@ -2516,18 +2546,18 @@ public final class JobProto {
       return nextTriggerTime_;
     }
 
-    public static final int LASTEXECUTEENDTIME_FIELD_NUMBER = 18;
+    public static final int LASTEXECUTEENDTIME_FIELD_NUMBER = 19;
     private long lastExecuteEndTime_ = 0L;
     /**
-     * <code>optional int64 lastExecuteEndTime = 18;</code>
+     * <code>optional int64 lastExecuteEndTime = 19;</code>
      * @return Whether the lastExecuteEndTime field is set.
      */
     @Override
     public boolean hasLastExecuteEndTime() {
-      return ((bitField0_ & 0x00020000) != 0);
+      return ((bitField0_ & 0x00040000) != 0);
     }
     /**
-     * <code>optional int64 lastExecuteEndTime = 18;</code>
+     * <code>optional int64 lastExecuteEndTime = 19;</code>
      * @return The lastExecuteEndTime.
      */
     @Override
@@ -2599,13 +2629,16 @@ public final class JobProto {
         output.writeInt32(15, timeoutS_);
       }
       if (((bitField0_ & 0x00008000) != 0)) {
-        output.writeInt32(16, timeoutHandleType_);
+        output.writeInt32(16, maxWaitNum_);
       }
       if (((bitField0_ & 0x00010000) != 0)) {
-        output.writeInt64(17, nextTriggerTime_);
+        output.writeInt32(17, logAutoDelHours_);
       }
       if (((bitField0_ & 0x00020000) != 0)) {
-        output.writeInt64(18, lastExecuteEndTime_);
+        output.writeInt64(18, nextTriggerTime_);
+      }
+      if (((bitField0_ & 0x00040000) != 0)) {
+        output.writeInt64(19, lastExecuteEndTime_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -2674,15 +2707,19 @@ public final class JobProto {
       }
       if (((bitField0_ & 0x00008000) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(16, timeoutHandleType_);
+          .computeInt32Size(16, maxWaitNum_);
       }
       if (((bitField0_ & 0x00010000) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(17, nextTriggerTime_);
+          .computeInt32Size(17, logAutoDelHours_);
       }
       if (((bitField0_ & 0x00020000) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(18, lastExecuteEndTime_);
+          .computeInt64Size(18, nextTriggerTime_);
+      }
+      if (((bitField0_ & 0x00040000) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(19, lastExecuteEndTime_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -2774,10 +2811,15 @@ public final class JobProto {
         if (getTimeoutS()
             != other.getTimeoutS()) return false;
       }
-      if (hasTimeoutHandleType() != other.hasTimeoutHandleType()) return false;
-      if (hasTimeoutHandleType()) {
-        if (getTimeoutHandleType()
-            != other.getTimeoutHandleType()) return false;
+      if (hasMaxWaitNum() != other.hasMaxWaitNum()) return false;
+      if (hasMaxWaitNum()) {
+        if (getMaxWaitNum()
+            != other.getMaxWaitNum()) return false;
+      }
+      if (hasLogAutoDelHours() != other.hasLogAutoDelHours()) return false;
+      if (hasLogAutoDelHours()) {
+        if (getLogAutoDelHours()
+            != other.getLogAutoDelHours()) return false;
       }
       if (hasNextTriggerTime() != other.hasNextTriggerTime()) return false;
       if (hasNextTriggerTime()) {
@@ -2863,9 +2905,13 @@ public final class JobProto {
         hash = (37 * hash) + TIMEOUTS_FIELD_NUMBER;
         hash = (53 * hash) + getTimeoutS();
       }
-      if (hasTimeoutHandleType()) {
-        hash = (37 * hash) + TIMEOUTHANDLETYPE_FIELD_NUMBER;
-        hash = (53 * hash) + getTimeoutHandleType();
+      if (hasMaxWaitNum()) {
+        hash = (37 * hash) + MAXWAITNUM_FIELD_NUMBER;
+        hash = (53 * hash) + getMaxWaitNum();
+      }
+      if (hasLogAutoDelHours()) {
+        hash = (37 * hash) + LOGAUTODELHOURS_FIELD_NUMBER;
+        hash = (53 * hash) + getLogAutoDelHours();
       }
       if (hasNextTriggerTime()) {
         hash = (37 * hash) + NEXTTRIGGERTIME_FIELD_NUMBER;
@@ -3023,7 +3069,8 @@ public final class JobProto {
         routeType_ = 0;
         retryCount_ = 0;
         timeoutS_ = 0;
-        timeoutHandleType_ = 0;
+        maxWaitNum_ = 0;
+        logAutoDelHours_ = 0;
         nextTriggerTime_ = 0L;
         lastExecuteEndTime_ = 0L;
         return this;
@@ -3121,16 +3168,20 @@ public final class JobProto {
           to_bitField0_ |= 0x00004000;
         }
         if (((from_bitField0_ & 0x00008000) != 0)) {
-          result.timeoutHandleType_ = timeoutHandleType_;
+          result.maxWaitNum_ = maxWaitNum_;
           to_bitField0_ |= 0x00008000;
         }
         if (((from_bitField0_ & 0x00010000) != 0)) {
-          result.nextTriggerTime_ = nextTriggerTime_;
+          result.logAutoDelHours_ = logAutoDelHours_;
           to_bitField0_ |= 0x00010000;
         }
         if (((from_bitField0_ & 0x00020000) != 0)) {
-          result.lastExecuteEndTime_ = lastExecuteEndTime_;
+          result.nextTriggerTime_ = nextTriggerTime_;
           to_bitField0_ |= 0x00020000;
+        }
+        if (((from_bitField0_ & 0x00040000) != 0)) {
+          result.lastExecuteEndTime_ = lastExecuteEndTime_;
+          to_bitField0_ |= 0x00040000;
         }
         result.bitField0_ |= to_bitField0_;
       }
@@ -3200,8 +3251,11 @@ public final class JobProto {
         if (other.hasTimeoutS()) {
           setTimeoutS(other.getTimeoutS());
         }
-        if (other.hasTimeoutHandleType()) {
-          setTimeoutHandleType(other.getTimeoutHandleType());
+        if (other.hasMaxWaitNum()) {
+          setMaxWaitNum(other.getMaxWaitNum());
+        }
+        if (other.hasLogAutoDelHours()) {
+          setLogAutoDelHours(other.getLogAutoDelHours());
         }
         if (other.hasNextTriggerTime()) {
           setNextTriggerTime(other.getNextTriggerTime());
@@ -3314,20 +3368,25 @@ public final class JobProto {
                 break;
               } // case 120
               case 128: {
-                timeoutHandleType_ = input.readInt32();
+                maxWaitNum_ = input.readInt32();
                 bitField0_ |= 0x00008000;
                 break;
               } // case 128
               case 136: {
-                nextTriggerTime_ = input.readInt64();
+                logAutoDelHours_ = input.readInt32();
                 bitField0_ |= 0x00010000;
                 break;
               } // case 136
               case 144: {
-                lastExecuteEndTime_ = input.readInt64();
+                nextTriggerTime_ = input.readInt64();
                 bitField0_ |= 0x00020000;
                 break;
               } // case 144
+              case 152: {
+                lastExecuteEndTime_ = input.readInt64();
+                bitField0_ |= 0x00040000;
+                break;
+              } // case 152
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -4105,57 +4164,97 @@ public final class JobProto {
         return this;
       }
 
-      private int timeoutHandleType_ ;
+      private int maxWaitNum_ ;
       /**
-       * <code>optional int32 timeoutHandleType = 16;</code>
-       * @return Whether the timeoutHandleType field is set.
+       * <code>optional int32 maxWaitNum = 16;</code>
+       * @return Whether the maxWaitNum field is set.
        */
       @Override
-      public boolean hasTimeoutHandleType() {
+      public boolean hasMaxWaitNum() {
         return ((bitField0_ & 0x00008000) != 0);
       }
       /**
-       * <code>optional int32 timeoutHandleType = 16;</code>
-       * @return The timeoutHandleType.
+       * <code>optional int32 maxWaitNum = 16;</code>
+       * @return The maxWaitNum.
        */
       @Override
-      public int getTimeoutHandleType() {
-        return timeoutHandleType_;
+      public int getMaxWaitNum() {
+        return maxWaitNum_;
       }
       /**
-       * <code>optional int32 timeoutHandleType = 16;</code>
-       * @param value The timeoutHandleType to set.
+       * <code>optional int32 maxWaitNum = 16;</code>
+       * @param value The maxWaitNum to set.
        * @return This builder for chaining.
        */
-      public Builder setTimeoutHandleType(int value) {
+      public Builder setMaxWaitNum(int value) {
 
-        timeoutHandleType_ = value;
+        maxWaitNum_ = value;
         bitField0_ |= 0x00008000;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int32 timeoutHandleType = 16;</code>
+       * <code>optional int32 maxWaitNum = 16;</code>
        * @return This builder for chaining.
        */
-      public Builder clearTimeoutHandleType() {
+      public Builder clearMaxWaitNum() {
         bitField0_ = (bitField0_ & ~0x00008000);
-        timeoutHandleType_ = 0;
+        maxWaitNum_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int logAutoDelHours_ ;
+      /**
+       * <code>optional int32 logAutoDelHours = 17;</code>
+       * @return Whether the logAutoDelHours field is set.
+       */
+      @Override
+      public boolean hasLogAutoDelHours() {
+        return ((bitField0_ & 0x00010000) != 0);
+      }
+      /**
+       * <code>optional int32 logAutoDelHours = 17;</code>
+       * @return The logAutoDelHours.
+       */
+      @Override
+      public int getLogAutoDelHours() {
+        return logAutoDelHours_;
+      }
+      /**
+       * <code>optional int32 logAutoDelHours = 17;</code>
+       * @param value The logAutoDelHours to set.
+       * @return This builder for chaining.
+       */
+      public Builder setLogAutoDelHours(int value) {
+
+        logAutoDelHours_ = value;
+        bitField0_ |= 0x00010000;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 logAutoDelHours = 17;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearLogAutoDelHours() {
+        bitField0_ = (bitField0_ & ~0x00010000);
+        logAutoDelHours_ = 0;
         onChanged();
         return this;
       }
 
       private long nextTriggerTime_ ;
       /**
-       * <code>optional int64 nextTriggerTime = 17;</code>
+       * <code>optional int64 nextTriggerTime = 18;</code>
        * @return Whether the nextTriggerTime field is set.
        */
       @Override
       public boolean hasNextTriggerTime() {
-        return ((bitField0_ & 0x00010000) != 0);
+        return ((bitField0_ & 0x00020000) != 0);
       }
       /**
-       * <code>optional int64 nextTriggerTime = 17;</code>
+       * <code>optional int64 nextTriggerTime = 18;</code>
        * @return The nextTriggerTime.
        */
       @Override
@@ -4163,23 +4262,23 @@ public final class JobProto {
         return nextTriggerTime_;
       }
       /**
-       * <code>optional int64 nextTriggerTime = 17;</code>
+       * <code>optional int64 nextTriggerTime = 18;</code>
        * @param value The nextTriggerTime to set.
        * @return This builder for chaining.
        */
       public Builder setNextTriggerTime(long value) {
 
         nextTriggerTime_ = value;
-        bitField0_ |= 0x00010000;
+        bitField0_ |= 0x00020000;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 nextTriggerTime = 17;</code>
+       * <code>optional int64 nextTriggerTime = 18;</code>
        * @return This builder for chaining.
        */
       public Builder clearNextTriggerTime() {
-        bitField0_ = (bitField0_ & ~0x00010000);
+        bitField0_ = (bitField0_ & ~0x00020000);
         nextTriggerTime_ = 0L;
         onChanged();
         return this;
@@ -4187,15 +4286,15 @@ public final class JobProto {
 
       private long lastExecuteEndTime_ ;
       /**
-       * <code>optional int64 lastExecuteEndTime = 18;</code>
+       * <code>optional int64 lastExecuteEndTime = 19;</code>
        * @return Whether the lastExecuteEndTime field is set.
        */
       @Override
       public boolean hasLastExecuteEndTime() {
-        return ((bitField0_ & 0x00020000) != 0);
+        return ((bitField0_ & 0x00040000) != 0);
       }
       /**
-       * <code>optional int64 lastExecuteEndTime = 18;</code>
+       * <code>optional int64 lastExecuteEndTime = 19;</code>
        * @return The lastExecuteEndTime.
        */
       @Override
@@ -4203,23 +4302,23 @@ public final class JobProto {
         return lastExecuteEndTime_;
       }
       /**
-       * <code>optional int64 lastExecuteEndTime = 18;</code>
+       * <code>optional int64 lastExecuteEndTime = 19;</code>
        * @param value The lastExecuteEndTime to set.
        * @return This builder for chaining.
        */
       public Builder setLastExecuteEndTime(long value) {
 
         lastExecuteEndTime_ = value;
-        bitField0_ |= 0x00020000;
+        bitField0_ |= 0x00040000;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 lastExecuteEndTime = 18;</code>
+       * <code>optional int64 lastExecuteEndTime = 19;</code>
        * @return This builder for chaining.
        */
       public Builder clearLastExecuteEndTime() {
-        bitField0_ = (bitField0_ & ~0x00020000);
+        bitField0_ = (bitField0_ & ~0x00040000);
         lastExecuteEndTime_ = 0L;
         onChanged();
         return this;
@@ -4807,19 +4906,19 @@ public final class JobProto {
       "\n\rjobRaft.proto\022\005jraft\"\036\n\rAssignRequest\022" +
       "\r\n\005jobId\030\001 \002(\003\"\032\n\tRmRequest\022\r\n\005jobId\030\001 \001" +
       "(\003\";\n\010Response\022\017\n\007success\030\001 \002(\010\022\020\n\010error" +
-      "Msg\030\002 \001(\t\022\014\n\004data\030\003 \001(\t\"\360\002\n\024PushIntoTime" +
+      "Msg\030\002 \001(\t\022\014\n\004data\030\003 \001(\t\"\202\003\n\024PushIntoTime" +
       "rRequest\022\r\n\005jobId\030\001 \002(\003\022\014\n\004name\030\002 \001(\t\022\020\n" +
       "\010workerId\030\003 \001(\005\022\021\n\tstartTime\030\004 \001(\003\022\017\n\007en" +
       "dTime\030\005 \001(\003\022\025\n\rprocessorType\030\006 \001(\005\022\021\n\tpr" +
       "ocessor\030\007 \001(\t\022\r\n\005param\030\010 \001(\t\022\023\n\013triggerT" +
       "ype\030\t \001(\005\022\014\n\004cron\030\n \001(\t\022\016\n\006speedS\030\013 \001(\005\022" +
       "\020\n\010delayedS\030\014 \001(\005\022\021\n\trouteType\030\r \001(\005\022\022\n\n" +
-      "retryCount\030\016 \001(\005\022\020\n\010timeoutS\030\017 \001(\005\022\031\n\021ti" +
-      "meoutHandleType\030\020 \001(\005\022\027\n\017nextTriggerTime" +
-      "\030\021 \001(\003\022\032\n\022lastExecuteEndTime\030\022 \001(\003\"\'\n\026Re" +
-      "moveFromTimerRequest\022\r\n\005jobId\030\001 \002(\003B1\n%c" +
-      "om.github.vizaizai.server.raft.protoB\010Jo" +
-      "bProto"
+      "retryCount\030\016 \001(\005\022\020\n\010timeoutS\030\017 \001(\005\022\022\n\nma" +
+      "xWaitNum\030\020 \001(\005\022\027\n\017logAutoDelHours\030\021 \001(\005\022" +
+      "\027\n\017nextTriggerTime\030\022 \001(\003\022\032\n\022lastExecuteE" +
+      "ndTime\030\023 \001(\003\"\'\n\026RemoveFromTimerRequest\022\r" +
+      "\n\005jobId\030\001 \002(\003B1\n%com.github.vizaizai.ser" +
+      "ver.raft.protoB\010JobProto"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -4848,7 +4947,7 @@ public final class JobProto {
     internal_static_jraft_PushIntoTimerRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_jraft_PushIntoTimerRequest_descriptor,
-        new String[] { "JobId", "Name", "WorkerId", "StartTime", "EndTime", "ProcessorType", "Processor", "Param", "TriggerType", "Cron", "SpeedS", "DelayedS", "RouteType", "RetryCount", "TimeoutS", "TimeoutHandleType", "NextTriggerTime", "LastExecuteEndTime", });
+        new String[] { "JobId", "Name", "WorkerId", "StartTime", "EndTime", "ProcessorType", "Processor", "Param", "TriggerType", "Cron", "SpeedS", "DelayedS", "RouteType", "RetryCount", "TimeoutS", "MaxWaitNum", "LogAutoDelHours", "NextTriggerTime", "LastExecuteEndTime", });
     internal_static_jraft_RemoveFromTimerRequest_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_jraft_RemoveFromTimerRequest_fieldAccessorTable = new

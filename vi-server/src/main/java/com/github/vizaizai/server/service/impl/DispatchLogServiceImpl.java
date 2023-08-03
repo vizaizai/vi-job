@@ -6,9 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.github.vizaizai.common.contants.BizCode;
 import com.github.vizaizai.common.contants.ExecuteStatus;
-import com.github.vizaizai.common.model.LogInfo;
-import com.github.vizaizai.common.model.LogQueryParam;
-import com.github.vizaizai.common.model.Result;
+import com.github.vizaizai.common.model.*;
 import com.github.vizaizai.remote.codec.RpcResponse;
 import com.github.vizaizai.remote.utils.Utils;
 import com.github.vizaizai.server.constant.DispatchStatus;
@@ -26,8 +24,10 @@ import com.github.vizaizai.server.web.dto.DispatchLogDTO;
 import com.github.vizaizai.server.web.dto.WorkerDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -72,7 +72,9 @@ public class DispatchLogServiceImpl implements DispatchLogService {
                     record.setJobName(jobDO.getName());
                     record.setWorkerName(map.get(record.getWorkerId()));
                 }
-
+                if (Objects.equals(record.getExecuteStatus(), ExecuteStatus.ING.getCode())) {
+                    record.setExecStatus(this.getExecStatus(record.getWorkerAddress(), record.getJobId(), record.getId()));
+                }
             }
         }
         return Result.handleSuccess(dispatchLogPage);
@@ -103,14 +105,71 @@ public class DispatchLogServiceImpl implements DispatchLogService {
         return Result.handleSuccess(logInfo);
     }
 
+    @Transactional
     @Override
-    public Result<Void> kill(Long id) {
+    public Result<Void> cancel(Long id) {
         DispatchLogDO dispatchLog = dispatchLogMapper.selectById(id);
         if (dispatchLog == null) {
             return Result.handleFailure("调度记录不存在");
         }
         if (!Objects.equals(ExecuteStatus.ING.getCode(), dispatchLog.getExecuteStatus())) {
-            return Result.handleFailure("当前执行状态无法中断执行");
+            return Result.handleFailure("当前执行状态无法取消执行");
+        }
+        // 执行取消
+        boolean canceled = this.cancel(dispatchLog.getWorkerAddress(), dispatchLog.getJobId(), dispatchLog.getId());
+        if (canceled) {
+            DispatchLogDO dispatchLogForUpdate = new DispatchLogDO();
+            dispatchLogForUpdate.setId(id);
+            dispatchLogForUpdate.setExecuteStatus(ExecuteStatus.EXEC_CANCEL.getCode());
+            dispatchLogMapper.updateById(dispatchLogForUpdate);
+            return Result.ok("取消成功");
+        }
+        return Result.handleFailure("取消失败，任务正在执行或已执行完毕");
+    }
+
+    @Transactional
+    @Override
+    public Result<Void> remove(Long id) {
+        dispatchLogMapper.deleteById(id);
+        return Result.ok();
+    }
+
+    @Override
+    public int batchRemove() {
+        return dispatchLogMapper.delete(Wrappers.<DispatchLogDO>lambdaQuery()
+                .lt(DispatchLogDO::getExpectedDeleteTime, LocalDateTimeUtil.now()));
+    }
+
+    /**
+     * 取消执行
+     * @param address 地址
+     * @param jobId 任务id
+     * @param dispatchLogId 调度id
+     */
+    private boolean cancel(String address, Long jobId, Long dispatchLogId) {
+        ExecCancelParam param = new ExecCancelParam();
+        param.setJobId(jobId);
+        param.setJobDispatchId(dispatchLogId);
+        RpcResponse response = RpcUtils.call(address, BizCode.CANCEL, param);
+        if (response.getSuccess()) {
+            return (boolean) response.getResult();
+        }
+        return false;
+    }
+    /**
+     * 查询执行状态
+     * @param address 地址
+     * @param jobId 任务id
+     * @param dispatchLogId 调度id
+     * @return 状态
+     */
+    private Integer getExecStatus(String address, Long jobId, Long dispatchLogId) {
+        ExecStatusQueryParam param = new ExecStatusQueryParam();
+        param.setJobId(jobId);
+        param.setJobDispatchId(dispatchLogId);
+        RpcResponse response = RpcUtils.call(address, BizCode.STATUS, param);
+        if (response.getSuccess()) {
+            return (Integer) response.getResult();
         }
         return null;
     }

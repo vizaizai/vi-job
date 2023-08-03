@@ -34,10 +34,9 @@ public class TaskTriggerParam implements Serializable {
      */
     private Integer executeTimeout;
     /**
-     * 任务超时处理策略 1-标记 2-中断
+     * 最大等待数
      */
-    private Integer timeoutHandleType = 1;
-
+    private Integer maxWaitNum;
 
     public Long getJobId() {
         return jobId;
@@ -87,13 +86,11 @@ public class TaskTriggerParam implements Serializable {
         this.executeTimeout = executeTimeout;
     }
 
-    public Integer getTimeoutHandleType() {
-        return timeoutHandleType;
+    public Integer getMaxWaitNum() {
+        return maxWaitNum;
     }
 
-    public void setTimeoutHandleType(Integer timeoutHandleType) {
-        this.timeoutHandleType = timeoutHandleType;
+    public void setMaxWaitNum(Integer maxWaitNum) {
+        this.maxWaitNum = maxWaitNum;
     }
-
-
 }

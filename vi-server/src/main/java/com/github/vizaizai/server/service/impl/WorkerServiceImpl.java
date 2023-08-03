@@ -113,11 +113,19 @@ public class WorkerServiceImpl implements WorkerService {
         //是否存在
         List<RegistryDO> registries = registryMapper.selectList(Wrappers.<RegistryDO>lambdaQuery()
                 .eq(RegistryDO::getAddress, registerCO.getAddress()));
+
         // 注册已存在则更新时间
         if (Utils.isNotEmpty(registries)) {
             registryMapper.update(null, Wrappers.<RegistryDO>lambdaUpdate()
                     .eq(RegistryDO::getAddress, registerCO.getAddress())
                     .set(RegistryDO::getUpdateTime, LocalDateTimeUtil.now()));
+
+            String key = Commons.WORKER_NODE_KEY + registries.get(0).getWorkerId();
+            Set<String> members = KVUtils.stMembers(Commons.WORKER_NODE_KEY + registries.get(0).getWorkerId());
+            if (!members.contains(registerCO.getAddress())) {
+                KVUtils.stAdd(key, registerCO.getAddress());
+            }
+
             return Result.ok("更新成功");
         }
 

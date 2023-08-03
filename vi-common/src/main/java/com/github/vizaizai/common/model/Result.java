@@ -2,13 +2,14 @@ package com.github.vizaizai.common.model;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * @author liaochongwei
  * @date 2023/5/16 17:15
  */
-public class Result<T> {
+public class Result<T>  implements Serializable {
     private Integer code;
     private String msg;
     private T data;

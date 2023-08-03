@@ -22,7 +22,7 @@ public class IdleExecutor implements BizProcessor {
         if (runner == null || !runner.isRunning()) {
             response = RpcResponse.ok(TaskResult.ok());
         }else {
-            response = RpcResponse.ok( TaskResult.fail("Job["+jobId+"] is busy"));
+            response = RpcResponse.ok(TaskResult.fail("Job["+jobId+"] is busy"));
         }
         sender.send(RpcMessage.createResponse(request.getRid(),response));
     }

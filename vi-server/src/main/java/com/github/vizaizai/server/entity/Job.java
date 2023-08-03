@@ -3,10 +3,12 @@ package com.github.vizaizai.server.entity;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import com.github.vizaizai.retry.mode.CronSequenceGenerator;
 import com.github.vizaizai.server.constant.TriggerType;
+import com.github.vizaizai.server.utils.ContextUtil;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.concurrent.ExecutorService;
 
 /**
  * 任务实体
@@ -85,9 +87,13 @@ public class Job {
      */
     private Integer timeoutS;
     /**
-     * 任务超时处理策略 1-标记 2-中断
+     * 最大等待数量
      */
-    private Integer timeoutHandleType;
+    private Integer maxWaitNum;
+    /**
+     * 调度记录自动删除时间（小时）
+     */
+    private Integer logAutoDelHours;
     /**
      * 下次触发时间
      */

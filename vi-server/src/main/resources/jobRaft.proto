@@ -35,9 +35,10 @@ message PushIntoTimerRequest {
   optional int32 routeType = 13;
   optional int32 retryCount = 14;
   optional int32 timeoutS = 15;
-  optional int32 timeoutHandleType = 16;
-  optional int64 nextTriggerTime = 17;
-  optional int64 lastExecuteEndTime = 18;
+  optional int32 maxWaitNum = 16;
+  optional int32 logAutoDelHours = 17;
+  optional int64 nextTriggerTime = 18;
+  optional int64 lastExecuteEndTime = 19;
 }
 
 message RemoveFromTimerRequest {

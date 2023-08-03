@@ -4,7 +4,6 @@ import com.github.vizaizai.remote.utils.Utils;
 import com.github.vizaizai.server.constant.Commons;
 import com.github.vizaizai.server.dao.dataobject.JobDO;
 import com.github.vizaizai.server.entity.Job;
-import com.github.vizaizai.server.raft.RaftServer;
 import com.github.vizaizai.server.service.GlobalJobGroupManager;
 import com.github.vizaizai.server.service.JobService;
 import com.github.vizaizai.server.utils.BeanUtils;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * job计划任务
@@ -23,36 +21,18 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @Component
-public class JobScheduleTask {
-
+public class JobScheduleTask extends BaseTask{
     @Resource
     private JobService jobService;
     @Resource
-    private RaftServer raftServer;
-    @Resource
     private GlobalJobGroupManager globalJobGroupManager;
-    /**
-     * 是否首次执行
-     */
-    private static boolean firstExecute = true;
     /**
      * 3分钟执行一次,将5分钟内触发的任务添加到触发Timer中
      */
     @Scheduled(fixedDelay = 1000 * 60 * 3)
     public void schedule() {
-        if (raftServer.isCluster()) {
-            // 集群环境首次执行延时5秒，避免快照数据未加载导致获取不到数据
-            if (firstExecute) {
-                try {
-                    TimeUnit.SECONDS.sleep(5);
-                }catch (Exception ignored) {
-                }
-                firstExecute = false;
-            }
-            raftServer.waitingToStart();
-            if (!raftServer.isLeader()) {
-                return;
-            }
+        if (!this.execTask()) {
+            return;
         }
         List<JobDO> jobs = jobService.listWaitingJobs(System.currentTimeMillis() + Commons.TIMER_MAX);
         if (Utils.isEmpty(jobs)) {

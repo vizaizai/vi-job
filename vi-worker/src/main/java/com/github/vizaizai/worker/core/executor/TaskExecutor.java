@@ -63,17 +63,14 @@ public class TaskExecutor implements BizProcessor {
         // 执行处理器
         BasicProcessor basicProcessor = processors.get(triggerParam.getJobName());
         if (basicProcessor != null) {
-            result = TaskResult.ok();
+            // 推入待执行任务队列中
+            TaskContext taskContext = new TaskContext(triggerParam, sender);
+            JobProcessRunner runner = JobProcessRunner.getInstance(triggerParam.getJobId(), basicProcessor);
+            result = runner.pushTaskQueue(taskContext);
         }else {
             result = TaskResult.fail("Processor not found");
         }
         // 响应客户端
         sender.send(RpcMessage.createResponse(request.getRid(),RpcResponse.ok(result)));
-        if (basicProcessor != null) {
-            // 推入待执行任务队列中
-            TaskContext taskContext = new TaskContext(triggerParam, sender);
-            JobProcessRunner runner = JobProcessRunner.getInstance(triggerParam.getJobId(), basicProcessor);
-            runner.pushTaskQueue(taskContext);
-        }
     }
 }

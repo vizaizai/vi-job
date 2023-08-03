@@ -6,16 +6,18 @@ import com.github.vizaizai.remote.server.Server;
 import com.github.vizaizai.remote.server.netty.NettyServer;
 import com.github.vizaizai.remote.utils.NetUtils;
 import com.github.vizaizai.remote.utils.Utils;
-import com.github.vizaizai.worker.core.executor.IdleExecutor;
-import com.github.vizaizai.worker.core.executor.LogExecutor;
-import com.github.vizaizai.worker.core.executor.TaskExecutor;
+import com.github.vizaizai.worker.core.executor.*;
 import com.github.vizaizai.worker.runner.JobProcessRunner;
-import com.github.vizaizai.worker.runner.RegistryRunner;
+import com.github.vizaizai.worker.runner.LogClearScheduledRunner;
+import com.github.vizaizai.worker.runner.RegistryScheduledRunner;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * 启动器
@@ -43,12 +45,22 @@ public class ViStarter {
     /**
      * 日志路径
      */
-    private String logBasePath = "/tmp/applogs";
-
+    private String logBasePath;
+    /**
+     * 日志最大保留天数
+     */
+    private Integer logMaxHistory;
     /**
      * 调度中心地址列表
      */
     private final List<String> severAddrList = new ArrayList<>();
+    /**
+     * scheduled线程池
+     */
+    private final static ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2,
+            new BasicThreadFactory.Builder().namingPattern("Scheduled-%d").build());
+
+
     public String getAppName() {
         return appName;
     }
@@ -80,7 +92,10 @@ public class ViStarter {
             // 关闭任务运行
             JobProcessRunner.shutdownAll();
             // 关闭注册
-            RegistryRunner.shutdown();
+            RegistryScheduledRunner.shutdown();
+            // 关闭日志清理
+            LogClearScheduledRunner.shutdown();
+
         }catch (Exception e) {
             logger.error("ShutDownFailure.",e);
         }
@@ -89,16 +104,22 @@ public class ViStarter {
     private void initEmbedServer() {
         // 获取主机地址
         this.host = this.host == null || this.host.trim().length() == 0 ? NetUtils.getLocalHost() : this.host;
-        logger.info("address: {}", host+":" + port);
         Server server = new NettyServer(this.host, this.port);
         server.addBizProcessor(BizCode.RUN, new TaskExecutor());
         server.addBizProcessor(BizCode.IDlE, new IdleExecutor());
         server.addBizProcessor(BizCode.LOG, new LogExecutor());
+        server.addBizProcessor(BizCode.CANCEL, new ExecCancelExecutor());
+        server.addBizProcessor(BizCode.STATUS, new ExecStatusExecutor());
         server.start();
     }
 
     private void registry() {
-        RegistryRunner.initAndStart(this.host + ":" + this.port,  this.appName, this.getSeverAddrList());
+        RegistryScheduledRunner.initAndStart(this.host + ":" + this.port,  this.appName,
+                this.getSeverAddrList(), scheduledExecutorService);
+    }
+
+    private void startLogClearRunner() {
+        LogClearScheduledRunner.initAndStart(this.logBasePath, this.logMaxHistory, scheduledExecutorService);
     }
 
     void checkParams() {
@@ -111,9 +132,11 @@ public class ViStarter {
         if (StringUtils.isBlank(serverAddr.trim())) {
             throw new IllegalArgumentException("ServerAddr invalid");
         }
-
         if (StringUtils.isBlank(logBasePath)) {
             throw new IllegalArgumentException("LogBasePath invalid");
+        }
+        if (this.logMaxHistory == null) {
+            throw new IllegalArgumentException("logMaxHistory must be not null");
         }
 
         String[] addrArray = serverAddr.split(",");
@@ -162,5 +185,13 @@ public class ViStarter {
 
     public void setLogBasePath(String logBasePath) {
         this.logBasePath = logBasePath;
+    }
+
+    public Integer getLogMaxHistory() {
+        return logMaxHistory;
+    }
+
+    public void setLogMaxHistory(Integer logMaxHistory) {
+        this.logMaxHistory = logMaxHistory;
     }
 }

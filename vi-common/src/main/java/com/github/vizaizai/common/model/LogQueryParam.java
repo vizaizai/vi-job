@@ -1,13 +1,13 @@
 package com.github.vizaizai.common.model;
 
-import java.time.LocalDate;
+import java.io.Serializable;
 
 /**
  * 日志查询参数
  * @author liaochongwei
  * @date 2023/7/10 16:35
  */
-public class LogQueryParam {
+public class LogQueryParam  implements Serializable {
     /**
      * 任务id
      */

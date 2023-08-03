@@ -50,7 +50,7 @@ public class DispatchLogDTO {
     private Integer dispatchStatus;
 
     /**
-     * 执行状态 0-执行失败 1-执行中 2-执行成功 3-执行成功（超时） 4-超时中断 5-主动中断
+     * 执行状态 0-执行失败 1-执行中 2-执行成功 3-执行超时3-执行超时 4-取消
      */
     private Integer executeStatus;
     /**
@@ -85,4 +85,9 @@ public class DispatchLogDTO {
      */
     @JsonFormat(pattern = Commons.DT_PATTERN)
     private LocalDateTime createTime;
+
+    /**
+     * 执行状态 0-缺省 1-执行中 2-待执行
+     */
+    private Integer execStatus;
 }

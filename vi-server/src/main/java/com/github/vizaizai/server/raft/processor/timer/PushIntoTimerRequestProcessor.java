@@ -39,7 +39,8 @@ public class PushIntoTimerRequestProcessor implements RpcProcessor<JobProto.Push
         job.setRouteType(request.getRouteType());
         job.setRetryCount(request.getRetryCount());
         job.setTimeoutS(request.getTimeoutS());
-        job.setTimeoutHandleType(request.getTimeoutHandleType());
+        job.setMaxWaitNum(request.getMaxWaitNum());
+        job.setLogAutoDelHours(request.getLogAutoDelHours());
         if (request.getNextTriggerTime() > 0L) {
             job.setNextTriggerTime(request.getNextTriggerTime());
         }

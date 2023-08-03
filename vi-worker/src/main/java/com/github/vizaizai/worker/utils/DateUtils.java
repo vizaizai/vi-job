@@ -1,6 +1,7 @@
 package com.github.vizaizai.worker.utils;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -29,6 +30,16 @@ public class DateUtils {
         return dateTimeFormatter.format(temporal);
     }
 
+    /**
+     * 解析成LocalDate
+     * @param text 字符串
+     * @param pattern 格式
+     * @return LocalDateTime
+     */
+    public static LocalDate parseDate(String text, String pattern) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(pattern);
+        return LocalDate.parse(text, dateTimeFormatter);
+    }
     public static LocalDateTime parse(long timestamp) {
         return Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()).toLocalDateTime();
     }

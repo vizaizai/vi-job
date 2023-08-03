@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -19,8 +21,8 @@ import java.util.concurrent.TimeUnit;
  * @author liaochongwei
  * @date 2023/5/9 16:26
  */
-public class RegistryRunner extends Thread {
-
+public class RegistryScheduledRunner implements Runnable {
+   private static final Logger logger = LoggerFactory.getLogger(RegistryScheduledRunner.class);
     /**
      * 注册地址
      */
@@ -33,11 +35,8 @@ public class RegistryRunner extends Thread {
      * 调度中心地址列表
      */
     private List<String> serverAddrList;
-    /**
-     * 是否停止
-     */
-    private boolean stop = false;
-    private static final Logger logger = LoggerFactory.getLogger(RegistryRunner.class);
+
+    private ScheduledFuture<?> scheduledFuture;
     /**
      * 注册地址
      */
@@ -46,8 +45,8 @@ public class RegistryRunner extends Thread {
      * 注销地址
      */
     private static final String UNREGISTER_URL = "/worker/unregister";
-    private static RegistryRunner runner;
-    private RegistryRunner() {
+    private static RegistryScheduledRunner runner;
+    private RegistryScheduledRunner() {
     }
 
 
@@ -57,41 +56,34 @@ public class RegistryRunner extends Thread {
      * @param appName 应用名称
      * @param serverAddrList 调度中心地址列表
      */
-    public static void initAndStart(String address, String appName, List<String> serverAddrList) {
+    public static void initAndStart(String address, String appName,
+                                    List<String> serverAddrList, ScheduledExecutorService scheduledExecutorService) {
         if (runner != null) {
             return;
         }
-        runner = new RegistryRunner();
+        runner = new RegistryScheduledRunner();
         runner.address = address;
         runner.appName = appName;
         runner.serverAddrList = serverAddrList;
-        runner.setName("registry");
-        runner.start();
-        logger.info(">>>>>>>>>>Thead[{}] started, serverAddr:{}", runner.getName(), String.join(",", serverAddrList));
+        runner.scheduledFuture = scheduledExecutorService.scheduleWithFixedDelay(runner, 1, 60, TimeUnit.SECONDS);
+        logger.debug(">>>>>>>>>>RegistryRunner started, serverAddr:{}", String.join(",", serverAddrList));
 
     }
     @Override
     public void run() {
-        while (!stop) {
-            for (String serverAddr : serverAddrList) {
-                boolean success = this.process(serverAddr + REGISTER_URL);
-                if (success) {
-                    logger.debug(">>>>>>>>>>Worker register success.");
-                    break;
-                }
-                logger.warn("Worker register fail, serverAddr:{}", serverAddr);
+        for (String serverAddr : serverAddrList) {
+            boolean success = this.process(serverAddr + REGISTER_URL);
+            if (success) {
+                logger.debug(">>>>>>>>>>Worker register success.");
+                break;
             }
-            try {
-                // 休眠60s
-                TimeUnit.SECONDS.sleep(60);
-            }catch (Exception ignored) {
-            }
+            logger.warn("Worker register fail, serverAddr:{}", serverAddr);
         }
     }
 
     public static void shutdown() {
         try {
-            RegistryRunner runner = RegistryRunner.runner;
+            RegistryScheduledRunner runner = RegistryScheduledRunner.runner;
             if (runner != null) {
                 for (String serverAddr : runner.serverAddrList) {
                     boolean success = runner.process(serverAddr + UNREGISTER_URL);
@@ -100,11 +92,7 @@ public class RegistryRunner extends Thread {
                         break;
                     }
                 }
-                if (runner.isInterrupted()) {
-                    runner.interrupt();
-                }
-                runner.stop = true;
-
+                runner.scheduledFuture.cancel(true);
             }
 
         }catch (Exception e) {

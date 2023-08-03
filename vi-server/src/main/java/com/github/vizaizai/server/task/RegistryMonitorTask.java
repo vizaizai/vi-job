@@ -17,19 +17,18 @@ import java.util.List;
  */
 @Slf4j
 @Component
-public class RegistryMonitorTask {
+public class RegistryMonitorTask extends BaseTask{
     @Resource
     private WorkerService workerService;
-    @Resource
-    private RaftServer raftServer;
+
     /**
      * 一分钟扫描一次
      */
     @Scheduled(fixedDelay = 1000 * 60)
     public void check() {
-        if (raftServer.isCluster() && !raftServer.isLeader()) {
-            return;
-        }
+       if (!this.execTask()) {
+           return;
+       }
         List<RegistryDO> deadRegistries = workerService.listDeadRegistries();
         for (RegistryDO deadRegistry : deadRegistries) {
             workerService.removeRegistry(deadRegistry.getWorkerId(), deadRegistry.getAddress());

@@ -94,11 +94,17 @@ public class JobUpdateCO {
     @Range(min = 0, message = "任务超时时间参数错误")
     private Integer timeoutS;
     /**
-     * 任务超时处理策略 1-标记 2-中断
+     * 最大等待数量
      */
-    private Integer timeoutHandleType;
+    private Integer maxWaitNum;
+    /**
+     * 调度记录自动删除时间（小时）
+     */
+    @Range(min = 1, message = "自动删除时间最少1小时")
+    private Integer logAutoDelHours;
     /**
      * 新建人
      */
     private String creater;
+
 }
