@@ -26,8 +26,10 @@ public class DispatchLogClearTask extends BaseTask {
         if (!this.execTask()) {
            return;
         }
-        log.info(">>>>>>>>>>自动清理调度记录开始");
         int count = dispatchLogService.batchRemove();
-        log.info(">>>>>>>>>>自动清理调度记录结束，{}条", count);
+        if (count > 0) {
+            log.info("{} record was cleared", count);
+        }
+
     }
 }

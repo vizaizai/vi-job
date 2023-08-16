@@ -3,12 +3,10 @@ package com.github.vizaizai.server.entity;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import com.github.vizaizai.retry.mode.CronSequenceGenerator;
 import com.github.vizaizai.server.constant.TriggerType;
-import com.github.vizaizai.server.utils.ContextUtil;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.concurrent.ExecutorService;
 
 /**
  * 任务实体
@@ -106,9 +104,18 @@ public class Job {
      * 基准时间
      */
     private Long baseTime;
+    /**
+     * 直接运行
+     */
+    private boolean directRun;
+    /**
+     * 已取消执行
+     */
+    private boolean canceled;
 
-    public void resetNextTriggerTime() {
+    public Job resetNextTriggerTime() {
         this.nextTriggerTime = this.initNextTriggerTime();
+        return this;
     }
 
     /**
@@ -122,7 +129,8 @@ public class Job {
         LocalDateTime baseLocalTime = LocalDateTimeUtil.of(this.baseTime);
         // 未开始
         if (startTime != null && baseLocalTime.isBefore(startTime)) {
-            return initNextTriggerTime0(LocalDateTimeUtil.toEpochMilli(startTime));
+            this.baseTime = LocalDateTimeUtil.toEpochMilli(startTime);
+            return initNextTriggerTime0(baseTime);
         }
         // 已结束
         if (endTime != null && baseLocalTime.isAfter(endTime)) {
@@ -152,14 +160,9 @@ public class Job {
         if (triggerType == TriggerType.SPEED.getCode()) {
             return dateTime + speedS * 1000;
         }
-
-        // 固定延时，需要基于上一次执行完成时间
+        // 固定延时
         if (triggerType == TriggerType.DELAYED.getCode()) {
-            if (lastExecuteEndTime == null) {
-                return dateTime + delayedS  * 1000;
-            }
-            // 上一次未执行完成
-            return lastExecuteEndTime + delayedS * 1000;
+            return dateTime + delayedS * 1000;
         }
 
         return null;

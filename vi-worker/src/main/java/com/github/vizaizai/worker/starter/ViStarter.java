@@ -10,11 +10,13 @@ import com.github.vizaizai.worker.core.executor.*;
 import com.github.vizaizai.worker.runner.JobProcessRunner;
 import com.github.vizaizai.worker.runner.LogClearScheduledRunner;
 import com.github.vizaizai.worker.runner.RegistryScheduledRunner;
+import com.github.vizaizai.worker.runner.ReportRetryRunner;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -83,7 +85,11 @@ public class ViStarter {
         // 初始化内嵌服务
         this.initEmbedServer();
         // 注册调度中心
-        this.registry();
+        this.initRegistry();
+        // 日志清理
+        this.initLogClear();
+        // 上报重试
+        this.initReportRetry();
 
     }
 
@@ -113,13 +119,17 @@ public class ViStarter {
         server.start();
     }
 
-    private void registry() {
+    private void initRegistry() {
         RegistryScheduledRunner.initAndStart(this.host + ":" + this.port,  this.appName,
                 this.getSeverAddrList(), scheduledExecutorService);
     }
 
-    private void startLogClearRunner() {
+    private void initLogClear() {
         LogClearScheduledRunner.initAndStart(this.logBasePath, this.logMaxHistory, scheduledExecutorService);
+    }
+
+    private void initReportRetry() {
+        ReportRetryRunner.getInstance();
     }
 
     void checkParams() {
@@ -155,6 +165,7 @@ public class ViStarter {
             throw new IllegalArgumentException("ServerAddr invalid");
         }
         System.setProperty(PropsKeys.LOG_BASE_PATH, logBasePath);
+        System.setProperty(PropsKeys.SERVER_ADDR, String.join(",", severAddrList));
     }
 
 

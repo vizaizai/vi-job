@@ -20,6 +20,11 @@ public class StatusReportCO {
     private Long dispatchId;
 
     /**
+     * 触发类型
+     */
+    private Integer triggerType;
+
+    /**
      * 执行状态 0-失败 1-执行中 2-执行成功 3-执行超时3-执行超时 4-取消
      */
     @NotNull(message = "执行状态必须")
@@ -32,6 +37,9 @@ public class StatusReportCO {
      * 执行结束时间
      */
     private long executeEndTime;
-
+    /**
+     * 执行次数
+     */
+    private Integer execCount;
 
 }

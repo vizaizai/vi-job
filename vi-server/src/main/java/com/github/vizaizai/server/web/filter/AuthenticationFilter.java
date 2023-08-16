@@ -26,7 +26,8 @@ public class AuthenticationFilter implements Filter {
      */
     private static final String[] exclude = new String[] {
             "/user/login",
-            "/worker/**"
+            "/worker/**",
+            "/job/statusReport"
     };
 
     @Override

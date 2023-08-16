@@ -26,6 +26,10 @@ public class TaskTriggerParam implements Serializable {
      */
     private String jobParams;
     /**
+     * 触发类型
+     */
+    private Integer triggerType;
+    /**
      * 触发时间
      */
     private Long triggerTime;
@@ -37,6 +41,10 @@ public class TaskTriggerParam implements Serializable {
      * 最大等待数
      */
     private Integer maxWaitNum;
+    /**
+     * 执行失败重试次数
+     */
+    private Integer retryCount;
 
     public Long getJobId() {
         return jobId;
@@ -70,6 +78,14 @@ public class TaskTriggerParam implements Serializable {
         this.jobParams = jobParams;
     }
 
+    public Integer getTriggerType() {
+        return triggerType;
+    }
+
+    public void setTriggerType(Integer triggerType) {
+        this.triggerType = triggerType;
+    }
+
     public Long getTriggerTime() {
         return triggerTime;
     }
@@ -92,5 +108,13 @@ public class TaskTriggerParam implements Serializable {
 
     public void setMaxWaitNum(Integer maxWaitNum) {
         this.maxWaitNum = maxWaitNum;
+    }
+
+    public Integer getRetryCount() {
+        return retryCount;
+    }
+
+    public void setRetryCount(Integer retryCount) {
+        this.retryCount = retryCount;
     }
 }

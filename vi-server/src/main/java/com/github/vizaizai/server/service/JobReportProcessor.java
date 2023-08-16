@@ -29,7 +29,6 @@ public class JobReportProcessor implements BizProcessor {
         StatusReportParam reportParam = (StatusReportParam) request.getParam();
         StatusReportCO statusReportCO = BeanUtils.toBean(reportParam, StatusReportCO::new);
         try {
-            log.info(">>>>>>>>>>开始处理状态上报");
             Result<Void> result = jobService.statusReport(statusReportCO);
             sender.send(RpcMessage.createResponse(request.getRid(), RpcResponse.ok(result)));
         }catch (Exception e) {

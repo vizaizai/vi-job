@@ -8,12 +8,14 @@ import com.github.vizaizai.remote.codec.RpcResponse;
 import com.github.vizaizai.remote.common.sender.Sender;
 import com.github.vizaizai.worker.core.HttpSender;
 import com.github.vizaizai.worker.core.TaskContext;
+import com.github.vizaizai.worker.starter.Commons;
 import com.github.vizaizai.worker.utils.JSONUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -28,9 +30,13 @@ public class ReportRunner extends Thread{
      */
     private static final String STATUS_REPORT_URL = "/job/statusReport";
     /**
+     * 调度中心地址
+     */
+    private String serverAddr;
+    /**
      * 待上报队列
      */
-    private final BlockingQueue<TaskContext> waitingReports = new LinkedBlockingQueue<>();
+    private static final BlockingQueue<TaskContext> waitingReports = new LinkedBlockingQueue<>();
     private static volatile ReportRunner runner = null;
     private boolean stop = false;
 
@@ -42,6 +48,7 @@ public class ReportRunner extends Thread{
             synchronized (ReportRunner.class) {
                 if (runner == null) {
                     runner = new ReportRunner();
+                    runner.serverAddr = Commons.getServerAddr();
                     runner.setName("reporter");
                     runner.start();
                 }
@@ -56,6 +63,9 @@ public class ReportRunner extends Thread{
      */
     public void pushReportQueue(TaskContext taskContext) {
         try {
+            if (this.stop) {
+                 throw new IllegalStateException("Report runner is stopped");
+            }
             waitingReports.put(taskContext);
         }catch (Exception e) {
             logger.error("Report-Queue operation error,",e);
@@ -63,30 +73,29 @@ public class ReportRunner extends Thread{
         }
     }
 
-
     @Override
     public void run() {
         long startTime = System.currentTimeMillis();
         while (!stop) {
             try {
-                TaskContext taskContext = this.waitingReports.poll(5, TimeUnit.SECONDS);
+                TaskContext taskContext = waitingReports.poll(5, TimeUnit.SECONDS);
                 if (taskContext != null) {
                     try {
                         this.doReport(taskContext);
                     }catch (Exception e) {
                         logger.warn("job#{} report fail, {}",taskContext.getTriggerParam().getJobName(), e.getMessage());
-                        this.waitingReports.put(taskContext);
+                        // 上报失败，保存重试参数
+                        ReportRetryRunner.getInstance().writeRetryParam(taskContext.getReportParam());
                     }
                     // 重置时间
                     startTime = System.currentTimeMillis();
                 }else {
                     // 空闲120s停止运行器
-                    if ((System.currentTimeMillis() - startTime) / 1000 >= 120
+                    if (System.currentTimeMillis() - startTime > Commons.MAX_IDLE
                             && waitingReports.size() == 0) {
                         runner = null;
                         stop = true;
-                        logger.info("Thead[{}] idle 120s", this.getName());
-                        this.interrupt();
+                        logger.debug("Thead[{}] idle 120s", this.getName());
                     }
                 }
             }catch (Exception e) {
@@ -98,10 +107,10 @@ public class ReportRunner extends Thread{
     }
 
     @SuppressWarnings("rawtypes")
-    private void doReport(TaskContext taskContext) {
+    public void doReport(TaskContext taskContext) {
         Sender sender = taskContext.getSender();
         if (sender != null && sender.available()) {
-            RpcResponse response = (RpcResponse) sender.sendAndRevResponse(RpcRequest.wrap(BizCode.REPORT, taskContext.getReportParam()), 30000);
+            RpcResponse response = (RpcResponse) sender.sendAndRevResponse(RpcRequest.wrap(BizCode.REPORT, taskContext.getReportParam()), 3000);
             if (!response.getSuccess()) {
                 throw new RuntimeException(response.getMsg());
             }
@@ -109,11 +118,10 @@ public class ReportRunner extends Thread{
             if (!result.isSuccess()) {
                 throw new RuntimeException(result.getMsg());
             }
-
         }else {
             // http上报
-            sender = new HttpSender(STATUS_REPORT_URL);
-            String response = (String) sender.sendAndRevResponse(taskContext.getReportParam(), 30000);
+            sender = new HttpSender(this.getRandomServerAddr() + STATUS_REPORT_URL);
+            String response = (String) sender.sendAndRevResponse(taskContext.getReportParam(), 3000);
             if (StringUtils.isBlank(response)) {
                 throw new RuntimeException("http请求异常");
             }
@@ -122,5 +130,15 @@ public class ReportRunner extends Thread{
                 throw new RuntimeException(result.getMsg());
             }
         }
+    }
+
+    /**
+     * 获取随机地址
+     * @return addr
+     */
+    private String getRandomServerAddr() {
+        String[] addrs = serverAddr.split(",");
+        int nextInt = ThreadLocalRandom.current().nextInt(0, addrs.length);
+        return addrs[nextInt];
     }
 }

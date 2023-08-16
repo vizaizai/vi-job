@@ -151,5 +151,4 @@ public class Utils {
     public static <K, V> Map<K, V> newHashMap(int size) {
         return newHashMap(size, false);
     }
-
 }

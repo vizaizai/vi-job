@@ -81,13 +81,17 @@ public class DispatchLogDTO {
     @JsonFormat(pattern = Commons.DT_PATTERN)
     private LocalDateTime executeEndTime;
     /**
+     * 执行次数
+     */
+    private Integer execCount;
+    /**
      * 创建时间
      */
     @JsonFormat(pattern = Commons.DT_PATTERN)
     private LocalDateTime createTime;
 
     /**
-     * 执行状态 0-缺省 1-执行中 2-待执行
+     * 执行状态 0-未知 1-执行中 2-待执行
      */
     private Integer execStatus;
 }

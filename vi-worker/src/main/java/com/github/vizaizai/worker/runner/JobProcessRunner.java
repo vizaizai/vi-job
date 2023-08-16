@@ -1,6 +1,7 @@
 package com.github.vizaizai.worker.runner;
 
 import com.github.vizaizai.common.contants.ExecuteStatus;
+import com.github.vizaizai.common.contants.ExtendExecStatus;
 import com.github.vizaizai.common.model.StatusReportParam;
 import com.github.vizaizai.common.model.TaskResult;
 import com.github.vizaizai.common.model.TaskTriggerParam;
@@ -8,6 +9,7 @@ import com.github.vizaizai.logging.LoggerFactory;
 import com.github.vizaizai.worker.core.TaskContext;
 import com.github.vizaizai.worker.core.processor.BasicProcessor;
 import com.github.vizaizai.worker.log.impl.JobLogger;
+import com.github.vizaizai.worker.starter.Commons;
 import com.github.vizaizai.worker.utils.DateUtils;
 import org.slf4j.Logger;
 
@@ -84,6 +86,9 @@ public class JobProcessRunner extends Thread{
      */
     public TaskResult pushTaskQueue(TaskContext taskContext) {
         try {
+            if (this.stop) {
+                return TaskResult.fail("Job runner is stopped");
+            }
             Integer maxWaitNum = taskContext.getTriggerParam().getMaxWaitNum();
             if (maxWaitNum != null && waitingTask.size() > maxWaitNum) {
                 return TaskResult.fail("Waiting task is too many");
@@ -112,8 +117,8 @@ public class JobProcessRunner extends Thread{
                    StatusReportParam reportParam = new StatusReportParam();
                    reportParam.setJobId(triggerParam.getJobId());
                    reportParam.setDispatchId(triggerParam.getJobDispatchId());
+                   reportParam.setTriggerType(triggerParam.getTriggerType());
                    reportParam.setExecuteStartTime(System.currentTimeMillis());
-
                    // 设置日志记录器
                    JobLogger currLogger = JobLogger.getInstance(jobId, DateUtils.parse(triggerParam.getTriggerTime()).toLocalDate(), true);
                    taskContext.setLogger(currLogger);
@@ -128,51 +133,34 @@ public class JobProcessRunner extends Thread{
                    }
                    // 标记日志位置
                    currLogger.resetPos(triggerParam.getJobDispatchId());
-                   try {
-                       jobLogger.info(">>>>>>>>>job#{} start", triggerParam.getJobName());
-                       jobLogger.info("param: {}, triggerTime:{}", triggerParam.getJobParams(), triggerParam.getTriggerTime());
-                       Integer timeout = triggerParam.getExecuteTimeout();
-
-                       if (timeout != null) {
-                           FutureTask<Boolean> futureTask = new FutureTask<>(() -> {
-                               // 执行处理器
-                               this.processor.execute(taskContext);
-                               return true;
-                           });
-                           Thread thread = new Thread(futureTask);
-                           thread.setName("ft-job-" + this.jobId);
-                           thread.start();
-                           try {
-                               futureTask.get(timeout, TimeUnit.SECONDS);
-                               reportParam.setExecuteStatus(ExecuteStatus.OK.getCode());
-                           }catch (TimeoutException te) {
-                               // 执行超时了
-                               jobLogger.warn("job#{} execute timeout", triggerParam.getJobName());
-                               reportParam.setExecuteStatus(ExecuteStatus.EXEC_TIMEOUT.getCode());
-                           }
-                       }else {
-                           // 执行处理器
-                           this.processor.execute(taskContext);
-                           reportParam.setExecuteStatus(ExecuteStatus.OK.getCode());
+                   jobLogger.info(">>>>>>>>>job#{} start", triggerParam.getJobName());
+                   jobLogger.info("param: {}, triggerTime:{}", triggerParam.getJobParams(), triggerParam.getTriggerTime());
+                   int execCount = 0;
+                   int execResult = 0;
+                   int maxExecCount = triggerParam.getRetryCount() != null ? triggerParam.getRetryCount() + 1 : 1;
+                   while (execResult != ExecuteStatus.OK.getCode()
+                           && execCount < maxExecCount) {
+                       if (execCount > 0) {
+                           jobLogger.info(">>>>>>>>>job-retry start,count:{}", execCount);
                        }
-                       jobLogger.info(">>>>>>>>>job finished");
-                   }catch (Exception ie) {
-                       jobLogger.error("job#{} execute error,", triggerParam.getJobName(), ie);
-                       reportParam.setExecuteStatus(ExecuteStatus.FAIL.getCode());
-                   }finally {
-                       this.runId = 0L;
-                       reportParam.setExecuteEndTime(System.currentTimeMillis());
-                       taskContext.setReportParam(reportParam);
-                       // 推入上报队列
-                       ReportRunner.getInstance().pushReportQueue(taskContext);
+                       execResult = this.exec(taskContext);
+                       execCount++;
                    }
+                   jobLogger.info(">>>>>>>>>job finished");
+                   this.runId = 0L;
+                   reportParam.setExecuteStatus(execResult);
+                   reportParam.setExecCount(execCount);
+                   reportParam.setExecuteEndTime(System.currentTimeMillis());
+                   taskContext.setReportParam(reportParam);
+                   // 推入上报队列
+                   ReportRunner.getInstance().pushReportQueue(taskContext);
                    // 重置时间
                    startTime = System.currentTimeMillis();
                }else {
                    // 空闲30s停止运行器
-                   if ((System.currentTimeMillis() - startTime) / 1000 >= 30
+                   if (System.currentTimeMillis() - startTime > Commons.MAX_IDLE
                            && waitingTask.size() == 0) {
-                       logger.info("Thead[{}] idle 30s", this.getName());
+                       logger.debug("Thead[{}] idle 120s", this.getName());
                        this.shutdown();
                    }
                }
@@ -186,21 +174,59 @@ public class JobProcessRunner extends Thread{
 
 
     /**
+     * 执行业务
+     * @param taskContext 任务上下文
+     * @return 执行状态
+     */
+    private Integer exec(TaskContext taskContext) {
+        TaskTriggerParam triggerParam = taskContext.getTriggerParam();
+        try {
+            Integer timeout = triggerParam.getExecuteTimeout();
+            if (timeout != null) {
+                FutureTask<Boolean> futureTask = new FutureTask<>(() -> {
+                    // 执行处理器
+                    this.processor.execute(taskContext);
+                    return true;
+                });
+                Thread thread = new Thread(futureTask);
+                thread.setName("ft-job-" + this.jobId);
+                thread.start();
+                try {
+                    futureTask.get(timeout, TimeUnit.SECONDS);
+                    return ExecuteStatus.OK.getCode();
+                }catch (TimeoutException te) {
+                    // 执行超时
+                    jobLogger.warn("job#{} execute timeout", triggerParam.getJobName());
+                    return ExecuteStatus.EXEC_TIMEOUT.getCode();
+                }
+            }else {
+                // 执行处理器
+                this.processor.execute(taskContext);
+                return ExecuteStatus.OK.getCode();
+            }
+        }catch (Exception ie) {
+            jobLogger.error("job#{} execute error,", triggerParam.getJobName(), ie);
+            return ExecuteStatus.FAIL.getCode();
+        }
+    }
+
+
+    /**
      * 获取执行状态
      * @param runId 运行时id
-     * @return 0-缺省 1-执行中 2-待执行
+     * @return 0-未知 1-执行中 2-待执行
      */
     public int status(long runId) {
         if (this.runId == runId) {
-            return 1;
+            return ExtendExecStatus.ING.getCode();
         }
         boolean match = this.waitingTask
                 .stream()
                 .anyMatch(e -> e.getTriggerParam().getJobDispatchId().equals(runId));
         if (match) {
-            return 2;
+            return ExtendExecStatus.WAIT.getCode();
         }
-        return 0;
+        return ExtendExecStatus.UNKNOWN.getCode();
     }
 
     /**

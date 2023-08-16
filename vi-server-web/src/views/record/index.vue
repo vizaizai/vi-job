@@ -294,7 +294,7 @@ export default {
         }
       })
       if (tab) {
-        getLog({ id: parseInt(this.logDrawer.logTab), maxLines: 50, startPos: tab.pos }).then(res => {
+        getLog({ id: parseInt(this.logDrawer.logTab), maxLines: 500, startPos: tab.pos }).then(res => {
           if (res.code === 200) {
             if (res.data && res.data.data) {
               // 追加显示数据

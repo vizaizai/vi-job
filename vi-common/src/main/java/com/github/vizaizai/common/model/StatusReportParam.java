@@ -18,6 +18,10 @@ public class StatusReportParam implements Serializable {
      */
     private Long dispatchId;
     /**
+     * 触发类型
+     */
+    private Integer triggerType;
+    /**
      * 执行状态 0-失败 1-执行中 2-执行成功 3-执行超时 4-取消
      */
     private Integer executeStatus;
@@ -29,6 +33,10 @@ public class StatusReportParam implements Serializable {
      * 执行结束时间
      */
     private long executeEndTime;
+    /**
+     * 执行次数
+     */
+    private Integer execCount;
 
     public Long getJobId() {
         return jobId;
@@ -68,5 +76,21 @@ public class StatusReportParam implements Serializable {
 
     public void setExecuteEndTime(long executeEndTime) {
         this.executeEndTime = executeEndTime;
+    }
+
+    public Integer getTriggerType() {
+        return triggerType;
+    }
+
+    public void setTriggerType(Integer triggerType) {
+        this.triggerType = triggerType;
+    }
+
+    public Integer getExecCount() {
+        return execCount;
+    }
+
+    public void setExecCount(Integer execCount) {
+        this.execCount = execCount;
     }
 }

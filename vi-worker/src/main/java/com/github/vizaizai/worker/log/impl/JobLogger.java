@@ -4,6 +4,7 @@ import com.github.vizaizai.common.model.LogInfo;
 import com.github.vizaizai.logging.LoggerFactory;
 import com.github.vizaizai.worker.log.Level;
 import com.github.vizaizai.worker.log.Logger;
+import com.github.vizaizai.worker.starter.Commons;
 import com.github.vizaizai.worker.starter.PropsKeys;
 import com.github.vizaizai.worker.utils.DateUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -131,17 +132,16 @@ public class JobLogger implements Logger {
     }
 
     public void init() {
-        String logBasePath = System.getProperty(PropsKeys.LOG_BASE_PATH, "/data/vi-job");
-        File logPathDir = Paths.get(logBasePath, date).toFile();
+        File logDir = Paths.get(Commons.getLogBasePath(), date).toFile();
         // mk base dir
-        if (!logPathDir.exists()) {
-            boolean mkdirs = logPathDir.mkdirs();
+        if (!logDir.exists()) {
+            boolean mkdirs = logDir.mkdirs();
             if (!mkdirs) {
                 throw new RuntimeException("Make dirs error");
             }
         }
-        this.logFileName = logPathDir.getPath() + File.separator + this.jobId + ".log";;
-        this.logIndexFileName = logPathDir.getPath() + File.separator + this.jobId + "_index.log";;
+        this.logFileName = logDir.getPath() + File.separator + this.jobId + ".log";;
+        this.logIndexFileName = logDir.getPath() + File.separator + this.jobId + ".idx";;
         try {
             Path path = Paths.get(this.logFileName);
             File file = path.toFile();

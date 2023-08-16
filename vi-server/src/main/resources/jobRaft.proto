@@ -38,9 +38,12 @@ message PushIntoTimerRequest {
   optional int32 maxWaitNum = 16;
   optional int32 logAutoDelHours = 17;
   optional int64 nextTriggerTime = 18;
-  optional int64 lastExecuteEndTime = 19;
 }
 
 message RemoveFromTimerRequest {
+  required int64 jobId = 1;
+}
+
+message EndWatchForJobExecRequest {
   required int64 jobId = 1;
 }

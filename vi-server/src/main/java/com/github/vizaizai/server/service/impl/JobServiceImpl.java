@@ -27,6 +27,9 @@ import com.github.vizaizai.server.service.GlobalJobGroupManager;
 import com.github.vizaizai.server.service.JobService;
 import com.github.vizaizai.server.service.WorkerService;
 import com.github.vizaizai.server.timer.JobTriggerTimer;
+import com.github.vizaizai.server.timer.watch.ExecPredicate;
+import com.github.vizaizai.server.timer.watch.WatchDogRunner;
+import com.github.vizaizai.server.timer.watch.WatchInstance;
 import com.github.vizaizai.server.utils.BeanUtils;
 import com.github.vizaizai.server.utils.RpcUtils;
 import com.github.vizaizai.server.utils.UserUtils;
@@ -99,7 +102,6 @@ public class JobServiceImpl implements JobService {
     @Override
     public Result<Void> removeJob(Long id) {
         jobMapper.deleteById(id);
-        JobTriggerTimer.getInstance().remove(id);
         globalJobGroupHandler.remove(id);
         return Result.ok("删除成功");
     }
@@ -235,9 +237,11 @@ public class JobServiceImpl implements JobService {
             taskTriggerParam.setJobName(job.getProcessor());
             taskTriggerParam.setJobDispatchId(dispatchLogInsert.getId());
             taskTriggerParam.setJobParams(job.getParam());
+            taskTriggerParam.setTriggerType(job.getTriggerType());
             taskTriggerParam.setTriggerTime(LocalDateTimeUtil.toEpochMilli(dispatchLogDO.getTriggerTime()));
             taskTriggerParam.setExecuteTimeout(job.getTimeoutS());
             taskTriggerParam.setMaxWaitNum(job.getMaxWaitNum());
+            taskTriggerParam.setRetryCount(job.getRetryCount());
 
             // 执行任务触发
             TaskResult taskResult = RpcUtils.toTaskResult(RpcUtils.call(address, BizCode.RUN, taskTriggerParam));
@@ -247,7 +251,28 @@ public class JobServiceImpl implements JobService {
                     .setExecuteStatus(taskResult.isSuccess() ? ExecuteStatus.ING.getCode() : null)
                     .setErrorMsg(taskResult.getMsg());
             dispatchLogMapper.updateById(dispatchLogUpdate);
+
+            // 延时任务启动监听
+            if (!job.isDirectRun()
+                    && Objects.equals(job.getTriggerType(), TriggerType.DELAYED.getCode())) {
+                WatchInstance watchInstance = new WatchInstance();
+                watchInstance.setWatchId(WatchInstance.getWatchId1(taskTriggerParam.getJobId()));
+                Map<String, Object> extras = new HashMap<>();
+                extras.put("jobId",taskTriggerParam.getJobId());
+                extras.put("dispatchId",taskTriggerParam.getJobDispatchId());
+                extras.put("workerAddr",address);
+                watchInstance.setExtras(extras);
+                watchInstance.setWatchPredicate(new ExecPredicate());
+                watchInstance.setCompleter((e)-> {
+                    JobDO jobDO = jobMapper.selectById((long) e.getExtras().get("jobId"));
+                    if (jobDO != null && Objects.equals(jobDO.getStatus(), JobStatus.RUN.getCode())) {
+                        globalJobGroupHandler.pushIntoTimer(BeanUtils.toBean(jobDO, Job::new).resetNextTriggerTime());
+                    }
+                });
+                WatchDogRunner.getInstance().start(watchInstance);
+            }
         }
+
 
     }
 
@@ -260,7 +285,7 @@ public class JobServiceImpl implements JobService {
             jobDO.setNextTriggerTime(nextTriggerTime);
             jobMapper.updateById(jobDO);
         }catch (Exception e) {
-            log.error("更新触发时间错误,{}",e.getMessage());
+            log.error("Trigger time refresh fail,{}",e.getMessage());
         }
     }
 
@@ -281,8 +306,12 @@ public class JobServiceImpl implements JobService {
         dispatchLogDO.setExecuteStatus(statusReportCO.getExecuteStatus());
         dispatchLogDO.setExecuteStartTime(LocalDateTimeUtil.of(statusReportCO.getExecuteStartTime()));
         dispatchLogDO.setExecuteEndTime(LocalDateTimeUtil.of(statusReportCO.getExecuteEndTime()));
+        dispatchLogDO.setExecCount(statusReportCO.getExecCount());
         dispatchLogMapper.updateById(dispatchLogDO);
-        // TODO: 2023/6/1 延时任务处理
+        // 延时任务：结束监听
+        if (Objects.equals(statusReportCO.getTriggerType(), TriggerType.DELAYED.getCode())) {
+            globalJobGroupHandler.endWatchForJobExec(statusReportCO.getJobId());
+        }
         return Result.ok("上报成功");
     }
 
@@ -320,7 +349,6 @@ public class JobServiceImpl implements JobService {
         if (jobUpdateCO.getTriggerType() == TriggerType.DELAYED.getCode() && jobUpdateCO.getDelayedS() == null) {
             throw new RuntimeException("固定延时触发须填写延时");
         }
-
     }
 
 }

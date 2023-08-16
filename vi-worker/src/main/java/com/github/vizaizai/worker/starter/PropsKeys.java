@@ -10,4 +10,8 @@ public class PropsKeys {
      * 日志基础路径
      */
     public static final String LOG_BASE_PATH = "vi-job.logBasePath";
+    /**
+     * 调度中心地址
+     */
+    public static final String SERVER_ADDR = "vi-job.serverAddr";
 }

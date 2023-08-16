@@ -86,7 +86,7 @@ public class JobUpdateCO {
      * 任务失败重试次数
      */
     @NotNull(message = "任务失败重试次数必须")
-    @Range(message = "重试次数参数错误")
+    @Range(max = 10, message = "重试次数最大为10")
     private Integer retryCount;
     /**
      * 任务超时时间

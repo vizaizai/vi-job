@@ -1,5 +1,6 @@
 package com.github.vizaizai.worker.core.executor;
 
+import com.github.vizaizai.common.contants.ExtendExecStatus;
 import com.github.vizaizai.common.model.ExecStatusQueryParam;
 import com.github.vizaizai.remote.codec.RpcMessage;
 import com.github.vizaizai.remote.codec.RpcRequest;
@@ -23,7 +24,7 @@ public class ExecStatusExecutor implements BizProcessor {
             if (runner != null) {
                 response = RpcResponse.ok(runner.status(param.getJobDispatchId()));
             }else {
-                response = RpcResponse.ok(0);
+                response = RpcResponse.ok(ExtendExecStatus.UNKNOWN.getCode());
             }
         }catch (Exception e) {
             response = RpcResponse.error(e.getMessage());

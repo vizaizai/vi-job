@@ -14,11 +14,11 @@ public class TaskContext {
     /**
      * 任务触发参数
      */
-    private final TaskTriggerParam triggerParam;
+    private TaskTriggerParam triggerParam;
     /**
      * 消息发送者
      */
-    private final Sender sender;
+    private  Sender sender;
     /**
      * 状态上报参数
      */
@@ -27,6 +27,10 @@ public class TaskContext {
      * 日志记录器
      */
     private Logger logger;
+
+    public TaskContext(StatusReportParam reportParam) {
+        this.reportParam = reportParam;
+    }
 
     public TaskContext(TaskTriggerParam triggerParam, Sender sender) {
         this.triggerParam = triggerParam;

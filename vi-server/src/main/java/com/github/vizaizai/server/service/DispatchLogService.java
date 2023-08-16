@@ -46,4 +46,6 @@ public interface DispatchLogService {
      * @return
      */
     int batchRemove();
+
+
 }

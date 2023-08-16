@@ -1,6 +1,7 @@
 package com.github.vizaizai.worker.runner;
 
 import com.github.vizaizai.logging.LoggerFactory;
+import com.github.vizaizai.worker.starter.Commons;
 import com.github.vizaizai.worker.utils.DateUtils;
 import org.slf4j.Logger;
 
@@ -62,6 +63,9 @@ public class LogClearScheduledRunner implements Runnable {
         for (File file : files) {
             try {
                 String name = file.getName();
+                if (name.equals(Commons.RETRY_PATH)) {
+                    continue;
+                }
                 LocalDate fileDate = DateUtils.parseDate(name, "yyyyMMdd");
                 if (fileDate.isBefore(date)) {
                     boolean delete = delete(file);

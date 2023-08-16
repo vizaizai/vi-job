@@ -21,10 +21,16 @@ public class Commons {
      * 快照名
      */
     public static final String SNAPSHOT_NAME = "data";
+
+
     /**
      * 注册表失效失效（秒）
      */
     public static final long REG_EXPIRED_S = 120;
+    /**
+     * 看门狗最大空闲（秒）
+     */
+    public static final long WATCH_MAX_IDLE = 60 * 1000;
     /**
      * job分配信息key
      */

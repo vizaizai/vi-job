@@ -21,7 +21,6 @@ public class DispatchLogDO {
      */
     @TableId(type = IdType.AUTO)
     private Long id;
-
     /**
      * 任务id
      */
@@ -74,6 +73,10 @@ public class DispatchLogDO {
      * 执行结束时间
      */
     private LocalDateTime executeEndTime;
+    /**
+     * 执行次数
+     */
+    private Integer execCount;
     /**
      * 创建时间
      */

@@ -10,6 +10,8 @@ import com.github.vizaizai.server.raft.proto.JobProto;
 import com.github.vizaizai.server.raft.proto.ResponseProto;
 import com.github.vizaizai.server.service.apply.JobAssignApplyService;
 import com.github.vizaizai.server.timer.JobTriggerTimer;
+import com.github.vizaizai.server.timer.watch.WatchDogRunner;
+import com.github.vizaizai.server.timer.watch.WatchInstance;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +30,6 @@ public class GlobalJobGroupManager {
     private RaftServer raftServer;
     @Resource
     private JobAssignApplyService jobAssignApplyService;
-    private final JobTriggerTimer triggerTimer = JobTriggerTimer.getInstance();
     /**
      * 任务分配
      * @param jobId 任务id
@@ -80,11 +81,11 @@ public class GlobalJobGroupManager {
 
     /**
      * 将任务推入Timer
-     * @param job
+     * @param job 任务信息
      */
     public void  pushIntoTimer(Job job) {
         if (!raftServer.isCluster()) {
-            triggerTimer.push(job);
+            JobTriggerTimer.getInstance().push(job);
             return;
         }
 
@@ -94,7 +95,7 @@ public class GlobalJobGroupManager {
         }
         // 执行调度地址为当前地址，则直接push，无需网络请求
         if (Objects.equals(raftServer.getCurrentNodeAddress(), nodeAddress)) {
-            triggerTimer.push(job);
+            JobTriggerTimer.getInstance().push(job);
             return;
         }
         JobProto.PushIntoTimerRequest.Builder builder = JobProto.PushIntoTimerRequest.newBuilder();
@@ -138,9 +139,6 @@ public class GlobalJobGroupManager {
         if (job.getNextTriggerTime() != null) {
             builder.setNextTriggerTime(job.getNextTriggerTime());
         }
-        if (job.getLastExecuteEndTime() != null) {
-            builder.setLastExecuteEndTime(job.getLastExecuteEndTime());
-        }
 
         JobProto.PushIntoTimerRequest request = builder.build();
         try {
@@ -160,7 +158,7 @@ public class GlobalJobGroupManager {
      */
     public void removeFormTimer(Long jobId) {
         if (!raftServer.isCluster()) {
-            triggerTimer.remove(jobId);
+            JobTriggerTimer.getInstance().remove(jobId);
             return;
         }
 
@@ -170,7 +168,7 @@ public class GlobalJobGroupManager {
         }
         // 执行调度地址为当前地址，则直接remove，无需网络请求
         if (Objects.equals(raftServer.getCurrentNodeAddress(), nodeAddress)) {
-            triggerTimer.remove(jobId);
+            JobTriggerTimer.getInstance().remove(jobId);
             return;
         }
         JobProto.RemoveFromTimerRequest.Builder builder = JobProto.RemoveFromTimerRequest.newBuilder();
@@ -181,6 +179,39 @@ public class GlobalJobGroupManager {
                     .invokeSync(JRaftUtils.getEndPoint(nodeAddress), request, 3000);
             if (!response.getSuccess()) {
                 throw new RuntimeException("从定时器移除失败");
+            }
+        }catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    /**
+     * 任务执行结束监听处理
+     * @param jobId 任务id
+     */
+    public void endWatchForJobExec(Long jobId) {
+        if (!raftServer.isCluster()) {
+            WatchDogRunner.getInstance().end(WatchInstance.getWatchId1(jobId));
+            return;
+        }
+
+        String nodeAddress = jobAssignApplyService.get(jobId, false);
+        if (Utils.isBlank(nodeAddress)) {
+            throw new RuntimeException("任务未分配，请稍等");
+        }
+        // 执行调度地址为当前地址，无需网络请求
+        if (Objects.equals(raftServer.getCurrentNodeAddress(), nodeAddress)) {
+            WatchDogRunner.getInstance().end(WatchInstance.getWatchId1(jobId));
+            return;
+        }
+        JobProto.EndWatchForJobExecRequest.Builder builder = JobProto.EndWatchForJobExecRequest.newBuilder();
+        builder.setJobId(jobId);
+        JobProto.EndWatchForJobExecRequest request = builder.build();
+        try {
+            ResponseProto.Response response = (ResponseProto.Response) raftServer.getRpcClient()
+                    .invokeSync(JRaftUtils.getEndPoint(nodeAddress), request, 3000);
+            if (!response.getSuccess()) {
+                throw new RuntimeException("任务执行结束监听处理失败");
             }
         }catch (Exception e) {
             throw new RuntimeException(e.getMessage());

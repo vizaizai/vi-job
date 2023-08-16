@@ -34,6 +34,7 @@ import com.github.vizaizai.server.raft.processor.assign.JobRmRequestProcessor;
 import com.github.vizaizai.server.raft.processor.kv.KVSetRequestProcessor;
 import com.github.vizaizai.server.raft.processor.timer.PushIntoTimerRequestProcessor;
 import com.github.vizaizai.server.raft.processor.timer.RemoveFromTimerRequestProcessor;
+import com.github.vizaizai.server.raft.processor.watch.EndWatchForJobExecRequestProcessor;
 import com.github.vizaizai.server.utils.ContextUtil;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -114,6 +115,7 @@ public class RaftServer implements Lifecycle<RaftNodeOptions>, DisposableBean {
         rpcServer.registerProcessor(ContextUtil.getBean(KVSetRequestProcessor.class));
         rpcServer.registerProcessor(new PushIntoTimerRequestProcessor());
         rpcServer.registerProcessor(new RemoveFromTimerRequestProcessor());
+        rpcServer.registerProcessor(new EndWatchForJobExecRequestProcessor());
 
         this.raftGroupService = new RaftGroupService(groupId, serverId, nodeOpts, rpcServer);
         this.node = this.raftGroupService.start();
