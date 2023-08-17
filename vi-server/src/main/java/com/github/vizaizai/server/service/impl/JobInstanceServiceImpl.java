@@ -10,17 +10,17 @@ import com.github.vizaizai.common.model.*;
 import com.github.vizaizai.remote.codec.RpcResponse;
 import com.github.vizaizai.remote.utils.Utils;
 import com.github.vizaizai.server.constant.DispatchStatus;
-import com.github.vizaizai.server.dao.DispatchLogMapper;
+import com.github.vizaizai.server.dao.JobInstanceMapper;
 import com.github.vizaizai.server.dao.JobMapper;
-import com.github.vizaizai.server.dao.dataobject.DispatchLogDO;
+import com.github.vizaizai.server.dao.dataobject.JobInstanceDO;
 import com.github.vizaizai.server.dao.dataobject.JobDO;
-import com.github.vizaizai.server.service.DispatchLogService;
+import com.github.vizaizai.server.service.JobInstanceService;
 import com.github.vizaizai.server.service.WorkerService;
 import com.github.vizaizai.server.utils.BeanUtils;
 import com.github.vizaizai.server.utils.RpcUtils;
-import com.github.vizaizai.server.web.co.DispatchLogQueryCO;
+import com.github.vizaizai.server.web.co.JobInstanceQueryCO;
 import com.github.vizaizai.server.web.co.LogQueryCO;
-import com.github.vizaizai.server.web.dto.DispatchLogDTO;
+import com.github.vizaizai.server.web.dto.JobInstanceDTO;
 import com.github.vizaizai.server.web.dto.WorkerDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,33 +39,33 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-public class DispatchLogServiceImpl implements DispatchLogService {
+public class JobInstanceServiceImpl implements JobInstanceService {
 
     @Resource
-    private DispatchLogMapper dispatchLogMapper;
+    private JobInstanceMapper jobInstanceMapper;
     @Resource
     private JobMapper jobMapper;
     @Resource
     private WorkerService workerService;
 
     @Override
-    public Result<IPage<DispatchLogDTO>> pageDispatchLogs(DispatchLogQueryCO queryCO) {
-        LambdaQueryWrapper<DispatchLogDO> queryWrapper = Wrappers.lambdaQuery();
-        queryWrapper.eq(queryCO.getJobId() != null, DispatchLogDO::getJobId, queryCO.getJobId())
-                .eq(queryCO.getWorkerId() != null, DispatchLogDO::getWorkerId, queryCO.getWorkerId())
-                .eq(queryCO.getDispatchStatus() != null, DispatchLogDO::getDispatchStatus, queryCO.getDispatchStatus())
-                .in(queryCO.getDispatchStatus() == null, DispatchLogDO::getDispatchStatus, DispatchStatus.codes())
-                .eq(queryCO.getExecuteStatus() != null, DispatchLogDO::getExecuteStatus, queryCO.getExecuteStatus())
+    public Result<IPage<JobInstanceDTO>> pageJobInstances(JobInstanceQueryCO queryCO) {
+        LambdaQueryWrapper<JobInstanceDO> queryWrapper = Wrappers.lambdaQuery();
+        queryWrapper.eq(queryCO.getJobId() != null, JobInstanceDO::getJobId, queryCO.getJobId())
+                .eq(queryCO.getWorkerId() != null, JobInstanceDO::getWorkerId, queryCO.getWorkerId())
+                .eq(queryCO.getDispatchStatus() != null, JobInstanceDO::getDispatchStatus, queryCO.getDispatchStatus())
+                .in(queryCO.getDispatchStatus() == null, JobInstanceDO::getDispatchStatus, DispatchStatus.codes())
+                .eq(queryCO.getExecuteStatus() != null, JobInstanceDO::getExecuteStatus, queryCO.getExecuteStatus())
                 .between(queryCO.getTriggerStartTime() != null && queryCO.getTriggerEndTime() != null,
-                        DispatchLogDO::getTriggerTime, queryCO.getTriggerStartTime(), queryCO.getTriggerEndTime())
-                .orderByDesc(DispatchLogDO::getTriggerTime);
+                        JobInstanceDO::getTriggerTime, queryCO.getTriggerStartTime(), queryCO.getTriggerEndTime())
+                .orderByDesc(JobInstanceDO::getTriggerTime);
 
-        IPage<DispatchLogDTO> dispatchLogPage = BeanUtils.toPageBean(dispatchLogMapper.selectPage(queryCO.toPage(), queryWrapper), DispatchLogDTO::new);
-        if (Utils.isNotEmpty(dispatchLogPage.getRecords())) {
-            List<DispatchLogDTO> records = dispatchLogPage.getRecords();
-            Set<Integer> set = records.stream().map(DispatchLogDTO::getWorkerId).collect(Collectors.toSet());
+        IPage<JobInstanceDTO> jobInstancePage = BeanUtils.toPageBean(jobInstanceMapper.selectPage(queryCO.toPage(), queryWrapper), JobInstanceDTO::new);
+        if (Utils.isNotEmpty(jobInstancePage.getRecords())) {
+            List<JobInstanceDTO> records = jobInstancePage.getRecords();
+            Set<Integer> set = records.stream().map(JobInstanceDTO::getWorkerId).collect(Collectors.toSet());
             Map<Integer, String> map = workerService.listByIds(set).stream().collect(Collectors.toMap(WorkerDTO::getId, WorkerDTO::getName));
-            for (DispatchLogDTO record : records) {
+            for (JobInstanceDTO record : records) {
                 JobDO jobDO = jobMapper.selectById(record.getJobId());
                 if (Objects.nonNull(jobDO)) {
                     record.setJobName(jobDO.getName());
@@ -76,29 +76,29 @@ public class DispatchLogServiceImpl implements DispatchLogService {
                 }
             }
         }
-        return Result.handleSuccess(dispatchLogPage);
+        return Result.handleSuccess(jobInstancePage);
     }
 
     @Override
     public Result<LogInfo> getLog(LogQueryCO logQueryCO) {
-        DispatchLogDO dispatchLog = dispatchLogMapper.selectById(logQueryCO.getId());
-        if (dispatchLog == null) {
-            return Result.handleFailure("调度记录不存在");
+        JobInstanceDO jobInstance = jobInstanceMapper.selectById(logQueryCO.getId());
+        if (jobInstance == null) {
+            return Result.handleFailure("任务实例不存在");
         }
-        if (!Objects.equals(DispatchStatus.OK.getCode(), dispatchLog.getDispatchStatus())) {
+        if (!Objects.equals(DispatchStatus.OK.getCode(), jobInstance.getDispatchStatus())) {
             return Result.handleFailure("当前调度状态不支持查询执行日志");
         }
         LogQueryParam param = new LogQueryParam();
-        param.setJobId(dispatchLog.getJobId());
-        param.setLogId(dispatchLog.getId());
-        param.setTriggerTime(LocalDateTimeUtil.toEpochMilli(dispatchLog.getTriggerTime()));
+        param.setJobId(jobInstance.getJobId());
+        param.setLogId(jobInstance.getId());
+        param.setTriggerTime(LocalDateTimeUtil.toEpochMilli(jobInstance.getTriggerTime()));
         param.setStartPos(logQueryCO.getStartPos());
         param.setMaxLines(logQueryCO.getMaxLines());
 
-        RpcResponse response = RpcUtils.call(dispatchLog.getWorkerAddress(), BizCode.LOG, param);
+        RpcResponse response = RpcUtils.call(jobInstance.getWorkerAddress(), BizCode.LOG, param);
         if (!response.getSuccess()) {
             log.error("查询执行日志错误: {}", response.getMsg());
-            return Result.handleFailure(response.getMsg());
+            return Result.handleSuccess(null);
         }
         LogInfo logInfo = (LogInfo) response.getResult();
         return Result.handleSuccess(logInfo);
@@ -107,20 +107,20 @@ public class DispatchLogServiceImpl implements DispatchLogService {
     @Transactional
     @Override
     public Result<Void> cancel(Long id) {
-        DispatchLogDO dispatchLog = dispatchLogMapper.selectById(id);
-        if (dispatchLog == null) {
-            return Result.handleFailure("调度记录不存在");
+        JobInstanceDO jobInstance = jobInstanceMapper.selectById(id);
+        if (jobInstance == null) {
+            return Result.handleFailure("任务实例不存在");
         }
-        if (!Objects.equals(ExecuteStatus.ING.getCode(), dispatchLog.getExecuteStatus())) {
+        if (!Objects.equals(ExecuteStatus.ING.getCode(), jobInstance.getExecuteStatus())) {
             return Result.handleFailure("当前执行状态无法取消执行");
         }
         // 执行取消
-        boolean canceled = this.cancel(dispatchLog.getWorkerAddress(), dispatchLog.getJobId(), dispatchLog.getId());
+        boolean canceled = this.cancel(jobInstance.getWorkerAddress(), jobInstance.getJobId(), jobInstance.getId());
         if (canceled) {
-            DispatchLogDO dispatchLogForUpdate = new DispatchLogDO();
-            dispatchLogForUpdate.setId(id);
-            dispatchLogForUpdate.setExecuteStatus(ExecuteStatus.EXEC_CANCEL.getCode());
-            dispatchLogMapper.updateById(dispatchLogForUpdate);
+            JobInstanceDO jobInstanceForUpdate = new JobInstanceDO();
+            jobInstanceForUpdate.setId(id);
+            jobInstanceForUpdate.setExecuteStatus(ExecuteStatus.EXEC_CANCEL.getCode());
+            jobInstanceMapper.updateById(jobInstanceForUpdate);
             return Result.ok("取消成功");
         }
         return Result.handleFailure("取消失败，任务正在执行或已执行完毕");
@@ -129,26 +129,26 @@ public class DispatchLogServiceImpl implements DispatchLogService {
     @Transactional
     @Override
     public Result<Void> remove(Long id) {
-        dispatchLogMapper.deleteById(id);
+        jobInstanceMapper.deleteById(id);
         return Result.ok();
     }
 
     @Override
     public int batchRemove() {
-        return dispatchLogMapper.delete(Wrappers.<DispatchLogDO>lambdaQuery()
-                .lt(DispatchLogDO::getExpectedDeleteTime, LocalDateTimeUtil.now()));
+        return jobInstanceMapper.delete(Wrappers.<JobInstanceDO>lambdaQuery()
+                .lt(JobInstanceDO::getExpectedDeleteTime, LocalDateTimeUtil.now()));
     }
 
     /**
      * 取消执行
      * @param address 地址
      * @param jobId 任务id
-     * @param dispatchLogId 调度id
+     * @param jobInstanceId 调度id
      */
-    private boolean cancel(String address, Long jobId, Long dispatchLogId) {
+    private boolean cancel(String address, Long jobId, Long jobInstanceId) {
         ExecCancelParam param = new ExecCancelParam();
         param.setJobId(jobId);
-        param.setJobDispatchId(dispatchLogId);
+        param.setJobInstanceId(jobInstanceId);
         RpcResponse response = RpcUtils.call(address, BizCode.CANCEL, param);
         if (response.getSuccess()) {
             return (boolean) response.getResult();
@@ -159,13 +159,13 @@ public class DispatchLogServiceImpl implements DispatchLogService {
      * 查询执行状态
      * @param address 地址
      * @param jobId 任务id
-     * @param dispatchLogId 调度id
+     * @param jobInstanceId 任务实例id
      * @return 状态
      */
-    private Integer getExecStatus(String address, Long jobId, Long dispatchLogId) {
+    private Integer getExecStatus(String address, Long jobId, Long jobInstanceId) {
         ExecStatusQueryParam param = new ExecStatusQueryParam();
         param.setJobId(jobId);
-        param.setJobDispatchId(dispatchLogId);
+        param.setJobInstanceId(jobInstanceId);
         RpcResponse response = RpcUtils.call(address, BizCode.STATUS, param);
         if (response.getSuccess()) {
             return (Integer) response.getResult();

@@ -1,6 +1,6 @@
 package com.github.vizaizai.server.task;
 
-import com.github.vizaizai.server.service.DispatchLogService;
+import com.github.vizaizai.server.service.JobInstanceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -8,16 +8,16 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 
 /**
- * 调度记录清理任务
+ * 任务实例清理任务
  * @author liaochongwei
  * @date 2023/5/8 17:12
  */
 @Slf4j
 @Component
-public class DispatchLogClearTask extends BaseTask {
+public class JobInstanceClearTask extends BaseTask {
 
     @Resource
-    private DispatchLogService dispatchLogService;
+    private JobInstanceService jobInstanceService;
     /**
      * 30分钟执行一次
      */
@@ -26,7 +26,7 @@ public class DispatchLogClearTask extends BaseTask {
         if (!this.execTask()) {
            return;
         }
-        int count = dispatchLogService.batchRemove();
+        int count = jobInstanceService.batchRemove();
         if (count > 0) {
             log.info("{} record was cleared", count);
         }

@@ -84,7 +84,7 @@
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item class="dropdown-item" @click.native="toEdit(scope.row)">编辑</el-dropdown-item>
                   <el-dropdown-item class="dropdown-item" @click.native="toRun(scope.row)">运行</el-dropdown-item>
-                  <el-dropdown-item class="dropdown-item" @click.native="toRecord(scope.row)">调度记录</el-dropdown-item>
+                  <el-dropdown-item class="dropdown-item" @click.native="toInstance(scope.row)">任务实例</el-dropdown-item>
                   <el-dropdown-item class="dropdown-item" @click.native="toCopy(scope.row)">复制</el-dropdown-item>
                   <el-dropdown-item divided class="dropdown-item" @click.native="toDel(scope.row)">删除</el-dropdown-item>
                 </el-dropdown-menu>
@@ -164,9 +164,9 @@ export default {
     toAdd() {
       this.$refs.form.addOps(add)
     },
-    toRecord(row) {
+    toInstance(row) {
       this.$router.push({
-        name: 'Record',
+        name: 'JobInstance',
         query: { jobId: row.id }
       })
     },

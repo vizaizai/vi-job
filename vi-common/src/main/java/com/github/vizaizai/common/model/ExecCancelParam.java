@@ -13,9 +13,9 @@ public class ExecCancelParam implements Serializable {
      */
     private long jobId;
     /**
-     * 任务调度id
+     * 任务实例id
      */
-    private Long jobDispatchId;
+    private Long jobInstanceId;
 
     public long getJobId() {
         return jobId;
@@ -25,11 +25,11 @@ public class ExecCancelParam implements Serializable {
         this.jobId = jobId;
     }
 
-    public Long getJobDispatchId() {
-        return jobDispatchId;
+    public Long getJobInstanceId() {
+        return jobInstanceId;
     }
 
-    public void setJobDispatchId(Long jobDispatchId) {
-        this.jobDispatchId = jobDispatchId;
+    public void setJobInstanceId(Long jobInstanceId) {
+        this.jobInstanceId = jobInstanceId;
     }
 }

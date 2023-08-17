@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function page(params) {
   return request({
-    url: '/dispatch/page',
+    url: '/jobInstance/page',
     method: 'get',
     params: params
   })
@@ -10,7 +10,7 @@ export function page(params) {
 
 export function getLog(params) {
   return request({
-    url: '/dispatch/getLog',
+    url: '/jobInstance/getLog',
     method: 'get',
     params: params
   })
@@ -18,7 +18,7 @@ export function getLog(params) {
 
 export function cancel(data) {
   return request({
-    url: '/dispatch/cancel',
+    url: '/jobInstance/cancel',
     method: 'post',
     data
   })
@@ -26,7 +26,7 @@ export function cancel(data) {
 
 export function remove(data) {
   return request({
-    url: '/dispatch/remove',
+    url: '/jobInstance/remove',
     method: 'post',
     data
   })

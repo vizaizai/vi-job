@@ -98,7 +98,7 @@ public class JobUpdateCO {
      */
     private Integer maxWaitNum;
     /**
-     * 调度记录自动删除时间（小时）
+     * 任务实例自动删除时间（小时）
      */
     @Range(min = 1, message = "自动删除时间最少1小时")
     private Integer logAutoDelHours;

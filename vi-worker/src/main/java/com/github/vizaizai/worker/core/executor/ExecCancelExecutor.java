@@ -21,7 +21,7 @@ public class ExecCancelExecutor implements BizProcessor {
         try {
             JobProcessRunner runner = JobProcessRunner.getRunner(param.getJobId());
             if (runner != null) {
-                response = RpcResponse.ok(runner.cancel(param.getJobDispatchId()));
+                response = RpcResponse.ok(runner.cancel(param.getJobInstanceId()));
             }else {
                 response = RpcResponse.ok(false);
             }

@@ -52,7 +52,7 @@ public class ServerProperties {
          */
         private String confDir;
         /**
-         * 集群节点(127.0.0.1:2141,127.0.0.1:2142,127.0.0.1:2143)
+         * 集群节点(127.0.0.1:1141,127.0.0.1:1142,127.0.0.1:1143)
          */
         private List<String> nodes;
 

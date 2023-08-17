@@ -16,8 +16,8 @@ public class StatusReportCO {
     /**
      * 调度id
      */
-    @NotNull(message = "调度id必须")
-    private Long dispatchId;
+    @NotNull(message = "任务实例id")
+    private Long jobInstanceId;
 
     /**
      * 触发类型

@@ -161,14 +161,14 @@
   </div>
 </template>
 <script>
-import { getLog, cancel, page, remove } from '@/api/dispatch'
+import { getLog, cancel, page, remove } from '@/api/jobInstance'
 import { formatDateTime } from '@/utils'
 import initData from '@/mixins/initData'
 import worker from '../worker/wrap'
 
 const format = 'yyyy-MM-dd HH:mm:ss'
 export default {
-  name: 'Record',
+  name: 'JobInstance',
   components: { worker },
   mixins: [initData],
   props: {

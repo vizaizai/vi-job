@@ -111,12 +111,12 @@ public class JobProcessRunner extends Thread{
                 TaskContext taskContext = this.waitingTask.poll(5, TimeUnit.SECONDS);
                if (taskContext != null) {
                    this.running = true;
-                   this.runId = taskContext.getTriggerParam().getJobDispatchId();
+                   this.runId = taskContext.getTriggerParam().getJobInstanceId();
                    TaskTriggerParam triggerParam = taskContext.getTriggerParam();
                    // 构建上报参数
                    StatusReportParam reportParam = new StatusReportParam();
                    reportParam.setJobId(triggerParam.getJobId());
-                   reportParam.setDispatchId(triggerParam.getJobDispatchId());
+                   reportParam.setJobInstanceId(triggerParam.getJobInstanceId());
                    reportParam.setTriggerType(triggerParam.getTriggerType());
                    reportParam.setExecuteStartTime(System.currentTimeMillis());
                    // 设置日志记录器
@@ -132,7 +132,7 @@ public class JobProcessRunner extends Thread{
                        }
                    }
                    // 标记日志位置
-                   currLogger.resetPos(triggerParam.getJobDispatchId());
+                   currLogger.resetPos(triggerParam.getJobInstanceId());
                    jobLogger.info(">>>>>>>>>job#{} start", triggerParam.getJobName());
                    jobLogger.info("param: {}, triggerTime:{}", triggerParam.getJobParams(), triggerParam.getTriggerTime());
                    int execCount = 0;
@@ -222,7 +222,7 @@ public class JobProcessRunner extends Thread{
         }
         boolean match = this.waitingTask
                 .stream()
-                .anyMatch(e -> e.getTriggerParam().getJobDispatchId().equals(runId));
+                .anyMatch(e -> e.getTriggerParam().getJobInstanceId().equals(runId));
         if (match) {
             return ExtendExecStatus.WAIT.getCode();
         }
@@ -238,7 +238,7 @@ public class JobProcessRunner extends Thread{
         if (this.runId == runId) {
             throw new RuntimeException("Task is running, cancel fail");
         }
-        return this.waitingTask.removeIf(e -> e.getTriggerParam().getJobDispatchId().equals(runId));
+        return this.waitingTask.removeIf(e -> e.getTriggerParam().getJobInstanceId().equals(runId));
     }
     /**
      * 停止

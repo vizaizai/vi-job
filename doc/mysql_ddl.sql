@@ -65,7 +65,7 @@ CREATE TABLE `job` (
    `max_wait_num` int(11) DEFAULT NULL COMMENT '单节点最大等待数量',
    `last_trigger_time` bigint(20) DEFAULT NULL COMMENT '上次次触发时间',
    `next_trigger_time` bigint(20) DEFAULT NULL COMMENT '下次触发时间',
-   `log_auto_del_hours` int(11) DEFAULT NULL COMMENT '调度记录自动删除时间（小时）',
+   `log_auto_del_hours` int(11) DEFAULT NULL COMMENT '任务实例自动删除时间（小时）',
    `creater` varchar(64) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '新建人',
    `create_time` datetime DEFAULT NULL COMMENT '创建时间',
    `updater` varchar(64) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '更新人',
@@ -75,10 +75,9 @@ CREATE TABLE `job` (
 ) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='任务信息';
 
 
-drop table if exists `dispatch_log`;
--- vi_job.dispatch_log definition
+drop table if exists `job_instance`;
 
-CREATE TABLE `dispatch_log` (
+CREATE TABLE `job_instance` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
     `job_id` bigint(20) NOT NULL COMMENT '任务id',
     `job_param` varchar(1024) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '任务参数',
@@ -100,7 +99,7 @@ CREATE TABLE `dispatch_log` (
     KEY `dispatch_log_job_id_idx` (`job_id`) USING BTREE,
     KEY `dispatch_log_worker_id_idx` (`worker_id`) USING BTREE,
     KEY `dispatch_log_expected_delete_time_idx` (`expected_delete_time`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=2513 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='调度信息';
+) ENGINE=InnoDB AUTO_INCREMENT=2513 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='任务实例';
 
 
 

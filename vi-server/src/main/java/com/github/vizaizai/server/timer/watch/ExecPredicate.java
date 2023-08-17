@@ -21,7 +21,7 @@ public class ExecPredicate implements Predicate<WatchInstance> {
         Map<String, Object> extras = watchInstance.getExtras();
         ExecStatusQueryParam param = new ExecStatusQueryParam();
         param.setJobId((Long) extras.get("jobId"));
-        param.setJobDispatchId((Long) extras.get("dispatchId"));
+        param.setJobInstanceId((Long) extras.get("jobInstanceId"));
         // 查询执行状态
         RpcResponse response = RpcUtils.call((String) extras.get("workerAddr"), BizCode.STATUS, param);
         if (response.getSuccess()) {

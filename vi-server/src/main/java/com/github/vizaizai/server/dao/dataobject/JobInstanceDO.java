@@ -8,14 +8,14 @@ import lombok.experimental.Accessors;
 import java.time.LocalDateTime;
 
 /**
- * 调度日志
+ * 任务实例
  * @author liaochongwei
  * @date 2023/5/18 19:51
  */
 @Data
 @Accessors(chain = true)
-@TableName(value = "dispatch_log")
-public class DispatchLogDO {
+@TableName(value = "job_instance")
+public class JobInstanceDO {
     /**
      * id
      */
@@ -87,7 +87,7 @@ public class DispatchLogDO {
      */
     private LocalDateTime expectedDeleteTime;
 
-    public DispatchLogDO setErrorMsg(String errorMsg) {
+    public JobInstanceDO setErrorMsg(String errorMsg) {
         if (Utils.isNotBlank(errorMsg) && errorMsg.length() > 1024) {
             this.errorMsg = errorMsg.substring(0, 1023);
             return this;

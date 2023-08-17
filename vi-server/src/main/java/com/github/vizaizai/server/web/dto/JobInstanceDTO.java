@@ -7,12 +7,12 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 调度日志-DTO
+ * 任务实例-DTO
  * @author liaochongwei
  * @date 2023/5/18 19:51
  */
 @Data
-public class DispatchLogDTO {
+public class JobInstanceDTO {
     /**
      * id
      */

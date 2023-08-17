@@ -90,15 +90,15 @@ export const constantRoutes = [
     ]
   },
   {
-    path: '/record',
+    path: '/jobInstance',
     component: Layout,
-    redirect: '/record/index',
+    redirect: '/jobInstance/index',
     children: [
       {
         path: 'index',
-        component: () => import('@/views/record/index'),
-        name: 'Record',
-        meta: { title: '调度记录', icon: 'guide', noCache: true }
+        component: () => import('@/views/jobInstance/index'),
+        name: 'JobInstance',
+        meta: { title: '任务实例', icon: 'documentation', noCache: true }
       }
     ]
   },
@@ -111,7 +111,7 @@ export const constantRoutes = [
         path: 'index',
         component: () => import('@/views/worker/index'),
         name: 'Worker',
-        meta: { title: '执行器管理', icon: 'guide', noCache: true }
+        meta: { title: '执行器管理', icon: 'documentation', noCache: true }
       }
     ]
   },

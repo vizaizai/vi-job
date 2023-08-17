@@ -57,7 +57,7 @@ public class ReportRetryRunner extends Thread{
             }
         }
 
-        try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(Paths.get(retryDir.getPath(), param.getDispatchId() + Commons.RETRY_SUFFIX)))){
+        try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(Paths.get(retryDir.getPath(), param.getJobInstanceId() + Commons.RETRY_SUFFIX)))){
             oos.writeObject(param);
         }catch (Exception e) {
             logger.error("Write object error,", e);

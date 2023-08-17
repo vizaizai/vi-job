@@ -7,12 +7,12 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDateTime;
 
 /**
- * 调度日志查询-CO
+ * 任务实例查询-CO
  * @author liaochongwei
  * @date 2023/5/18 17:11
  */
 @Data
-public class DispatchLogQueryCO extends PageQueryCO {
+public class JobInstanceQueryCO extends PageQueryCO {
     /**
      * 任务id
      */

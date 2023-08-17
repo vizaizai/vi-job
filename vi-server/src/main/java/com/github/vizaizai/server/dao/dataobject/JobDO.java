@@ -103,7 +103,7 @@ public class JobDO {
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     private Long nextTriggerTime;
     /**
-     * 调度记录自动删除时间（小时）
+     * 任务实例自动删除时间（小时）
      */
     private Integer logAutoDelHours;
     /**

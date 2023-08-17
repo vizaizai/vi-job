@@ -71,8 +71,8 @@
           </el-tooltip>
         </el-form-item>
         <el-form-item prop="logAutoDelHours" label="自动清理时间">
-          <el-tooltip class="item" effect="light" open-delay="500" content="调度记录自动清理时间（小时），空表示永久不清理，默认360小时" placement="bottom">
-            <el-input v-model.number="formData.logAutoDelHours" style="width: 100%;" placeholder="调度记录自动清理时间（单位：小时）" />
+          <el-tooltip class="item" effect="light" open-delay="500" content="任务实例自动清理时间（小时），空表示永久不清理，默认360小时" placement="bottom">
+            <el-input v-model.number="formData.logAutoDelHours" style="width: 100%;" placeholder="任务实例自动清理时间（单位：小时）" />
           </el-tooltip>
         </el-form-item>
       </el-form>

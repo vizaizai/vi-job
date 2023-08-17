@@ -14,9 +14,9 @@ public class StatusReportParam implements Serializable {
      */
     private Long jobId;
     /**
-     * 调度id
+     * 任务实例id
      */
-    private Long dispatchId;
+    private Long jobInstanceId;
     /**
      * 触发类型
      */
@@ -46,12 +46,12 @@ public class StatusReportParam implements Serializable {
         this.jobId = jobId;
     }
 
-    public Long getDispatchId() {
-        return dispatchId;
+    public Long getJobInstanceId() {
+        return jobInstanceId;
     }
 
-    public void setDispatchId(Long dispatchId) {
-        this.dispatchId = dispatchId;
+    public void setJobInstanceId(Long jobInstanceId) {
+        this.jobInstanceId = jobInstanceId;
     }
 
     public Integer getExecuteStatus() {

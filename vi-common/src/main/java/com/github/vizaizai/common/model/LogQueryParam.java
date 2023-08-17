@@ -13,7 +13,7 @@ public class LogQueryParam  implements Serializable {
      */
     private long jobId;
     /**
-     * 日志id（调度id）
+     * 日志id（任务实例id）
      */
     private long logId;
     /**

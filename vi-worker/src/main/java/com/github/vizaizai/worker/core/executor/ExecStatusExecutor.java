@@ -22,7 +22,7 @@ public class ExecStatusExecutor implements BizProcessor {
         try {
             JobProcessRunner runner = JobProcessRunner.getRunner(param.getJobId());
             if (runner != null) {
-                response = RpcResponse.ok(runner.status(param.getJobDispatchId()));
+                response = RpcResponse.ok(runner.status(param.getJobInstanceId()));
             }else {
                 response = RpcResponse.ok(ExtendExecStatus.UNKNOWN.getCode());
             }
