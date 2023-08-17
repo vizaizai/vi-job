@@ -95,10 +95,10 @@ CREATE TABLE `job_instance` (
     `expected_delete_time` datetime DEFAULT NULL COMMENT '预计删除时间',
     `exec_count` int(11) NOT NULL default 0 COMMENT '执行次数',
     PRIMARY KEY (`id`),
-    KEY `dispatch_log_trigger_time_idx` (`trigger_time`) USING BTREE,
-    KEY `dispatch_log_job_id_idx` (`job_id`) USING BTREE,
-    KEY `dispatch_log_worker_id_idx` (`worker_id`) USING BTREE,
-    KEY `dispatch_log_expected_delete_time_idx` (`expected_delete_time`) USING BTREE
+    KEY `trigger_time_idx` (`trigger_time`) USING BTREE,
+    KEY `job_id_idx` (`job_id`) USING BTREE,
+    KEY `worker_id_idx` (`worker_id`) USING BTREE,
+    KEY `expected_delete_time_idx` (`expected_delete_time`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=2513 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='任务实例';
 
 
