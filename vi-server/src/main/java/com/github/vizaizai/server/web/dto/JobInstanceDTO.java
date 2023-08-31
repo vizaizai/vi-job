@@ -5,6 +5,7 @@ import com.github.vizaizai.server.constant.Commons;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 任务实例-DTO
@@ -17,6 +18,10 @@ public class JobInstanceDTO {
      * id
      */
     private Long id;
+    /**
+     * 父id
+     */
+    private Long pid;
     /**
      * 任务id
      */
@@ -45,12 +50,12 @@ public class JobInstanceDTO {
     private String workerAddress;
 
     /**
-     * 调度状态 0-失败 1-成功
+     * 调度状态
      */
     private Integer dispatchStatus;
 
     /**
-     * 执行状态 0-执行失败 1-执行中 2-执行成功 3-执行超时3-执行超时 4-取消
+     * 执行状态 0-执行失败 1-执行中 2-执行成功 3-执行超时 4-取消
      */
     private Integer executeStatus;
     /**
@@ -94,4 +99,8 @@ public class JobInstanceDTO {
      * 执行状态 0-未知 1-执行中 2-待执行
      */
     private Integer execStatus;
+    /**
+     * 子实例
+     */
+    private List<JobInstanceDTO> children;
 }

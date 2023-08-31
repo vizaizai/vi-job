@@ -21,7 +21,7 @@ import java.util.concurrent.*;
  * @author liaochongwei
  * @date 2023/4/27 11:26
  */
-public class JobProcessRunner extends Thread{
+public class JobProcessRunner extends Thread {
 
     private static final Logger logger = LoggerFactory.getLogger(JobProcessRunner.class);
     /**
@@ -120,7 +120,7 @@ public class JobProcessRunner extends Thread{
                    reportParam.setTriggerType(triggerParam.getTriggerType());
                    reportParam.setExecuteStartTime(System.currentTimeMillis());
                    // 设置日志记录器
-                   JobLogger currLogger = JobLogger.getInstance(jobId, DateUtils.parse(triggerParam.getTriggerTime()).toLocalDate(), true);
+                   JobLogger currLogger = new JobLogger(triggerParam.getJobInstanceId(), jobId, DateUtils.parse(triggerParam.getTriggerTime()).toLocalDate());
                    taskContext.setLogger(currLogger);
                    if (jobLogger == null) {
                        this.jobLogger = currLogger;
@@ -131,8 +131,6 @@ public class JobProcessRunner extends Thread{
                            this.jobLogger = currLogger;
                        }
                    }
-                   // 标记日志位置
-                   currLogger.resetPos(triggerParam.getJobInstanceId());
                    jobLogger.info(">>>>>>>>>job#{} start", triggerParam.getJobName());
                    jobLogger.info("param: {}, triggerTime:{}", triggerParam.getJobParams(), triggerParam.getTriggerTime());
                    int execCount = 0;
@@ -182,7 +180,7 @@ public class JobProcessRunner extends Thread{
         TaskTriggerParam triggerParam = taskContext.getTriggerParam();
         try {
             Integer timeout = triggerParam.getExecuteTimeout();
-            if (timeout != null) {
+            if (timeout != null && timeout > 0) {
                 FutureTask<Boolean> futureTask = new FutureTask<>(() -> {
                     // 执行处理器
                     this.processor.execute(taskContext);

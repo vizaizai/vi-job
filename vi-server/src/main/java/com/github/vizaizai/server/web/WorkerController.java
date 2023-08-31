@@ -31,17 +31,6 @@ public class WorkerController {
     @Resource
     private GlobalJobGroupManager globalJobTriggerTimer;
 
-    @GetMapping("/foo")
-    public Result<Void> foo(@RequestParam Long jobId) {
-        globalJobTriggerTimer.assign(jobId);
-        return Result.ok();
-    }
-
-    @GetMapping("/bar")
-    public Result<Void> bar(@RequestParam Long jobId) {
-        globalJobTriggerTimer.remove(jobId);
-        return Result.ok();
-    }
 
     @PostMapping("/saveOrUpdate")
     public Result<Void> saveOrUpdateWorker(@Validated @RequestBody WorkerUpdateCO workerUpdateCO) {

@@ -44,6 +44,10 @@ public class PushIntoTimerRequestProcessor implements RpcProcessor<JobProto.Push
         if (request.getNextTriggerTime() > 0L) {
             job.setNextTriggerTime(request.getNextTriggerTime());
         }
+        job.setDirectRun(request.getDirectRun());
+        if (request.getInstanceId() > 0L) {
+            job.setInstanceId(request.getInstanceId());
+        }
         JobTriggerTimer.getInstance().push(job);
         rpcContext.sendResponse(ResponseProto.Response.newBuilder().setSuccess(true).build());
     }

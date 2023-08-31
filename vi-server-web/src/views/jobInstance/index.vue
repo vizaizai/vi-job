@@ -35,18 +35,30 @@
     </div>
     <div class="table-container">
       <!--表格-->
-      <el-table :data="data" width="100%">
+      <el-table
+        :data="data"
+        width="100%"
+        row-key="id"
+        :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+        :row-class-name="tableRowClassName"
+      >
         <el-table-column
           prop="id"
           label="ID"
-          width="100"
-        />
+          width="130"
+        >
+          <template v-slot="{ row }">
+            {{ row.id }}
+          </template>
+        </el-table-column>
         <el-table-column
           label="任务"
           width="180"
         >
           <template v-slot="{ row }">
-            <span>#{{ row.jobId }}</span>&nbsp;<span v-if="row.jobName" style="color: #909399">{{ row.jobName }}</span>
+            <span v-if="row.pid === 0">
+              <span>#{{ row.jobId }}</span>&nbsp;<span v-if="row.jobName" style="color: #909399">{{ row.jobName }}</span>
+            </span>
           </template>
         </el-table-column>
         <el-table-column
@@ -54,8 +66,10 @@
           width="180"
         >
           <template v-slot="{ row }">
-            <span>#{{ row.workerId }}</span>
-            &nbsp;<span v-if="row.workerName" style="color: #909399">{{ row.workerName }}</span>
+            <span v-if="row.pid === 0">
+              <span>#{{ row.workerId }}</span>&nbsp;
+              <span v-if="row.workerName" style="color: #909399">{{ row.workerName }}</span>
+            </span>
             <div v-if="row.workerAddress" style="color: #409EFF">{{ row.workerAddress }}</div>
           </template>
         </el-table-column>
@@ -64,17 +78,22 @@
           width="100"
         >
           <template v-slot="{ row }">
-            <el-tooltip v-if="row.dispatchStatus === 0" class="item" effect="dark" :content="row.errorMsg" placement="top">
+            <el-tag v-if="row.dispatchStatus === 0" type="info">等待调度</el-tag>
+            <el-tag v-if="row.dispatchStatus === 1" type="success">调度成功</el-tag>
+            <el-tooltip v-if="row.dispatchStatus === 2" class="item" effect="dark" :content="row.errorMsg" placement="top">
               <el-tag type="danger">调度失败</el-tag>
             </el-tooltip>
-            <el-tag v-if="row.dispatchStatus === 1" type="success">调度成功</el-tag>
           </template>
         </el-table-column>
         <el-table-column
           prop="triggerTime"
           label="触发时间"
           width="160"
-        />
+        >
+          <template v-slot="{ row }">
+            {{ row.triggerTime }} <span v-if="row.dispatchStatus === 0">(预计)</span>
+          </template>
+        </el-table-column>
         <el-table-column
           label="执行状态"
           width="120"
@@ -190,10 +209,13 @@ export default {
         jobId: null
       },
       triggerOpts: [{
+        value: 0,
+        label: '等待调度'
+      }, {
         value: 1,
         label: '调度成功'
       }, {
-        value: 0,
+        value: 2,
         label: '调度失败'
       }],
       executeOpts: [{
@@ -325,6 +347,7 @@ export default {
     },
     getInitTime() {
       const end = new Date()
+      end.setTime(end.getTime() + 3600 * 1000 * 24 * 3)
       const start = new Date()
       start.setTime(start.getTime() - 3600 * 1000 * 24 * 30)
       return [formatDateTime(start, format), formatDateTime(end, format)]
@@ -386,6 +409,12 @@ export default {
     },
     barMouseup(e) {
       this.logDrawer.isDown = false
+    },
+    tableRowClassName({ row, rowIndex }) {
+      if (row.pid === 0) {
+        return ''
+      }
+      return 'children'
     }
   }
 }
@@ -409,5 +438,4 @@ export default {
 /deep/ .el-scrollbar__wrap {
   overflow-x: hidden;
 }
-
 </style>

@@ -18,7 +18,10 @@ public class JobDTO {
      * id
      */
     private Long id;
-
+    /**
+     * 任务编码
+     */
+    private String code;
     /**
      * 任务名称
      */
@@ -106,4 +109,13 @@ public class JobDTO {
      */
     @JsonFormat(pattern = Commons.DT_PATTERN)
     private LocalDateTime createTime;
+    /**
+     * 下次触发时间
+     */
+    private Long nextTriggerTime;
+    /**
+     * 触发时间
+     */
+    @JsonFormat(pattern = Commons.DT_PATTERN)
+    private LocalDateTime nextTriggerTime0;
 }

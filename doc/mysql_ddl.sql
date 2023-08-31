@@ -28,7 +28,7 @@ CREATE TABLE `worker` (
       `updater` varchar(64) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '更新人',
       `update_time` datetime DEFAULT NULL COMMENT '更新时间',
       PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='执行器信息';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='执行器信息';
 
 
 drop table if exists `registry`;
@@ -39,14 +39,14 @@ CREATE TABLE `registry` (
     `update_time` datetime DEFAULT NULL COMMENT '更新时间',
     PRIMARY KEY (`id`),
     KEY `registry_address_idx` (`address`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='注册表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='注册表';
 
 
-drop table if exists `job`;
 -- vi_job.job definition
 
 CREATE TABLE `job` (
    `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+   `code` varchar(64) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '任务编码',
    `name` varchar(128) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '任务名称',
    `worker_id` bigint(20) NOT NULL COMMENT '执行器id',
    `start_time` datetime DEFAULT NULL COMMENT '生命周期开始',
@@ -65,20 +65,21 @@ CREATE TABLE `job` (
    `max_wait_num` int(11) DEFAULT NULL COMMENT '单节点最大等待数量',
    `last_trigger_time` bigint(20) DEFAULT NULL COMMENT '上次次触发时间',
    `next_trigger_time` bigint(20) DEFAULT NULL COMMENT '下次触发时间',
-   `log_auto_del_hours` int(11) DEFAULT NULL COMMENT '任务实例自动删除时间（小时）',
+   `log_auto_del_hours` int(11) DEFAULT NULL COMMENT '调度记录自动删除时间（小时）',
    `creater` varchar(64) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '新建人',
    `create_time` datetime DEFAULT NULL COMMENT '创建时间',
    `updater` varchar(64) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '更新人',
    `update_time` datetime DEFAULT NULL COMMENT '更新时间',
    PRIMARY KEY (`id`),
+   UNIQUE KEY `job_code_idx` (`code`) USING BTREE,
    KEY `job_next_trigger_time_idx` (`next_trigger_time`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='任务信息';
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='任务信息';
 
 
 drop table if exists `job_instance`;
-
 CREATE TABLE `job_instance` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+    `pid` bigint(20) NOT NULL DEFAULT 0 COMMENT '父id',
     `job_id` bigint(20) NOT NULL COMMENT '任务id',
     `job_param` varchar(1024) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '任务参数',
     `worker_id` bigint(20) NOT NULL COMMENT '执行器id',
@@ -96,10 +97,11 @@ CREATE TABLE `job_instance` (
     `exec_count` int(11) NOT NULL default 0 COMMENT '执行次数',
     PRIMARY KEY (`id`),
     KEY `trigger_time_idx` (`trigger_time`) USING BTREE,
+    KEY `pid_idx` (`pid`) USING BTREE,
     KEY `job_id_idx` (`job_id`) USING BTREE,
     KEY `worker_id_idx` (`worker_id`) USING BTREE,
     KEY `expected_delete_time_idx` (`expected_delete_time`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=2513 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='任务实例';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='任务实例';
 
 
 

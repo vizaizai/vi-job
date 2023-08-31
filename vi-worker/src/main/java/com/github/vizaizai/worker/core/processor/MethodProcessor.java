@@ -33,6 +33,7 @@ public class MethodProcessor implements BasicProcessor {
     public void execute(TaskContext taskContext) throws Exception{
         Class<?>[] parameterTypes = method.getParameterTypes();
         if (parameterTypes.length > 0) {
+
             Object[] params = new Object[parameterTypes.length];
             for (int i = 0; i < parameterTypes.length; i++) {
                 Class<?> parameterType = parameterTypes[i];

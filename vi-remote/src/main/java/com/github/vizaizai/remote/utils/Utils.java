@@ -151,4 +151,32 @@ public class Utils {
     public static <K, V> Map<K, V> newHashMap(int size) {
         return newHashMap(size, false);
     }
+
+
+    /**
+     * 切割列表
+     * @param data 列表
+     * @param cutSize 大小
+     * @return
+     */
+    public static <T> List<List<T>> cutList(List<T> data, int cutSize) {
+        List<List<T>> resultList = new ArrayList<>();
+        if (isEmpty(data) || cutSize <= 0) {
+            return resultList;
+        }
+        int size = data.size();
+        int round = size / cutSize;
+        int mod = size % cutSize;
+        if (mod != 0) {
+            round = round + 1;
+        }
+
+        for (int i = 0; i < round; i++) {
+            int start = i * cutSize;
+            int end = Math.min(start + cutSize, size);
+            List<T> subList = data.subList(start, end);
+            resultList.add(subList);
+        }
+        return resultList;
+    }
 }

@@ -15,7 +15,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 /**
- * job计划任务
+ * job计划定时任务
  * @author liaochongwei
  * @date 2023/5/31 11:10
  */
@@ -27,9 +27,9 @@ public class JobScheduleTask extends BaseTask{
     @Resource
     private GlobalJobGroupManager globalJobGroupManager;
     /**
-     * 3分钟执行一次,将5分钟内触发的任务添加到触发Timer中
+     * 每分钟将5分钟内触发的任务添加到触发Timer中
      */
-    @Scheduled(fixedDelay = 1000 * 60 * 3)
+    @Scheduled(fixedDelay = 1000 * 60)
     public void schedule() {
         if (!this.execTask()) {
             return;

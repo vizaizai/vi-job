@@ -7,8 +7,8 @@ import com.github.vizaizai.server.entity.Job;
 import com.github.vizaizai.server.web.co.*;
 import com.github.vizaizai.server.web.dto.JobDTO;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 /**
  * 任务接口
@@ -57,23 +57,22 @@ public interface JobService {
      */
     Result<Void> run(JobRunCO jobRunCO);
     /**
+     * 状态上报
+     * @param statusReportCO
+     * @return
+     */
+    Result<Void> statusReport(StatusReportCO statusReportCO);
+    /**
      * 查询所有等待触发的任务
      * @param maxTime 最大时间
      * @return
      */
     List<JobDO> listWaitingJobs(long maxTime);
     /**
-     * id列表查询
-     * @param ids id列表
-     * @return
-     */
-    List<JobDO> listByIds(Set<Long> ids);
-    /**
      * 执行任务
      * @param job 任务
      */
     void invoke(Job job);
-
     /**
      * 刷新触发时间
      * @param jobId 任务id
@@ -88,12 +87,9 @@ public interface JobService {
      */
     void stop(Long jobId);
     /**
-     * 状态上报
-     * @param statusReportCO
+     * 批量id查询
+     * @param ids
      * @return
      */
-    Result<Void> statusReport(StatusReportCO statusReportCO);
-
-
-
+    List<JobDO> listByIds(List<Long> ids);
 }

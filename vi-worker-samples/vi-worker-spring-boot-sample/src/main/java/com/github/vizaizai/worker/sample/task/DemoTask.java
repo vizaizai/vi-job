@@ -17,15 +17,14 @@ public class DemoTask {
     private static final Logger logger = LoggerFactory.getLogger(DemoTask.class);
 
     @Job("demoTask1")
-    public void foo() {
-
-        logger.info("开始执行定时任务foo...");
+    public void foo(TaskContext context) {
+        context.getLogger().info("开始执行定时任务foo...，任务参数1: {}", context.getJobParam());
         try {
             Thread.sleep(1000 * 10);
         }catch (Exception e) {
 
         }
-        logger.info("执行订单任务完毕...");
+        context.getLogger().info("执行订单任务完毕...");
 
     }
     @Job("demoTask2")
@@ -38,6 +37,7 @@ public class DemoTask {
                 context.getLogger().info("demoTask2执行中打印: {}", i);
             }
         }catch (Exception e) {
+            logger.error("执行异常,",e);
         }
         logger.info("执行订单任务完毕...");
 

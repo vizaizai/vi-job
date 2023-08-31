@@ -3,7 +3,6 @@ package com.github.vizaizai.server.timer;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import com.github.vizaizai.retry.timewheel.HashedWheelTimer;
 import com.github.vizaizai.retry.timewheel.Timeout;
-import com.github.vizaizai.retry.timewheel.TimerTask;
 import com.github.vizaizai.server.constant.Commons;
 import com.github.vizaizai.server.constant.TriggerType;
 import com.github.vizaizai.server.entity.Job;
@@ -41,11 +40,11 @@ public class JobTriggerTimer {
      */
     private final HashedWheelTimer fastHashedWheelTimer;
 
-    private final Map<Long,Timeout> timeouts = new ConcurrentHashMap<>();
+    private final Map<String,Timeout> timeouts = new ConcurrentHashMap<>();
     /**
-     * 任务信息
+     * 调度中的任务
      */
-    private final Map<Long, Job> jobs = new ConcurrentHashMap<>();
+    private final static Map<Long, Job> schedulingJobs = new ConcurrentHashMap<>();
     private static JobService jobService  = null;
 
     private JobTriggerTimer() {
@@ -84,7 +83,8 @@ public class JobTriggerTimer {
      */
     public synchronized void push(Job job) {
         // 任务重复调度
-        if (getTimeout(job.getId()) != null) {
+        Timeout timeout = getTimeout(job.getUid());
+        if (timeout!= null && !timeout.isExpired() && !timeout.isCancelled()) {
             return;
         }
         // 延时任务校验，保证上一次调度执行结束
@@ -94,12 +94,6 @@ public class JobTriggerTimer {
             }
         }
 
-        // 触发时间检查
-        Long triggerTime = job.getNextTriggerTime();
-        if (triggerTime == null) {
-            return;
-        }
-
         // 生命周期检查
         if (job.getEndTime() != null
                 && System.currentTimeMillis() > LocalDateTimeUtil.toEpochMilli(job.getEndTime())) {
@@ -107,57 +101,70 @@ public class JobTriggerTimer {
             remove(job.getId());
             return;
         }
+
+        // 触发时间检查
+        Long triggerTime = job.getNextTriggerTime();
+        if (triggerTime == null) {
+            return;
+        }
+
         // 延时毫秒数
         long delay = triggerTime - System.currentTimeMillis();
         if (delay > Commons.TIMER_MAX) {
             return;
         }
-        jobs.put(job.getId(), job);
-
-        // 任务过期，计算下次调度时间
+        log.info("{}-延时毫秒数： {}", job.getUid(), delay);
+        // 任务过期
         if (delay < 0) {
+            // 直接调度任务：运行一次
+            if (job.isDirectRun()) {
+                new JobInvoker(invokeExecutor, jobService, job).exec();
+                return;
+            }
+            // 定时调度任务：计算下次调度时间
             job.setBaseTime(System.currentTimeMillis());
             job.resetNextTriggerTime();
             this.push(job);
             return;
         }
-
+        if (!job.isDirectRun()) {
+            schedulingJobs.put(job.getId(), job);
+        }
         // 延时调度
-        this.schedule(delay, job.getId(), new InvokerTimerTask(invokeExecutor, jobService, job));
-
+        this.schedule(delay, job.getUid(), new JobInvoker(invokeExecutor, jobService, job));
     }
 
 
     /**
      * 定时任务
      * @param delay 延时毫秒数
-     * @param jobId 任务id
-     * @
+     * @param timeoutId timeout标识
+     * @param jobInvoker JobInvoker
      */
-    private void schedule(long delay, long jobId, TimerTask timerTask) {
+    private void schedule(long delay, String timeoutId, JobInvoker jobInvoker) {
         // 延时时间大于最小时间->推入慢时间轮循环
         if (delay > Commons.TIMER_MIN) {
             Timeout timeout = slowHashedWheelTimer.newTimeout(()-> {
-                timeouts.remove(jobId);
+                timeouts.remove(timeoutId);
                 // 再次schedule，进入快时间轮
-                this.schedule(Commons.TIMER_MIN, jobId, timerTask);
+                this.schedule(Commons.TIMER_MIN, timeoutId, jobInvoker);
             }
             ,delay - Commons.TIMER_MIN
             ,TimeUnit.MILLISECONDS);
             // 将Timeout记录，用于中止任务
-            timeouts.put(jobId, timeout);
+            timeouts.put(timeoutId, timeout);
         }else if (delay > 50L) {
             Timeout timeout = fastHashedWheelTimer.newTimeout(()->{
-                timeouts.remove(jobId);
+                timeouts.remove(timeoutId);
                 // 运行任务
-                timerTask.run();
+                jobInvoker.exec();
             }
             ,delay
             ,TimeUnit.MILLISECONDS);
-            timeouts.put(jobId, timeout);
+            timeouts.put(timeoutId, timeout);
         }else  {
             // 运行任务
-            timerTask.run();
+            jobInvoker.exec();
         }
     }
     /**
@@ -166,22 +173,14 @@ public class JobTriggerTimer {
      */
     public synchronized void remove(Long jobId) {
         Timeout timeout;
-        timeout = timeouts.remove(jobId);
+        timeout = timeouts.remove(jobId.toString());
         if (timeout != null) {
             timeout.cancel();
         }
-        Job job = jobs.remove(jobId);
+        Job job = schedulingJobs.remove(jobId);
         if (job != null) {
             job.setCanceled(true);
         }
-    }
-
-    /**
-     * 直接运行
-     * @param job 任务
-     */
-    public void directRun(Job job) {
-        new InvokerTimerTask(invokeExecutor, jobService, job, true).run();
     }
 
     public HashedWheelTimer getSlowHashedWheelTimer() {
@@ -192,8 +191,8 @@ public class JobTriggerTimer {
         return fastHashedWheelTimer;
     }
 
-    public Timeout getTimeout(Long jobId) {
-        return timeouts.get(jobId);
+    public Timeout getTimeout(String timeoutId) {
+        return timeouts.get(timeoutId);
     }
 
 }

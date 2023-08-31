@@ -16,6 +16,10 @@ public class LogInfo implements Serializable {
      * 结尾位置
      */
     private long endPos;
+    /**
+     * 行数
+     */
+    private int lines;
 
 
     public String getData() {
@@ -34,11 +38,20 @@ public class LogInfo implements Serializable {
         this.endPos = endPos;
     }
 
+    public int getLines() {
+        return lines;
+    }
+
+    public void setLines(int lines) {
+        this.lines = lines;
+    }
+
     @Override
     public String toString() {
         return "LogInfo{" +
                 "data='" + data + '\'' +
                 ", endPos=" + endPos +
+                ", lines=" + lines +
                 '}';
     }
 }

@@ -19,6 +19,10 @@ public class JobDO {
      */
     @TableId(type = IdType.AUTO)
     private Long id;
+    /**
+     * 任务编码
+     */
+    private String code;
 
     /**
      * 任务名称

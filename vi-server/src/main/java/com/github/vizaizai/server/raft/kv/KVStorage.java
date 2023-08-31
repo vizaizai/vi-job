@@ -5,13 +5,16 @@ import com.alipay.remoting.serialization.SerializerManager;
 import com.github.vizaizai.server.raft.kv.impl.HashKVStorage;
 import com.github.vizaizai.server.raft.kv.impl.SetKVStorage;
 import com.github.vizaizai.server.raft.kv.impl.StringKVStorage;
+import com.github.vizaizai.server.raft.kv.metadata.HashMetadata;
 import com.github.vizaizai.server.raft.kv.metadata.Metadata;
+import com.github.vizaizai.server.raft.kv.metadata.SetMetadata;
+import com.github.vizaizai.server.raft.kv.metadata.StringMetadata;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Function;
 
 /**
  * KV存储
@@ -20,10 +23,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 @Slf4j
 public abstract class KVStorage {
-    /**
-     * 读写锁
-     */
-    public static final ReadWriteLock lock = new ReentrantReadWriteLock();
     /**
      * 元数据map
      */
@@ -36,6 +35,7 @@ public abstract class KVStorage {
     protected Metadata get(String key) {
         return metadataMap.get(key);
     }
+
     /**
      * rm操作
      * @param key 健
@@ -51,6 +51,25 @@ public abstract class KVStorage {
      */
     protected Metadata put(String key, Metadata metadata) {
         return metadataMap.put(key, metadata);
+    }
+
+    /**
+     * computeIfAbsent操作
+     * @param key 键
+     * @param mappingFunction function
+     * @return 元数据
+     */
+    protected Metadata computeIfAbsent(String key, Function<String, Metadata> mappingFunction) {
+        return metadataMap.computeIfAbsent(key, mappingFunction);
+    }
+
+    /**
+     * 初始化
+     * @param key 键
+     * @param metadata 元数据
+     */
+    protected void init(String key, Metadata metadata) {
+        metadataMap.putIfAbsent(key, metadata);
     }
     /**
      * 加载所有数据
@@ -72,14 +91,27 @@ public abstract class KVStorage {
         if (data == null || data.length == 0) {
             return;
         }
-        lock.writeLock().lock();
         try {
             Map<String, Metadata> map = SerializerManager.getSerializer(SerializerManager.Hessian2).deserialize(data, Map.class.getName());
-            map.forEach(metadataMap::putIfAbsent);
+            Set<String> keys = map.keySet();
+            for (String key : keys) {
+                Metadata metadata = map.get(key);
+                KVStorage storage = null;
+                if (metadata instanceof StringMetadata) {
+                    storage = new StringKVStorage();
+                }else if (metadata instanceof HashMetadata) {
+                    storage = new HashKVStorage();
+                }else if (metadata instanceof SetMetadata) {
+                    storage = new SetKVStorage();
+                }else {
+                    log.warn("Metadata[{}] is unknown", metadata.getClass().getName());
+                }
+                if (storage != null) {
+                    storage.init(key, metadata);
+                }
+            }
         }catch (Exception e) {
             log.error("初始化元数据失败，",e);
-        }finally {
-            lock.writeLock().unlock();
         }
     }
 

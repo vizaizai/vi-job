@@ -12,3 +12,4 @@ vi-job:
     address: 127.0.0.1:1141
   worker:
     app-name: ${spring.application.name}
+    port: 3923

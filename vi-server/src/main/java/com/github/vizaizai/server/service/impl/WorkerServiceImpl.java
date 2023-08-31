@@ -14,6 +14,7 @@ import com.github.vizaizai.server.dao.RegistryMapper;
 import com.github.vizaizai.server.dao.WorkerMapper;
 import com.github.vizaizai.server.dao.dataobject.RegistryDO;
 import com.github.vizaizai.server.dao.dataobject.WorkerDO;
+import com.github.vizaizai.server.raft.kv.impl.StringKVStorage;
 import com.github.vizaizai.server.service.WorkerService;
 import com.github.vizaizai.server.utils.BeanUtils;
 import com.github.vizaizai.server.utils.KVUtils;
@@ -161,6 +162,15 @@ public class WorkerServiceImpl implements WorkerService {
     @Override
     public List<String> getWorkerAddressList(Integer workerId) {
         return new ArrayList<>(KVUtils.stMembers(Commons.WORKER_NODE_KEY + workerId));
+    }
+
+    @Override
+    public Integer getWorkerId(String appName) {
+        WorkerDO worker = workerMapper.selectOne(Wrappers.<WorkerDO>lambdaQuery().eq(WorkerDO::getAppName, appName));
+        if (worker != null) {
+            return worker.getId();
+        }
+        return null;
     }
 
     @Override

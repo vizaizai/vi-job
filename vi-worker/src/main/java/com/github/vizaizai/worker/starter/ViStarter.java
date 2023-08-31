@@ -108,8 +108,7 @@ public class ViStarter {
     }
 
     private void initEmbedServer() {
-        // 获取主机地址
-        this.host = this.host == null || this.host.trim().length() == 0 ? NetUtils.getLocalHost() : this.host;
+
         Server server = new NettyServer(this.host, this.port);
         server.addBizProcessor(BizCode.RUN, new TaskExecutor());
         server.addBizProcessor(BizCode.IDlE, new IdleExecutor());
@@ -133,6 +132,9 @@ public class ViStarter {
     }
 
     void checkParams() {
+        // 获取主机地址
+        this.host = this.host == null || this.host.trim().length() == 0 ? NetUtils.getLocalHost() : this.host;
+
         if (Utils.isBlank(this.appName)) {
             throw new IllegalArgumentException("AppName invalid");
         }
@@ -166,6 +168,7 @@ public class ViStarter {
         }
         System.setProperty(PropsKeys.LOG_BASE_PATH, logBasePath);
         System.setProperty(PropsKeys.SERVER_ADDR, String.join(",", severAddrList));
+        System.setProperty(PropsKeys.BIND_ADDR, this.host + ":" + this.port);
     }
 
 

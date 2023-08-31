@@ -1,11 +1,15 @@
 package com.github.vizaizai.server.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.vizaizai.common.model.LogInfo;
 import com.github.vizaizai.common.model.Result;
+import com.github.vizaizai.server.dao.dataobject.JobInstanceDO;
 import com.github.vizaizai.server.web.co.JobInstanceQueryCO;
 import com.github.vizaizai.server.web.co.LogQueryCO;
 import com.github.vizaizai.server.web.dto.JobInstanceDTO;
+
+import java.util.List;
 
 /**
  * 任务实例接口服务
@@ -47,5 +51,11 @@ public interface JobInstanceService {
      */
     int batchRemove();
 
+    /**
+     * 查询等待中调度的任务实例
+     * @param maxTime 最大时间
+     * @return
+     */
+    List<JobInstanceDO> listWaitingInstances(long maxTime);
 
 }

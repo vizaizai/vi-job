@@ -6,7 +6,7 @@ import com.github.vizaizai.remote.codec.RpcRequest;
 import com.github.vizaizai.remote.codec.RpcResponse;
 import com.github.vizaizai.remote.common.sender.Sender;
 import com.github.vizaizai.remote.server.processor.BizProcessor;
-import com.github.vizaizai.worker.log.impl.JobLogger;
+import com.github.vizaizai.worker.log.impl.JobLoggerHandler;
 import com.github.vizaizai.worker.utils.DateUtils;
 
 /**
@@ -19,15 +19,15 @@ public class LogExecutor implements BizProcessor {
     public void execute(RpcRequest request, Sender sender) {
         LogQueryParam param = (LogQueryParam) request.getParam();
         RpcResponse response;
-        JobLogger jobLogger = null;
+        JobLoggerHandler jobLoggerHandler = null;
         try {
-            jobLogger = JobLogger.getInstance(param.getJobId(), DateUtils.parse(param.getTriggerTime()).toLocalDate(), false);
-            response = RpcResponse.ok(jobLogger.getLog(param.getLogId(), param.getStartPos(), param.getMaxLines()));
+            jobLoggerHandler = JobLoggerHandler.getInstance(param.getJobId(), DateUtils.parse(param.getTriggerTime()).toLocalDate(), false);
+            response = RpcResponse.ok(jobLoggerHandler.getLog(param.getLogId(), param.getStartPos(), param.getMaxLines()));
         }catch (Exception e) {
             response = RpcResponse.error(e.getMessage());
         }finally {
-            if (jobLogger != null) {
-                jobLogger.close();
+            if (jobLoggerHandler != null) {
+                jobLoggerHandler.close();
             }
         }
         sender.send(RpcMessage.createResponse(request.getRid(), response));

@@ -22,6 +22,10 @@ public class JobInstanceDO {
     @TableId(type = IdType.AUTO)
     private Long id;
     /**
+     * 父id
+     */
+    private Long pid;
+    /**
      * 任务id
      */
     private Long jobId;

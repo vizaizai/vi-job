@@ -15,6 +15,7 @@ import java.time.temporal.TemporalAccessor;
 public class DateUtils {
 
     public static final String NA_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
+    public static final String ST_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     private DateUtils() {
     }

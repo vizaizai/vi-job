@@ -16,13 +16,9 @@ public class ServerNodeDTO {
     /**
      * 状态
      */
-    private Integer state;
+    private Boolean state;
     /**
-     * 角色
+     * 是否leader
      */
-    private String role;
-    /**
-     * 元数据
-     */
-    private String mateData;
+    private Boolean leader;
 }

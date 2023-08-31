@@ -5,6 +5,9 @@
         <el-form-item prop="name" label="任务名称">
           <el-input v-model="formData.name" style="width: 100%;" placeholder="任务名称" />
         </el-form-item>
+        <el-form-item prop="code" label="任务编码">
+          <el-input v-model="formData.code" style="width: 100%;" placeholder="任务编码" />
+        </el-form-item>
         <el-form-item prop="workerId" label="执行器">
           <worker ref="worker" @select="selectWorker" />
         </el-form-item>
@@ -42,8 +45,10 @@
             />
           </el-select>
           <el-input v-if="formData.triggerType === 1" v-model="formData.cron" style="width: 70%;" placeholder="cron表达式" />
-          <el-input v-if="formData.triggerType === 2" v-model="formData.speedS" style="width: 70%;" placeholder="频率（单位：秒）" />
-          <el-input v-if="formData.triggerType === 3" v-model="formData.delayedS" style="width: 70%;" placeholder="延时（单位：秒）" />
+          <el-input v-if="formData.triggerType === 2" v-model="formData.speedS" style="width: 70%;" placeholder="固定频率（单位：秒）" />
+          <el-tooltip v-if="formData.triggerType === 3" class="item" effect="light" open-delay="500" content="从上次执行结束后开始计算延迟时间，到达延迟时间后触发下次调度" placement="bottom">
+            <el-input v-model="formData.delayedS" style="width: 70%;" placeholder="固定延时（单位：秒）" />
+          </el-tooltip>
         </el-form-item>
         <el-form-item prop="routeType" label="路由策略">
           <el-select v-model="formData.routeType" placeholder="策略选择" style="width: 27%;margin-right: 3%">
@@ -86,6 +91,14 @@
 
 <script>
 import worker from '../worker/wrap'
+
+const validateJobCode = (rule, value, callback) => {
+  if (value && !/^[A-Za-z0-9_]{5,40}$/.test(value)) {
+    callback(new Error('请输入正确的任务编码，由5-40位的大小写字母、数字和下划线组成'))
+  } else {
+    callback()
+  }
+}
 export default {
   components: { worker },
   data() {
@@ -97,6 +110,7 @@ export default {
       title: '', handler: function() {},
       rules: {
         name: [{ required: true, message: '请输入任务名称', trigger: 'blur' }],
+        code: [{ validator: validateJobCode, trigger: 'blur' }],
         workerId: [{ required: true, message: '请选择执行器', trigger: 'change' }],
         processorType: [{ required: true, message: '请选择处理器', trigger: 'blur' }],
         triggerType: [{ required: true, message: '请选择触发策略', trigger: 'blur' }],

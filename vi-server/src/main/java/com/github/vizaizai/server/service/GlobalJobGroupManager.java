@@ -83,7 +83,7 @@ public class GlobalJobGroupManager {
      * 将任务推入Timer
      * @param job 任务信息
      */
-    public void  pushIntoTimer(Job job) {
+    public void pushIntoTimer(Job job) {
         if (!raftServer.isCluster()) {
             JobTriggerTimer.getInstance().push(job);
             return;
@@ -138,6 +138,10 @@ public class GlobalJobGroupManager {
         }
         if (job.getNextTriggerTime() != null) {
             builder.setNextTriggerTime(job.getNextTriggerTime());
+        }
+        builder.setDirectRun(job.isDirectRun());
+        if (job.getInstanceId() != null) {
+            builder.setInstanceId(job.getInstanceId());
         }
 
         JobProto.PushIntoTimerRequest request = builder.build();

@@ -87,7 +87,6 @@ export default {
       }
     },
     toQuery() {
-      this.page = 1
       this.init()
     },
     resetQuery() {

@@ -10,8 +10,9 @@ import java.util.stream.Collectors;
  * @date 2023/5/19 15:02
  */
 public enum DispatchStatus {
-    FAIL(0,"失败"),
-    OK(1,"成功");
+    WAIT(0,"等待调度"),
+    OK(1,"调度成功"),
+    FAIL(2,"调度失败");
     private final int code;
     private final String msg;
 

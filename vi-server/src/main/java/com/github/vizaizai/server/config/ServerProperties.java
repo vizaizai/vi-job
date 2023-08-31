@@ -35,6 +35,10 @@ public class ServerProperties {
      *  Raft数据路径， 默认{baseDir}/raft/
      */
     private String dataDir;
+    /**
+     * 每轮触发最大数量
+     */
+    private Integer triggerMaximum = 500;
 
     @Data
     public static class InetUtils{

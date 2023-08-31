@@ -6,3 +6,17 @@ export function baseCount() {
     method: 'get'
   })
 }
+
+export function listWaitingJobs() {
+  return request({
+    url: '/home/listWaitingJobs',
+    method: 'get'
+  })
+}
+
+export function clusters() {
+  return request({
+    url: '/home/clusters',
+    method: 'get'
+  })
+}

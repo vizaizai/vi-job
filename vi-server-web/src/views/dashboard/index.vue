@@ -33,52 +33,57 @@
         <el-row>
           <el-col :span="12">
             <div class="main-content">
-              <el-divider content-position="left">等待触发任务</el-divider>
+              <el-divider content-position="left">等待调度任务</el-divider>
               <div>
-                <div class="main-text">#12 测试任务（固定延时）<span class="main-text-min">2023-10-10 19:17:40</span></div>
-                <div class="main-text">#13 测试任务（固定延时）<span class="main-text-min">2023-10-10 19:17:40</span></div>
+                <div v-for="item in waitingJobs" :key="item.id" class="main-text">
+                  #{{ item.id }}&nbsp;{{ item.name }}
+                  <span class="main-text-min">
+                    {{ item.nextTriggerTime0 }}
+                  </span>
+                </div>
               </div>
             </div>
           </el-col>
           <el-col :span="12">
             <div class="main-content">
-              <el-divider content-position="left">调度趋势图</el-divider>
+              <el-divider content-position="left">调度中心集群节点</el-divider>
               <div>
-                <div class="main-text">#1953 测试任务（固定延时）</div>
+                <el-table
+                  :data="clusters"
+                  style="width: 100%"
+                >
+                  <el-table-column
+                    prop="address"
+                    label="节点地址"
+                  />
+                  <el-table-column
+                    label="状态"
+                  >
+                    <template v-slot="{ row }">
+                      <span v-if="row.state"> <svg-icon icon-class="online" />上线</span>
+                      <span v-else> <svg-icon icon-class="offline" />离线</span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column
+                    label="Leader"
+                  >
+                    <template v-slot="{ row }">
+                      {{ row.leader ? '是' : '否' }}
+                    </template>
+                  </el-table-column>
+                </el-table>
               </div>
             </div>
           </el-col>
         </el-row>
       </el-main>
-      <el-footer>
-        <el-table
-          :data="clusters"
-          border
-          style="width: 100%"
-        >
-          <el-table-column
-            prop="date"
-            label="地址"
-            width="180"
-          />
-          <el-table-column
-            prop="name"
-            label="状态"
-            width="180"
-          />
-          <el-table-column
-            prop="address"
-            label="角色"
-          />
-        </el-table>
-      </el-footer>
     </el-container>
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
-import { baseCount } from '@/api/home'
+import { baseCount, listWaitingJobs, clusters } from '@/api/home'
 
 export default {
   name: 'Dashboard',
@@ -90,7 +95,8 @@ export default {
         workerNum: 0,
         workerNodeNum: 0
       },
-      clusters: []
+      clusters: [],
+      waitingJobs: []
     }
   },
   computed: {
@@ -99,13 +105,31 @@ export default {
     ])
   },
   created() {
-    this.queryBaseCount()
+    this.$nextTick(() => {
+      this.queryBaseCount()
+      this.queryWaitingJobs()
+      this.queryClusters()
+    })
   },
   methods: {
     queryBaseCount() {
       baseCount().then(res => {
         if (res.code === 200) {
           this.baseCount = res.data
+        }
+      })
+    },
+    queryWaitingJobs() {
+      listWaitingJobs().then(res => {
+        if (res.code === 200) {
+          this.waitingJobs = res.data
+        }
+      })
+    },
+    queryClusters() {
+      clusters().then(res => {
+        if (res.code === 200) {
+          this.clusters = res.data
         }
       })
     }
@@ -134,14 +158,19 @@ export default {
   font-weight: lighter;
 }
 .main-content {
-  width: 100%;
+  width: 70%;
   padding: 50px;
 }
 .main-text{
+  padding: 10px;
   line-height: 25px;
   color: #303133;
+  margin-top: 10px;
+  background-color: #fafafa;
+  border-radius: 7px;
 }
 .main-text-min {
+  display: block;
   color: #909399;
   font-size: 13px;
 }

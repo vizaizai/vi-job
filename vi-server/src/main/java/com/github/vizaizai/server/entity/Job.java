@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * 任务实体
@@ -97,17 +98,17 @@ public class Job {
      */
     private Long nextTriggerTime;
     /**
-     * 上一次执行结束时间
+     * 直接运行
      */
-    private Long lastExecuteEndTime;
+    private boolean directRun;
+    /**
+     * 任务实例id
+     */
+    private Long instanceId;
     /**
      * 基准时间
      */
     private Long baseTime;
-    /**
-     * 直接运行
-     */
-    private boolean directRun;
     /**
      * 已取消执行
      */
@@ -166,6 +167,31 @@ public class Job {
         }
 
         return null;
+    }
+
+
+    public String getUid() {
+        String jobId = String.valueOf(String.valueOf(this.getId()));
+        if (this.getInstanceId() != null) {
+            jobId = jobId + "_" + this.getInstanceId();
+        }
+        return jobId;
+    }
+
+    /**
+     * 前置推入
+     * @return boolean
+     */
+    public boolean prePush() {
+        return !Objects.equals(this.getTriggerType(), TriggerType.DELAYED.getCode());
+    }
+
+    /**
+     * 后置推入
+     * @return boolean
+     */
+    public boolean postPush() {
+        return !prePush();
     }
 
 }

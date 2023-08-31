@@ -11,15 +11,13 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class StringKVStorage extends KVStorage {
-
     public Object sGet(String key) {
         StringMetadata metadata = (StringMetadata) this.get(key);
         if (metadata == null) {
             return null;
         }
-        return metadata.getValue();
+        return metadata.getData();
     }
-
     public Object sSet(String key, Object value) {
         return this.put(key, new StringMetadata(value)).getData();
     }

@@ -1,19 +1,22 @@
 package com.github.vizaizai.server.service.impl;
 
 import cn.hutool.core.date.LocalDateTimeUtil;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.vizaizai.common.contants.BizCode;
 import com.github.vizaizai.common.contants.ExecuteStatus;
 import com.github.vizaizai.common.model.*;
 import com.github.vizaizai.remote.codec.RpcResponse;
 import com.github.vizaizai.remote.utils.Utils;
+import com.github.vizaizai.server.config.ServerProperties;
 import com.github.vizaizai.server.constant.DispatchStatus;
 import com.github.vizaizai.server.dao.JobInstanceMapper;
 import com.github.vizaizai.server.dao.JobMapper;
-import com.github.vizaizai.server.dao.dataobject.JobInstanceDO;
 import com.github.vizaizai.server.dao.dataobject.JobDO;
+import com.github.vizaizai.server.dao.dataobject.JobInstanceDO;
 import com.github.vizaizai.server.service.JobInstanceService;
 import com.github.vizaizai.server.service.WorkerService;
 import com.github.vizaizai.server.utils.BeanUtils;
@@ -47,6 +50,8 @@ public class JobInstanceServiceImpl implements JobInstanceService {
     private JobMapper jobMapper;
     @Resource
     private WorkerService workerService;
+    @Resource
+    private ServerProperties serverProperties;
 
     @Override
     public Result<IPage<JobInstanceDTO>> pageJobInstances(JobInstanceQueryCO queryCO) {
@@ -56,6 +61,7 @@ public class JobInstanceServiceImpl implements JobInstanceService {
                 .eq(queryCO.getDispatchStatus() != null, JobInstanceDO::getDispatchStatus, queryCO.getDispatchStatus())
                 .in(queryCO.getDispatchStatus() == null, JobInstanceDO::getDispatchStatus, DispatchStatus.codes())
                 .eq(queryCO.getExecuteStatus() != null, JobInstanceDO::getExecuteStatus, queryCO.getExecuteStatus())
+                .eq( JobInstanceDO::getPid, 0)
                 .between(queryCO.getTriggerStartTime() != null && queryCO.getTriggerEndTime() != null,
                         JobInstanceDO::getTriggerTime, queryCO.getTriggerStartTime(), queryCO.getTriggerEndTime())
                 .orderByDesc(JobInstanceDO::getTriggerTime);
@@ -74,6 +80,15 @@ public class JobInstanceServiceImpl implements JobInstanceService {
                 if (Objects.equals(record.getExecuteStatus(), ExecuteStatus.ING.getCode())) {
                     record.setExecStatus(this.getExecStatus(record.getWorkerAddress(), record.getJobId(), record.getId()));
                 }
+                List<JobInstanceDTO> children = BeanUtils.toBeans(this.listByPid(record.getId()), JobInstanceDTO::new);
+                record.setChildren(children);
+                if (Utils.isNotEmpty(children)) {
+                    for (JobInstanceDTO child : children) {
+                        child.setJobName(record.getJobName());
+                        child.setWorkerName(record.getWorkerName());
+                    }
+                }
+
             }
         }
         return Result.handleSuccess(jobInstancePage);
@@ -139,6 +154,17 @@ public class JobInstanceServiceImpl implements JobInstanceService {
                 .lt(JobInstanceDO::getExpectedDeleteTime, LocalDateTimeUtil.now()));
     }
 
+    @Override
+    public List<JobInstanceDO> listWaitingInstances(long maxTime) {
+        Wrapper<JobInstanceDO> queryWrapper = Wrappers.<JobInstanceDO>lambdaQuery()
+                .eq(JobInstanceDO::getDispatchStatus, DispatchStatus.WAIT.getCode())
+                .eq(JobInstanceDO::getPid, 0)
+                .le(JobInstanceDO::getTriggerTime, LocalDateTimeUtil.of(maxTime))
+                .orderByAsc(JobInstanceDO::getTriggerTime);
+        Page<JobInstanceDO> jobPage = jobInstanceMapper.selectPage(new Page<>(1, serverProperties.getTriggerMaximum()), queryWrapper);
+        return jobPage.getRecords();
+    }
+
     /**
      * 取消执行
      * @param address 地址
@@ -171,5 +197,9 @@ public class JobInstanceServiceImpl implements JobInstanceService {
             return (Integer) response.getResult();
         }
         return null;
+    }
+
+    private List<JobInstanceDO> listByPid(Long pid) {
+        return jobInstanceMapper.selectList(Wrappers.<JobInstanceDO>lambdaQuery().eq(JobInstanceDO::getPid, pid));
     }
 }

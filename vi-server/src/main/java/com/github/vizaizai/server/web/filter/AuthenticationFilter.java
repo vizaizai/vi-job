@@ -3,11 +3,10 @@ package com.github.vizaizai.server.web.filter;
 import cn.hutool.json.JSONUtil;
 import cn.hutool.jwt.JWT;
 import cn.hutool.jwt.JWTUtil;
-import com.github.vizaizai.server.utils.UserUtils;
 import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.common.model.StatusCode;
+import com.github.vizaizai.server.utils.UserUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.*;
@@ -15,7 +14,6 @@ import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.charset.Charset;
 
 @Component
 @WebFilter(filterName = "authenticationFilter", urlPatterns = "/*")
@@ -27,7 +25,8 @@ public class AuthenticationFilter implements Filter {
     private static final String[] exclude = new String[] {
             "/user/login",
             "/worker/**",
-            "/job/statusReport"
+            "/job/statusReport",
+            "/job/run"
     };
 
     @Override

@@ -14,4 +14,8 @@ public class PropsKeys {
      * 调度中心地址
      */
     public static final String SERVER_ADDR = "vi-job.serverAddr";
+    /**
+     * 绑定地址
+     */
+    public static final String BIND_ADDR = "vi-job.bindAddress";
 }

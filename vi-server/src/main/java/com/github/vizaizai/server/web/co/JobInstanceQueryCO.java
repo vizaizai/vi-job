@@ -22,7 +22,7 @@ public class JobInstanceQueryCO extends PageQueryCO {
      */
     private Integer workerId;
     /**
-     * 调度状态 0-失败 1-调度中 2-调度成功
+     * 调度状态 0-等待调度 1-调度成功 2-调度失败
      */
     private Integer dispatchStatus;
 

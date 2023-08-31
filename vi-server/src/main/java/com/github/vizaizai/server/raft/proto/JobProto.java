@@ -2032,6 +2032,28 @@ public final class JobProto {
      * @return The nextTriggerTime.
      */
     long getNextTriggerTime();
+
+    /**
+     * <code>optional bool directRun = 19;</code>
+     * @return Whether the directRun field is set.
+     */
+    boolean hasDirectRun();
+    /**
+     * <code>optional bool directRun = 19;</code>
+     * @return The directRun.
+     */
+    boolean getDirectRun();
+
+    /**
+     * <code>optional int64 instanceId = 20;</code>
+     * @return Whether the instanceId field is set.
+     */
+    boolean hasInstanceId();
+    /**
+     * <code>optional int64 instanceId = 20;</code>
+     * @return The instanceId.
+     */
+    long getInstanceId();
   }
   /**
    * Protobuf type {@code jraft.PushIntoTimerRequest}
@@ -2535,6 +2557,44 @@ public final class JobProto {
       return nextTriggerTime_;
     }
 
+    public static final int DIRECTRUN_FIELD_NUMBER = 19;
+    private boolean directRun_ = false;
+    /**
+     * <code>optional bool directRun = 19;</code>
+     * @return Whether the directRun field is set.
+     */
+    @Override
+    public boolean hasDirectRun() {
+      return ((bitField0_ & 0x00040000) != 0);
+    }
+    /**
+     * <code>optional bool directRun = 19;</code>
+     * @return The directRun.
+     */
+    @Override
+    public boolean getDirectRun() {
+      return directRun_;
+    }
+
+    public static final int INSTANCEID_FIELD_NUMBER = 20;
+    private long instanceId_ = 0L;
+    /**
+     * <code>optional int64 instanceId = 20;</code>
+     * @return Whether the instanceId field is set.
+     */
+    @Override
+    public boolean hasInstanceId() {
+      return ((bitField0_ & 0x00080000) != 0);
+    }
+    /**
+     * <code>optional int64 instanceId = 20;</code>
+     * @return The instanceId.
+     */
+    @Override
+    public long getInstanceId() {
+      return instanceId_;
+    }
+
     private byte memoizedIsInitialized = -1;
     @Override
     public final boolean isInitialized() {
@@ -2606,6 +2666,12 @@ public final class JobProto {
       }
       if (((bitField0_ & 0x00020000) != 0)) {
         output.writeInt64(18, nextTriggerTime_);
+      }
+      if (((bitField0_ & 0x00040000) != 0)) {
+        output.writeBool(19, directRun_);
+      }
+      if (((bitField0_ & 0x00080000) != 0)) {
+        output.writeInt64(20, instanceId_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -2683,6 +2749,14 @@ public final class JobProto {
       if (((bitField0_ & 0x00020000) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(18, nextTriggerTime_);
+      }
+      if (((bitField0_ & 0x00040000) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(19, directRun_);
+      }
+      if (((bitField0_ & 0x00080000) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(20, instanceId_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -2789,6 +2863,16 @@ public final class JobProto {
         if (getNextTriggerTime()
             != other.getNextTriggerTime()) return false;
       }
+      if (hasDirectRun() != other.hasDirectRun()) return false;
+      if (hasDirectRun()) {
+        if (getDirectRun()
+            != other.getDirectRun()) return false;
+      }
+      if (hasInstanceId() != other.hasInstanceId()) return false;
+      if (hasInstanceId()) {
+        if (getInstanceId()
+            != other.getInstanceId()) return false;
+      }
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -2875,6 +2959,16 @@ public final class JobProto {
         hash = (37 * hash) + NEXTTRIGGERTIME_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
             getNextTriggerTime());
+      }
+      if (hasDirectRun()) {
+        hash = (37 * hash) + DIRECTRUN_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+            getDirectRun());
+      }
+      if (hasInstanceId()) {
+        hash = (37 * hash) + INSTANCEID_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getInstanceId());
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -3025,6 +3119,8 @@ public final class JobProto {
         maxWaitNum_ = 0;
         logAutoDelHours_ = 0;
         nextTriggerTime_ = 0L;
+        directRun_ = false;
+        instanceId_ = 0L;
         return this;
       }
 
@@ -3131,6 +3227,14 @@ public final class JobProto {
           result.nextTriggerTime_ = nextTriggerTime_;
           to_bitField0_ |= 0x00020000;
         }
+        if (((from_bitField0_ & 0x00040000) != 0)) {
+          result.directRun_ = directRun_;
+          to_bitField0_ |= 0x00040000;
+        }
+        if (((from_bitField0_ & 0x00080000) != 0)) {
+          result.instanceId_ = instanceId_;
+          to_bitField0_ |= 0x00080000;
+        }
         result.bitField0_ |= to_bitField0_;
       }
 
@@ -3207,6 +3311,12 @@ public final class JobProto {
         }
         if (other.hasNextTriggerTime()) {
           setNextTriggerTime(other.getNextTriggerTime());
+        }
+        if (other.hasDirectRun()) {
+          setDirectRun(other.getDirectRun());
+        }
+        if (other.hasInstanceId()) {
+          setInstanceId(other.getInstanceId());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
@@ -3327,6 +3437,16 @@ public final class JobProto {
                 bitField0_ |= 0x00020000;
                 break;
               } // case 144
+              case 152: {
+                directRun_ = input.readBool();
+                bitField0_ |= 0x00040000;
+                break;
+              } // case 152
+              case 160: {
+                instanceId_ = input.readInt64();
+                bitField0_ |= 0x00080000;
+                break;
+              } // case 160
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -4220,6 +4340,86 @@ public final class JobProto {
       public Builder clearNextTriggerTime() {
         bitField0_ = (bitField0_ & ~0x00020000);
         nextTriggerTime_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private boolean directRun_ ;
+      /**
+       * <code>optional bool directRun = 19;</code>
+       * @return Whether the directRun field is set.
+       */
+      @Override
+      public boolean hasDirectRun() {
+        return ((bitField0_ & 0x00040000) != 0);
+      }
+      /**
+       * <code>optional bool directRun = 19;</code>
+       * @return The directRun.
+       */
+      @Override
+      public boolean getDirectRun() {
+        return directRun_;
+      }
+      /**
+       * <code>optional bool directRun = 19;</code>
+       * @param value The directRun to set.
+       * @return This builder for chaining.
+       */
+      public Builder setDirectRun(boolean value) {
+
+        directRun_ = value;
+        bitField0_ |= 0x00040000;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool directRun = 19;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearDirectRun() {
+        bitField0_ = (bitField0_ & ~0x00040000);
+        directRun_ = false;
+        onChanged();
+        return this;
+      }
+
+      private long instanceId_ ;
+      /**
+       * <code>optional int64 instanceId = 20;</code>
+       * @return Whether the instanceId field is set.
+       */
+      @Override
+      public boolean hasInstanceId() {
+        return ((bitField0_ & 0x00080000) != 0);
+      }
+      /**
+       * <code>optional int64 instanceId = 20;</code>
+       * @return The instanceId.
+       */
+      @Override
+      public long getInstanceId() {
+        return instanceId_;
+      }
+      /**
+       * <code>optional int64 instanceId = 20;</code>
+       * @param value The instanceId to set.
+       * @return This builder for chaining.
+       */
+      public Builder setInstanceId(long value) {
+
+        instanceId_ = value;
+        bitField0_ |= 0x00080000;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 instanceId = 20;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearInstanceId() {
+        bitField0_ = (bitField0_ & ~0x00080000);
+        instanceId_ = 0L;
         onChanged();
         return this;
       }
@@ -5293,7 +5493,7 @@ public final class JobProto {
       "\n\rjobRaft.proto\022\005jraft\"\036\n\rAssignRequest\022" +
       "\r\n\005jobId\030\001 \002(\003\"\032\n\tRmRequest\022\r\n\005jobId\030\001 \001" +
       "(\003\";\n\010Response\022\017\n\007success\030\001 \002(\010\022\020\n\010error" +
-      "Msg\030\002 \001(\t\022\014\n\004data\030\003 \001(\t\"\346\002\n\024PushIntoTime" +
+      "Msg\030\002 \001(\t\022\014\n\004data\030\003 \001(\t\"\215\003\n\024PushIntoTime" +
       "rRequest\022\r\n\005jobId\030\001 \002(\003\022\014\n\004name\030\002 \001(\t\022\020\n" +
       "\010workerId\030\003 \001(\005\022\021\n\tstartTime\030\004 \001(\003\022\017\n\007en" +
       "dTime\030\005 \001(\003\022\025\n\rprocessorType\030\006 \001(\005\022\021\n\tpr" +
@@ -5302,10 +5502,11 @@ public final class JobProto {
       "\020\n\010delayedS\030\014 \001(\005\022\021\n\trouteType\030\r \001(\005\022\022\n\n" +
       "retryCount\030\016 \001(\005\022\020\n\010timeoutS\030\017 \001(\005\022\022\n\nma" +
       "xWaitNum\030\020 \001(\005\022\027\n\017logAutoDelHours\030\021 \001(\005\022" +
-      "\027\n\017nextTriggerTime\030\022 \001(\003\"\'\n\026RemoveFromTi" +
-      "merRequest\022\r\n\005jobId\030\001 \002(\003\"*\n\031EndWatchFor" +
-      "JobExecRequest\022\r\n\005jobId\030\001 \002(\003B1\n%com.git" +
-      "hub.vizaizai.server.raft.protoB\010JobProto"
+      "\027\n\017nextTriggerTime\030\022 \001(\003\022\021\n\tdirectRun\030\023 " +
+      "\001(\010\022\022\n\ninstanceId\030\024 \001(\003\"\'\n\026RemoveFromTim" +
+      "erRequest\022\r\n\005jobId\030\001 \002(\003\"*\n\031EndWatchForJ" +
+      "obExecRequest\022\r\n\005jobId\030\001 \002(\003B1\n%com.gith" +
+      "ub.vizaizai.server.raft.protoB\010JobProto"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -5334,7 +5535,7 @@ public final class JobProto {
     internal_static_jraft_PushIntoTimerRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_jraft_PushIntoTimerRequest_descriptor,
-        new String[] { "JobId", "Name", "WorkerId", "StartTime", "EndTime", "ProcessorType", "Processor", "Param", "TriggerType", "Cron", "SpeedS", "DelayedS", "RouteType", "RetryCount", "TimeoutS", "MaxWaitNum", "LogAutoDelHours", "NextTriggerTime", });
+        new String[] { "JobId", "Name", "WorkerId", "StartTime", "EndTime", "ProcessorType", "Processor", "Param", "TriggerType", "Cron", "SpeedS", "DelayedS", "RouteType", "RetryCount", "TimeoutS", "MaxWaitNum", "LogAutoDelHours", "NextTriggerTime", "DirectRun", "InstanceId", });
     internal_static_jraft_RemoveFromTimerRequest_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_jraft_RemoveFromTimerRequest_fieldAccessorTable = new

@@ -65,6 +65,13 @@ public interface WorkerService {
      */
     List<String> getWorkerAddressList(Integer workerId);
 
+    /**
+     * 获取执行器id
+     * @param appName 应用名称
+     * @return workerId
+     */
+    Integer getWorkerId(String appName);
+
     List<WorkerDTO> listByIds(Set<Integer> ids);
 
     /**

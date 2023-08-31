@@ -21,6 +21,11 @@
           width="100"
         />
         <el-table-column
+          prop="code"
+          label="任务编码"
+          width="100"
+        />
+        <el-table-column
           prop="name"
           label="任务名称"
           width="200"

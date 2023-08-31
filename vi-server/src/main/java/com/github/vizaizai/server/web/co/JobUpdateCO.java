@@ -7,6 +7,7 @@ import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.time.LocalDateTime;
 
 /**
@@ -20,11 +21,18 @@ public class JobUpdateCO {
      * 数据id
      */
     private Long id;
+
+    /**
+     * 任务名称
+     */
+    @Pattern(regexp = "^[A-Za-z0-9_]{5,20}$", message = "请输入正确的任务编码")
+    private String code;
     /**
      * 任务名称
      */
     @NotEmpty(message = "任务名称必须")
     private String name;
+
 
     /**
      * 执行器id
@@ -86,12 +94,12 @@ public class JobUpdateCO {
      * 任务失败重试次数
      */
     @NotNull(message = "任务失败重试次数必须")
-    @Range(max = 10, message = "重试次数最大为10")
+    @Range(max = 10, min = 0, message = "重试次数最大为10")
     private Integer retryCount;
     /**
      * 任务超时时间
      */
-    @Range(min = 0, message = "任务超时时间参数错误")
+    @Range(min = 1, message = "任务超时时间参数错误")
     private Integer timeoutS;
     /**
      * 最大等待数量

@@ -11,7 +11,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 /**
- * 注册表监视任务
+ * 注册表监视定时任务
  * @author liaochongwei
  * @date 2023/5/8 17:12
  */

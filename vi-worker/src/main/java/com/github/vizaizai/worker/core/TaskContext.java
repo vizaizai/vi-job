@@ -37,6 +37,10 @@ public class TaskContext {
         this.sender = sender;
     }
 
+
+    public String getJobParam() {
+        return triggerParam.getJobParams();
+    }
     public TaskTriggerParam getTriggerParam() {
         return triggerParam;
     }

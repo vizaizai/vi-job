@@ -14,19 +14,19 @@ import com.github.vizaizai.common.model.TaskResult;
 import com.github.vizaizai.common.model.TaskTriggerParam;
 import com.github.vizaizai.remote.utils.Utils;
 import com.github.vizaizai.retry.util.Assert;
+import com.github.vizaizai.server.config.ServerProperties;
 import com.github.vizaizai.server.constant.DispatchStatus;
 import com.github.vizaizai.server.constant.JobStatus;
 import com.github.vizaizai.server.constant.TriggerType;
 import com.github.vizaizai.server.dao.JobInstanceMapper;
 import com.github.vizaizai.server.dao.JobMapper;
-import com.github.vizaizai.server.dao.dataobject.JobInstanceDO;
 import com.github.vizaizai.server.dao.dataobject.JobDO;
+import com.github.vizaizai.server.dao.dataobject.JobInstanceDO;
 import com.github.vizaizai.server.entity.Job;
 import com.github.vizaizai.server.router.RouteType;
 import com.github.vizaizai.server.service.GlobalJobGroupManager;
 import com.github.vizaizai.server.service.JobService;
 import com.github.vizaizai.server.service.WorkerService;
-import com.github.vizaizai.server.timer.JobTriggerTimer;
 import com.github.vizaizai.server.timer.watch.ExecPredicate;
 import com.github.vizaizai.server.timer.watch.WatchDogRunner;
 import com.github.vizaizai.server.timer.watch.WatchInstance;
@@ -60,6 +60,8 @@ public class JobServiceImpl implements JobService {
     private WorkerService workerService;
     @Resource
     private GlobalJobGroupManager globalJobGroupHandler;
+    @Resource
+    private ServerProperties serverProperties;
 
     @Override
     public Result<Void> addJob(JobUpdateCO jobUpdateCO) {
@@ -159,17 +161,51 @@ public class JobServiceImpl implements JobService {
         return Result.ok();
     }
 
+    @Transactional
+    @Override
+    public Result<Void> statusReport(StatusReportCO statusReportCO) {
+        JobInstanceDO jobInstanceDO = new JobInstanceDO();
+        jobInstanceDO.setId(statusReportCO.getJobInstanceId());
+        jobInstanceDO.setExecuteStatus(statusReportCO.getExecuteStatus());
+        jobInstanceDO.setExecuteStartTime(LocalDateTimeUtil.of(statusReportCO.getExecuteStartTime()));
+        jobInstanceDO.setExecuteEndTime(LocalDateTimeUtil.of(statusReportCO.getExecuteEndTime()));
+        jobInstanceDO.setExecCount(statusReportCO.getExecCount());
+        jobInstanceMapper.updateById(jobInstanceDO);
+        // 延时任务：结束监听
+        if (Objects.equals(statusReportCO.getTriggerType(), TriggerType.DELAYED.getCode())) {
+            globalJobGroupHandler.endWatchForJobExec(statusReportCO.getJobId());
+        }
+        return Result.ok("上报成功");
+    }
+
+    @Transactional
     @Override
     public Result<Void> run(JobRunCO jobRunCO) {
-        JobDO jobDO = jobMapper.selectById(jobRunCO.getId());
+        JobDO jobDO;
+        if (jobRunCO.getId() != null) {
+            jobDO = jobMapper.selectById(jobRunCO.getId());
+        }else if (jobRunCO.getJobCode() != null) {
+            jobDO = jobMapper.selectOne(Wrappers.<JobDO>lambdaQuery().eq(JobDO::getCode, jobRunCO.getJobCode()));
+        }else {
+            return Result.handleFailure("The job identify[id, code] must be not null");
+        }
         if (jobDO == null) {
-            return Result.handleFailure("任务不存在");
+            return Result.handleFailure("Job is not exists");
         }
         Job job = BeanUtils.toBean(jobDO, Job::new);
         if (Objects.nonNull(jobRunCO.getJobParam())) {
             job.setParam(jobRunCO.getJobParam());
         }
-        JobTriggerTimer.getInstance().directRun(job);
+
+        // 预生成任务实例
+        JobInstanceDO jobInstanceDO = this.createBaseInstance(job);
+        jobInstanceDO.setTriggerTime(jobRunCO.getTriggerTime());
+        this.saveOrUpdateJobInstance(jobInstanceDO);
+        job.setDirectRun(true);
+        job.setNextTriggerTime(LocalDateTimeUtil.toEpochMilli(jobRunCO.getTriggerTime()));
+        job.setInstanceId(jobInstanceDO.getId());
+
+        globalJobGroupHandler.pushIntoTimer(job);
         return Result.ok("运行成功");
     }
 
@@ -177,23 +213,10 @@ public class JobServiceImpl implements JobService {
     public List<JobDO> listWaitingJobs(long maxTime) {
         Wrapper<JobDO> queryWrapper = Wrappers.<JobDO>lambdaQuery()
                 .eq(JobDO::getStatus, JobStatus.RUN.getCode())
-                .le(JobDO::getNextTriggerTime, maxTime);
-        List<JobDO> jobList = new ArrayList<>();
-        int page = 1;
-        while (true) {
-            Page<JobDO> jobPage = jobMapper.selectPage(new Page<>(page, 200), queryWrapper);
-            jobList.addAll(jobPage.getRecords());
-            if (!jobPage.hasNext()) {
-                break;
-            }
-            page ++;
-        }
-        return jobList;
-    }
-
-    @Override
-    public List<JobDO> listByIds(Set<Long> ids) {
-        return jobMapper.selectBatchIds(ids);
+                .le(JobDO::getNextTriggerTime, maxTime)
+                .orderByAsc(JobDO::getNextTriggerTime);
+        Page<JobDO> jobPage = jobMapper.selectPage(new Page<>(1, serverProperties.getTriggerMaximum()), queryWrapper);
+        return jobPage.getRecords();
     }
 
     @Override
@@ -201,19 +224,8 @@ public class JobServiceImpl implements JobService {
         List<String> workerAddressList = workerService.getWorkerAddressList(job.getWorkerId());
         RouteType routeType = RouteType.getInstance(job.getRouteType());
         Assert.notNull(routeType,"路由策略不支持");
-
-        LocalDateTime now = LocalDateTimeUtil.now();
         // 保存任务实例
-        JobInstanceDO jobInstanceDO = new JobInstanceDO();
-        jobInstanceDO.setJobId(job.getId());
-        jobInstanceDO.setWorkerId(job.getWorkerId());
-        jobInstanceDO.setProcessorType(job.getProcessorType());
-        jobInstanceDO.setProcessor(job.getProcessor());
-        jobInstanceDO.setJobParam(job.getParam());
-        jobInstanceDO.setTriggerTime(now);
-        if (job.getLogAutoDelHours() != null) {
-            jobInstanceDO.setExpectedDeleteTime(now.plusHours(job.getLogAutoDelHours()));
-        }
+        JobInstanceDO jobInstanceDO = this.createBaseInstance(job);
 
         log.info(">>>>>>>>>>>Trigger start, jobId:{}", job.getId());
         // 路由worker地址
@@ -221,21 +233,26 @@ public class JobServiceImpl implements JobService {
         if (workerAddress == null) {
             jobInstanceDO.setDispatchStatus(DispatchStatus.FAIL.getCode());
             jobInstanceDO.setErrorMsg("No available worker");
-            jobInstanceMapper.insert(jobInstanceDO);
+            this.saveOrUpdateJobInstance(jobInstanceDO);
             return;
         }
 
-        for (String address : workerAddress.split(",")) {
-            JobInstanceDO jobInstanceInsert = BeanUtils.toBean(jobInstanceDO, JobInstanceDO::new);
-            jobInstanceInsert.setWorkerAddress(address);
-            jobInstanceMapper.insert(jobInstanceInsert);
-            Assert.notNull(jobInstanceInsert.getId(),"保存任务实例错误");
 
+        for (String address : workerAddress.split(",")) {
+            JobInstanceDO jobInstanceUpdate = BeanUtils.toBean(jobInstanceDO, JobInstanceDO::new);
+            jobInstanceUpdate.setWorkerAddress(address);
+            this.saveOrUpdateJobInstance(jobInstanceUpdate);
+            Assert.notNull(jobInstanceUpdate.getId(),"保存任务实例错误");
+            // 重置父id
+            if (jobInstanceDO.getPid() == 0L) {
+                jobInstanceDO.setPid(jobInstanceUpdate.getId());
+                jobInstanceDO.setId(null);
+            }
             // 构建任务触发参数
             TaskTriggerParam taskTriggerParam = new TaskTriggerParam();
             taskTriggerParam.setJobId(job.getId());
             taskTriggerParam.setJobName(job.getProcessor());
-            taskTriggerParam.setJobInstanceId(jobInstanceInsert.getId());
+            taskTriggerParam.setJobInstanceId(jobInstanceUpdate.getId());
             taskTriggerParam.setJobParams(job.getParam());
             taskTriggerParam.setTriggerType(job.getTriggerType());
             taskTriggerParam.setTriggerTime(LocalDateTimeUtil.toEpochMilli(jobInstanceDO.getTriggerTime()));
@@ -245,12 +262,12 @@ public class JobServiceImpl implements JobService {
 
             // 执行任务触发
             TaskResult taskResult = RpcUtils.toTaskResult(RpcUtils.call(address, BizCode.RUN, taskTriggerParam));
-            JobInstanceDO jobInstanceUpdate = new JobInstanceDO()
+            jobInstanceUpdate = new JobInstanceDO()
                     .setId(taskTriggerParam.getJobInstanceId())
                     .setDispatchStatus(taskResult.isSuccess() ? DispatchStatus.OK.getCode(): DispatchStatus.FAIL.getCode())
                     .setExecuteStatus(taskResult.isSuccess() ? ExecuteStatus.ING.getCode() : null)
                     .setErrorMsg(taskResult.getMsg());
-            jobInstanceMapper.updateById(jobInstanceUpdate);
+            this.saveOrUpdateJobInstance(jobInstanceUpdate);
 
             // 延时任务启动监听
             if (!job.isDirectRun()
@@ -298,21 +315,9 @@ public class JobServiceImpl implements JobService {
         jobMapper.updateById(jobDO);
     }
 
-    @Transactional
     @Override
-    public Result<Void> statusReport(StatusReportCO statusReportCO) {
-        JobInstanceDO jobInstanceDO = new JobInstanceDO();
-        jobInstanceDO.setId(statusReportCO.getJobInstanceId());
-        jobInstanceDO.setExecuteStatus(statusReportCO.getExecuteStatus());
-        jobInstanceDO.setExecuteStartTime(LocalDateTimeUtil.of(statusReportCO.getExecuteStartTime()));
-        jobInstanceDO.setExecuteEndTime(LocalDateTimeUtil.of(statusReportCO.getExecuteEndTime()));
-        jobInstanceDO.setExecCount(statusReportCO.getExecCount());
-        jobInstanceMapper.updateById(jobInstanceDO);
-        // 延时任务：结束监听
-        if (Objects.equals(statusReportCO.getTriggerType(), TriggerType.DELAYED.getCode())) {
-            globalJobGroupHandler.endWatchForJobExec(statusReportCO.getJobId());
-        }
-        return Result.ok("上报成功");
+    public List<JobDO> listByIds(List<Long> ids) {
+        return jobMapper.selectBatchIds(ids);
     }
 
     /**
@@ -350,5 +355,41 @@ public class JobServiceImpl implements JobService {
             throw new RuntimeException("固定延时触发须填写延时");
         }
     }
+
+
+    /**
+     * 保存或更新任务实例
+     * @param jobInstanceDO 任务实例数据库对象
+     */
+    private void saveOrUpdateJobInstance(JobInstanceDO jobInstanceDO) {
+        if (jobInstanceDO.getId() == null) {
+            jobInstanceMapper.insert(jobInstanceDO);
+            return;
+        }
+        jobInstanceMapper.updateById(jobInstanceDO);
+    }
+
+    /**
+     * 创建基础任务实例
+     * @param job 任务实体
+     * @return JobInstanceDO
+     */
+   private JobInstanceDO createBaseInstance(Job job) {
+        LocalDateTime now = LocalDateTimeUtil.now();
+       JobInstanceDO jobInstanceDO = new JobInstanceDO();
+       jobInstanceDO.setId(job.getInstanceId());
+       jobInstanceDO.setPid(0L);
+       jobInstanceDO.setJobId(job.getId());
+       jobInstanceDO.setWorkerId(job.getWorkerId());
+       jobInstanceDO.setProcessorType(job.getProcessorType());
+       jobInstanceDO.setProcessor(job.getProcessor());
+       jobInstanceDO.setJobParam(job.getParam());
+       jobInstanceDO.setTriggerTime(now);
+       jobInstanceDO.setDispatchStatus(DispatchStatus.WAIT.getCode());
+       if (job.getLogAutoDelHours() != null) {
+           jobInstanceDO.setExpectedDeleteTime(now.plusHours(job.getLogAutoDelHours()));
+       }
+       return jobInstanceDO;
+   }
 
 }

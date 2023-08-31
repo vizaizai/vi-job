@@ -26,8 +26,8 @@ public interface HomeService {
     Result<CountDTO> baseCount();
 
     /**
-     * 等待触发的任务列表（最多7条）
+     * 等待触发的任务列表（最多10条）
      * @return
      */
-    Result<JobDTO> waitTriggerJobs();
+    Result<List<JobDTO>> listWaitingJobs();
 }

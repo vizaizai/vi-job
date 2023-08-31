@@ -38,6 +38,8 @@ message PushIntoTimerRequest {
   optional int32 maxWaitNum = 16;
   optional int32 logAutoDelHours = 17;
   optional int64 nextTriggerTime = 18;
+  optional bool directRun = 19;
+  optional int64 instanceId = 20;
 }
 
 message RemoveFromTimerRequest {

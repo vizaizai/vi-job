@@ -8,5 +8,6 @@ import java.io.Serializable;
  * @date 2023/6/30 14:51
  */
 public interface Metadata extends Serializable {
+    String getType();
     Object getData();
 }

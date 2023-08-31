@@ -2,9 +2,12 @@ package com.github.vizaizai.server.raft.kv.impl;
 
 import com.github.vizaizai.server.raft.kv.KVStorage;
 import com.github.vizaizai.server.raft.kv.metadata.HashMetadata;
+import com.github.vizaizai.server.raft.kv.metadata.Metadata;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * hash类型接口存储实现
@@ -13,6 +16,27 @@ import java.util.Map;
  */
 @Slf4j
 public class HashKVStorage extends KVStorage {
+    /**
+     * 读写锁
+     */
+    public static final ReadWriteLock lock = new ReentrantReadWriteLock();
+
+    @Override
+    protected void init(String key, Metadata metadata) {
+        lock.writeLock().lock();
+        try {
+            HashMetadata srcHashMetadata = (HashMetadata) metadata;
+            HashMetadata newMetadata = (HashMetadata) this.get(key);
+            if (newMetadata == null) {
+                this.put(key, srcHashMetadata);
+                return;
+            }
+            srcHashMetadata.foreach(newMetadata::putIfAbsent);
+        }finally {
+            lock.writeLock().unlock();
+        }
+    }
+
     public Object hGet(String key, String hashKey) {
         lock.readLock().lock();
         try {
@@ -24,7 +48,6 @@ public class HashKVStorage extends KVStorage {
         }finally {
             lock.readLock().unlock();
         }
-
     }
 
     /**
@@ -56,7 +79,7 @@ public class HashKVStorage extends KVStorage {
                return null;
             }
             Object value = metadata.remove(hashKey);
-            if (metadata.getValue().size() == 0) {
+            if (metadata.size() == 0) {
                 this.remove(key);
             }
             return value;
@@ -65,12 +88,13 @@ public class HashKVStorage extends KVStorage {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public Map<String, Object> hEntries(String key) {
         HashMetadata metadata = (HashMetadata) this.get(key);
         if (metadata == null) {
             return null;
         }
-        return metadata.getValue();
+        return (Map<String, Object>) metadata.getData();
     }
 
 }
