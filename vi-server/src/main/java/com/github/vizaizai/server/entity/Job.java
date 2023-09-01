@@ -169,15 +169,6 @@ public class Job {
         return null;
     }
 
-
-    public String getUid() {
-        String jobId = String.valueOf(String.valueOf(this.getId()));
-        if (this.getInstanceId() != null) {
-            jobId = jobId + "_" + this.getInstanceId();
-        }
-        return jobId;
-    }
-
     /**
      * 前置推入
      * @return boolean

@@ -64,7 +64,7 @@ public class JobInstanceServiceImpl implements JobInstanceService {
                 .eq( JobInstanceDO::getPid, 0)
                 .between(queryCO.getTriggerStartTime() != null && queryCO.getTriggerEndTime() != null,
                         JobInstanceDO::getTriggerTime, queryCO.getTriggerStartTime(), queryCO.getTriggerEndTime())
-                .orderByDesc(JobInstanceDO::getTriggerTime);
+                .orderByDesc(JobInstanceDO::getId);
 
         IPage<JobInstanceDTO> jobInstancePage = BeanUtils.toPageBean(jobInstanceMapper.selectPage(queryCO.toPage(), queryWrapper), JobInstanceDTO::new);
         if (Utils.isNotEmpty(jobInstancePage.getRecords())) {

@@ -82,8 +82,9 @@ public class JobTriggerTimer {
      * @param job 任务实体
      */
     public synchronized void push(Job job) {
+        String timeoutId = this.getTimeoutId(job.getId(), job.getInstanceId());
         // 任务重复调度
-        Timeout timeout = getTimeout(job.getUid());
+        Timeout timeout = getTimeout(timeoutId);
         if (timeout!= null && !timeout.isExpired() && !timeout.isCancelled()) {
             return;
         }
@@ -113,7 +114,6 @@ public class JobTriggerTimer {
         if (delay > Commons.TIMER_MAX) {
             return;
         }
-        log.info("{}-延时毫秒数： {}", job.getUid(), delay);
         // 任务过期
         if (delay < 0) {
             // 直接调度任务：运行一次
@@ -131,7 +131,7 @@ public class JobTriggerTimer {
             schedulingJobs.put(job.getId(), job);
         }
         // 延时调度
-        this.schedule(delay, job.getUid(), new JobInvoker(invokeExecutor, jobService, job));
+        this.schedule(delay, timeoutId, new JobInvoker(invokeExecutor, jobService, job));
     }
 
 
@@ -193,6 +193,14 @@ public class JobTriggerTimer {
 
     public Timeout getTimeout(String timeoutId) {
         return timeouts.get(timeoutId);
+    }
+
+    public String getTimeoutId(Long jobId, Long jobInstanceId) {
+        String timeoutId = String.valueOf(String.valueOf(jobId));
+        if (jobInstanceId != null) {
+            timeoutId = timeoutId + "_" + jobInstanceId;
+        }
+        return timeoutId;
     }
 
 }
