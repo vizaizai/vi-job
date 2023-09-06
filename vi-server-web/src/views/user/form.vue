@@ -6,7 +6,7 @@
           <el-input v-model="formData.userName" style="width: 340px;" placeholder="用户名" />
         </el-form-item>
         <el-form-item prop="password" label="密码">
-          <el-input v-model="formData.password" style="width: 340px;" placeholder="密码" />
+          <el-input v-model="formData.password" style="width: 340px;" placeholder="密码" show-password />
         </el-form-item>
         <el-form-item prop="role" label="角色">
           <el-select v-model="formData.role" placeholder="请选择角色">
