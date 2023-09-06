@@ -5,10 +5,12 @@ import cn.hutool.jwt.JWT;
 import cn.hutool.jwt.JWTUtil;
 import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.common.model.StatusCode;
+import com.github.vizaizai.server.service.UserService;
 import com.github.vizaizai.server.utils.UserUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +21,8 @@ import java.io.IOException;
 @WebFilter(filterName = "authenticationFilter", urlPatterns = "/*")
 public class AuthenticationFilter implements Filter {
 
+    @Resource
+    private UserService userService;
     /**
      * 排除路径
      */
@@ -72,7 +76,7 @@ public class AuthenticationFilter implements Filter {
             JWT jwt = JWTUtil.parseToken(token);
             jwt.setKey(UserUtils.key.getBytes());
             // token已失效
-            if (!jwt.verify() || !jwt.validate(60)) {
+            if (!jwt.verify() || !jwt.validate(60) || !userService.checkToken(token)) {
                 this.writeUnAuth(response, "授权已失效");
                 return;
             }

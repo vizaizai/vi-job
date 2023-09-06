@@ -47,4 +47,17 @@ public interface UserService {
      */
     Result<UserDTO> info();
 
+    /**
+     * 检查token
+     * @param token token
+     * @return token
+     */
+    boolean checkToken(String token);
+
+    /**
+     * 登出
+     * @return
+     */
+    Result<Void> logout();
+
 }

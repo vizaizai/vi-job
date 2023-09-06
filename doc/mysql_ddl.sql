@@ -18,6 +18,20 @@ INSERT INTO sys_user
 VALUES('1668158931570847711', 'admin', '32722cda40be81dd277f396fab2ea2aa', 'e5h59', 'sys', '2023-05-06 15:48:23', '', null, 1);
 
 
+
+drop table if exists `token`;
+CREATE TABLE `token` (
+     `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+     `user_id` varchar(32) COLLATE utf8mb4_bin NOT NULL COMMENT '用户id',
+     `token` varchar(1024) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '鉴权TOKEN',
+     `token_key` varchar(64) COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'key',
+     `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+     `expire_time` datetime DEFAULT NULL COMMENT '失效时间',
+     PRIMARY KEY (`id`),
+     UNIQUE KEY `token_token_key_idx` (`token_key`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='鉴权TOKEN';
+
+
 drop table if exists `worker`;
 CREATE TABLE `worker` (
       `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',

@@ -22,16 +22,22 @@ public class UserUtils {
     public static final String key = "o64nbbf2uryzj8z34acomrp81sjdzfnh7bqsblqv3k93w50fnc9oixnltefdcnib";
 
     public static UserDO getUser() {
+        String token = getToken();
+        if (token == null) {
+            return null;
+        }
+        JWT jwt = JWTUtil.parseToken(token);
+        return jwt.getPayloads().toBean(UserDO.class);
+    }
+
+    public static String getToken() {
         ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (requestAttributes == null) {
             return null;
         }
         HttpServletRequest request = requestAttributes.getRequest();
-        String token = request.getHeader("X-Token");
-        JWT jwt = JWTUtil.parseToken(token);
-        return jwt.getPayloads().toBean(UserDO.class);
+        return request.getHeader("X-Token");
     }
-
     public static String getUserName() {
         UserDO user = getUser();
         return user == null ? null : user.getUserName();

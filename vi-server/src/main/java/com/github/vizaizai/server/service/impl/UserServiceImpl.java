@@ -1,5 +1,6 @@
 package com.github.vizaizai.server.service.impl;
 
+import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -7,7 +8,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.vizaizai.common.model.Result;
+import com.github.vizaizai.server.dao.TokenMapper;
 import com.github.vizaizai.server.dao.UserMapper;
+import com.github.vizaizai.server.dao.dataobject.TokenDO;
 import com.github.vizaizai.server.dao.dataobject.UserDO;
 import com.github.vizaizai.server.service.UserService;
 import com.github.vizaizai.server.utils.BeanUtils;
@@ -35,6 +38,8 @@ public class UserServiceImpl implements UserService {
 
     @Resource
     private UserMapper userMapper;
+    @Resource
+    private TokenMapper tokenMapper;
 
     @Transactional
     @Override
@@ -82,7 +87,15 @@ public class UserServiceImpl implements UserService {
             log.info("用户名【{}】,密码不匹配",loginCO.getUserName());
             return Result.handleFailure("用户名或密码错误");
         }
-        return Result.handleSuccess(UserUtils.createToken(user));
+        String token = UserUtils.createToken(user);
+
+        TokenDO tokenDO = new TokenDO();
+        tokenDO.setUserId(user.getId());
+        tokenDO.setToken(token);
+        tokenDO.setTokenKey(DigestUtil.md5Hex(token));
+        tokenDO.setExpireTime(LocalDateTimeUtil.now().plusDays(1));
+        tokenMapper.insert(tokenDO);
+        return Result.handleSuccess(token);
     }
 
     @Override
@@ -97,5 +110,24 @@ public class UserServiceImpl implements UserService {
         }
         return Result.ok();
 
+    }
+
+    @Override
+    public boolean checkToken(String token) {
+        Long count = tokenMapper.selectCount(Wrappers.<TokenDO>lambdaQuery()
+                .eq(TokenDO::getTokenKey, DigestUtil.md5Hex(token))
+                .gt(TokenDO::getExpireTime, LocalDateTimeUtil.now()));
+        return count != null && count > 0;
+    }
+
+    @Override
+    public Result<Void> logout() {
+        String token = UserUtils.getToken();
+        if (token == null) {
+            return Result.handleFailure("未授权");
+        }
+        tokenMapper.delete(Wrappers.<TokenDO>lambdaQuery()
+                .eq(TokenDO::getTokenKey, DigestUtil.md5Hex(token)));
+        return Result.ok();
     }
 }

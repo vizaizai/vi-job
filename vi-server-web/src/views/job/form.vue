@@ -33,7 +33,7 @@
           <el-input v-if="formData.processorType === 1" v-model="formData.processor" style="width: 70%;" placeholder="处理器(@Job的value值)" />
         </el-form-item>
         <el-form-item prop="param" label="任务参数">
-          <el-input v-model="formData.param" style="width: 100%;" placeholder="任务参数" />
+          <el-input v-model="formData.param" :autosize="{ minRows: 3, maxRows: 15}" type="textarea" style="width: 340px;" placeholder="任务参数" />
         </el-form-item>
         <el-form-item prop="triggerType" label="触发策略">
           <el-select v-model="formData.triggerType" placeholder="策略选择" style="width: 27%;margin-right: 3%">

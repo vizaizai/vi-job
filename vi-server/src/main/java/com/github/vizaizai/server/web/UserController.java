@@ -56,6 +56,6 @@ public class UserController {
 
     @PostMapping("/logout")
     public Result<Void> logout() {
-        return Result.ok();
+        return userService.logout();
     }
 }

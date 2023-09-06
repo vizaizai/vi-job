@@ -230,7 +230,7 @@ public class JobServiceImpl implements JobService {
         log.info(">>>>>>>>>>>Trigger start, jobId:{}", job.getId());
         // 路由worker地址
         String workerAddress = routeType.getRouter().route(job, workerAddressList);
-        if (workerAddress == null) {
+        if (Utils.isBlank(workerAddress)) {
             jobInstanceDO.setDispatchStatus(DispatchStatus.FAIL.getCode());
             jobInstanceDO.setErrorMsg("No available worker");
             this.saveOrUpdateJobInstance(jobInstanceDO);

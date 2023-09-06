@@ -17,10 +17,11 @@ public class RpcUtils {
 
     public static TaskResult toTaskResult(RpcResponse response) {
         if (!response.getSuccess()) {
+            log.error("RpcResponse:{}", JSONUtil.toJsonStr(response));
             return TaskResult.fail(response.getMsg());
         }
         if (response.getResult() == null || !(response.getResult() instanceof TaskResult)) {
-            log.error("toTaskResult:{}", JSONUtil.toJsonStr(response));
+            log.error("RpcResponse:{}", JSONUtil.toJsonStr(response));
             return TaskResult.fail("Internal error");
         }
         return (TaskResult) response.getResult();
