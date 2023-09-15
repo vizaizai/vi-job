@@ -32,5 +32,8 @@ public class JobRunCO {
     @NotNull(message = "触发时间不能为空")
     @JsonFormat(pattern = Commons.DT_PATTERN)
     private LocalDateTime triggerTime;
-
+    /**
+     * worker节点地址
+     */
+    private String address;
 }

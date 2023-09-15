@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.vizaizai.common.contants.BizCode;
 import com.github.vizaizai.common.contants.ExecuteStatus;
 import com.github.vizaizai.common.model.*;
@@ -42,7 +43,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-public class JobInstanceServiceImpl implements JobInstanceService {
+public class JobInstanceServiceImpl extends ServiceImpl<JobInstanceMapper, JobInstanceDO>  implements JobInstanceService {
 
     @Resource
     private JobInstanceMapper jobInstanceMapper;
@@ -163,6 +164,14 @@ public class JobInstanceServiceImpl implements JobInstanceService {
                 .orderByAsc(JobInstanceDO::getTriggerTime);
         Page<JobInstanceDO> jobPage = jobInstanceMapper.selectPage(new Page<>(1, serverProperties.getTriggerMaximum()), queryWrapper);
         return jobPage.getRecords();
+    }
+
+    @Override
+    public boolean saveOrUpdate(JobInstanceDO entity) {
+        if (entity.getId() == null) {
+            return this.save(entity);
+        }
+        return this.updateById(entity);
     }
 
     /**

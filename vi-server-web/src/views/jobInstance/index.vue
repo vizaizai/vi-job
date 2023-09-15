@@ -176,6 +176,7 @@
           </el-tab-pane>
         </el-tabs>
       </div>
+      <span>关闭所有</span>
     </el-drawer>
   </div>
 </template>

@@ -39,4 +39,8 @@ public class Commons {
      * 执行器节点信息key
      */
     public static final String WORKER_NODE_KEY = "worker:node:info:";
+    /**
+     * job key
+     */
+    public static final String JOB_KEY = "job:info:";
 }

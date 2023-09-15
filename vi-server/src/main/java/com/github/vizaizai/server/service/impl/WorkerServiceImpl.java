@@ -1,20 +1,22 @@
 package com.github.vizaizai.server.service.impl;
 
 import cn.hutool.core.date.LocalDateTimeUtil;
+import cn.hutool.crypto.digest.DigestUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.vizaizai.common.contants.BizCode;
 import com.github.vizaizai.common.model.Result;
+import com.github.vizaizai.remote.codec.RpcRequest;
 import com.github.vizaizai.remote.codec.RpcResponse;
+import com.github.vizaizai.remote.utils.NetUtils;
 import com.github.vizaizai.remote.utils.Utils;
 import com.github.vizaizai.server.constant.Commons;
 import com.github.vizaizai.server.dao.RegistryMapper;
 import com.github.vizaizai.server.dao.WorkerMapper;
 import com.github.vizaizai.server.dao.dataobject.RegistryDO;
 import com.github.vizaizai.server.dao.dataobject.WorkerDO;
-import com.github.vizaizai.server.raft.kv.impl.StringKVStorage;
 import com.github.vizaizai.server.service.WorkerService;
 import com.github.vizaizai.server.utils.BeanUtils;
 import com.github.vizaizai.server.utils.KVUtils;
@@ -23,10 +25,13 @@ import com.github.vizaizai.server.utils.UserUtils;
 import com.github.vizaizai.server.web.co.RegisterCO;
 import com.github.vizaizai.server.web.co.WorkerQueryCO;
 import com.github.vizaizai.server.web.co.WorkerUpdateCO;
+import com.github.vizaizai.server.web.dto.PingResult;
 import com.github.vizaizai.server.web.dto.RegistryDTO;
 import com.github.vizaizai.server.web.dto.WorkerDTO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +51,8 @@ public class WorkerServiceImpl implements WorkerService {
     private WorkerMapper workerMapper;
     @Resource
     private RegistryMapper registryMapper;
+    @Value("${server.port}")
+    private Integer port;
 
     @Transactional
     @Override
@@ -95,8 +102,8 @@ public class WorkerServiceImpl implements WorkerService {
     public Result<List<RegistryDTO>> listWorkerNodes(Integer workerId) {
         List<RegistryDTO> registries = BeanUtils.toBeans(registryMapper.selectList(Wrappers.<RegistryDO>lambdaQuery().eq(RegistryDO::getWorkerId, workerId)), RegistryDTO::new);
         for (RegistryDTO registry : registries) {
-            RpcResponse response = RpcUtils.call(registry.getAddress(), BizCode.BEAT, "ping");
-            if (response.getSuccess() && Objects.equals(response.getResult(),"pong")) {
+            PingResult result = this.ping(registry.getAddress());
+            if (BooleanUtils.isTrue(result.getSuccess())) {
                 registry.setOnline(1);
             }
         }
@@ -106,11 +113,10 @@ public class WorkerServiceImpl implements WorkerService {
 
     @Transactional
     @Override
-    public Result<Void> register(RegisterCO registerCO) {
+    public Result<String> register(RegisterCO registerCO) {
         if (registerCO.getAddress().split(":").length != 2) {
             return Result.handleFailure("注册地址格式错误（ip:port）");
         }
-
         //是否存在
         List<RegistryDO> registries = registryMapper.selectList(Wrappers.<RegistryDO>lambdaQuery()
                 .eq(RegistryDO::getAddress, registerCO.getAddress()));
@@ -126,8 +132,7 @@ public class WorkerServiceImpl implements WorkerService {
             if (!members.contains(registerCO.getAddress())) {
                 KVUtils.stAdd(key, registerCO.getAddress());
             }
-
-            return Result.ok("更新成功");
+            return Result.handleSuccess("更新成功");
         }
 
         // 查询执行器
@@ -140,7 +145,7 @@ public class WorkerServiceImpl implements WorkerService {
         registryMapper.insert(registryDO);
         // 新增缓存
         KVUtils.stAdd(Commons.WORKER_NODE_KEY + worker.getId(), registerCO.getAddress());
-        return Result.ok("注册成功");
+        return Result.handleSuccess("注册成功");
     }
 
     @Transactional
@@ -165,12 +170,17 @@ public class WorkerServiceImpl implements WorkerService {
     }
 
     @Override
-    public Integer getWorkerId(String appName) {
-        WorkerDO worker = workerMapper.selectOne(Wrappers.<WorkerDO>lambdaQuery().eq(WorkerDO::getAppName, appName));
-        if (worker != null) {
-            return worker.getId();
+    public PingResult ping(String address) {
+        PingResult pr = new PingResult();
+        pr.setSuccess(false);
+        RpcRequest request = RpcRequest.wrap(BizCode.BEAT, DigestUtil.md5Hex(NetUtils.getLocalHost() + port), "ping");
+        RpcResponse response = RpcUtils.call(address, request);
+        if (response.getSuccess() && Objects.equals(response.getResult(),"pong")) {
+            pr.setSuccess(true);
+            pr.setOriginId(request.getOriginId());
+            return pr;
         }
-        return null;
+        return pr;
     }
 
     @Override

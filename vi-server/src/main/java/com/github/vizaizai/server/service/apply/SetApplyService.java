@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**
- * 注册表应用业务
+ * Set应用业务
  * @author liaochongwei
  * @date 2023/7/3 11:29
  */
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SetApplyService extends KVApplyService {
     /**
-     * 新增注册
+     * 添加
      * @param key key
      * @param element 元素
      * @param closure 回调
@@ -36,7 +36,7 @@ public class SetApplyService extends KVApplyService {
     }
 
     /**
-     * 移除任务
+     * 移除
      * @param key key
      * @param element 元素
      * @param closure 回调

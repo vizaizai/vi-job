@@ -6,6 +6,7 @@ import com.github.vizaizai.server.dao.dataobject.RegistryDO;
 import com.github.vizaizai.server.web.co.RegisterCO;
 import com.github.vizaizai.server.web.co.WorkerQueryCO;
 import com.github.vizaizai.server.web.co.WorkerUpdateCO;
+import com.github.vizaizai.server.web.dto.PingResult;
 import com.github.vizaizai.server.web.dto.RegistryDTO;
 import com.github.vizaizai.server.web.dto.WorkerDTO;
 
@@ -49,7 +50,7 @@ public interface WorkerService {
      * 注册执行器
      * @param registerCO
      */
-    Result<Void> register(RegisterCO registerCO);
+    Result<String> register(RegisterCO registerCO);
 
     /**
      * 移除执行器
@@ -66,11 +67,11 @@ public interface WorkerService {
     List<String> getWorkerAddressList(Integer workerId);
 
     /**
-     * 获取执行器id
-     * @param appName 应用名称
-     * @return workerId
+     * 向worker发送心跳指令
+     * @param address 地址
+     * @return PingResult
      */
-    Integer getWorkerId(String appName);
+    PingResult ping(String address);
 
     List<WorkerDTO> listByIds(Set<Integer> ids);
 

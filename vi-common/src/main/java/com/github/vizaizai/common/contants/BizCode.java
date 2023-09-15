@@ -15,7 +15,7 @@ public class BizCode {
     /**
      * 执行任务
      */
-    public static final String RUN = "run";
+    public static final String EXEC = "exec";
     /**
      * 取消待执行任务
      */
@@ -27,7 +27,7 @@ public class BizCode {
     /**
      * 执行日志查询
      */
-    public static final String LOG = "exe_log";
+    public static final String LOG = "exec_log";
     /**
      * 查询执行状态
      */
@@ -38,5 +38,9 @@ public class BizCode {
      * 状态上报
      */
     public static final String REPORT = "report";
+    /**
+     * 运行任务
+     */
+    public static final String RUN = "run";
 
 }

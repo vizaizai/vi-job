@@ -58,16 +58,18 @@ public class JobInvoker {
         if (job.isCanceled()) {
             return;
         }
+
         invokeExecutor.execute(() -> {
+            boolean refresh = false;
             try {
                 // 设置基准时间
                 job.setBaseTime(job.getNextTriggerTime());
                 // 重置触发时间
                 job.resetNextTriggerTime();
                 // 刷新触发时间
-                jobService.refreshTriggerTime(job.getId(), job.getBaseTime(), job.getNextTriggerTime());
+                 refresh = jobService.refreshTriggerTime(job.getId(), job.getBaseTime(), job.getNextTriggerTime());
                 // 推入timer
-                if (job.prePush()) {
+                if (refresh && job.prePush()) {
                     JobTriggerTimer.getInstance().push(job);
                 }
                 // 触发调度
@@ -75,7 +77,7 @@ public class JobInvoker {
             } catch (Exception e) {
                 log.error("Job execute error.", e);
             }finally {
-                if (job.postPush()) {
+                if (refresh && job.postPush()) {
                     JobTriggerTimer.getInstance().push(job);
                 }
             }

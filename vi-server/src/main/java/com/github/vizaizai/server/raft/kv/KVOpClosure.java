@@ -1,6 +1,8 @@
 package com.github.vizaizai.server.raft.kv;
 
 import com.alipay.sofa.jraft.Closure;
+import com.alipay.sofa.jraft.Status;
+import com.alipay.sofa.jraft.rpc.RpcContext;
 import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.server.raft.proto.ResponseProto.Response;
 
@@ -9,11 +11,15 @@ import com.github.vizaizai.server.raft.proto.ResponseProto.Response;
  * @author liaochongwei
  * @date 2023/6/21 14:49
  */
-abstract public class KVOpClosure implements Closure {
-
+public class KVOpClosure implements Closure {
+    private final RpcContext rpcContext;
     private KVCommand command;
 
     private Result<Object> result;
+
+    public KVOpClosure(RpcContext rpcContext) {
+        this.rpcContext = rpcContext;
+    }
 
     public KVCommand getCommand() {
         return command;
@@ -34,7 +40,6 @@ abstract public class KVOpClosure implements Closure {
     public Response getResponse() {
         Response.Builder builder = Response.newBuilder();
         builder.setSuccess(this.result.isSuccess());
-
         if (this.result.getMsg() != null) {
             builder.setErrorMsg(this.result.getMsg());
         }
@@ -43,5 +48,10 @@ abstract public class KVOpClosure implements Closure {
             builder.setData((String) this.result.getData());
         }
         return builder.build();
+    }
+
+    @Override
+    public void run(Status status) {
+        rpcContext.sendResponse(this.getResponse());
     }
 }

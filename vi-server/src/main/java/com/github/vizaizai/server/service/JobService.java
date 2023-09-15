@@ -1,13 +1,15 @@
 package com.github.vizaizai.server.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.vizaizai.common.model.JobRunParam;
 import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.server.dao.dataobject.JobDO;
 import com.github.vizaizai.server.entity.Job;
+import com.github.vizaizai.server.entity.JobCache;
 import com.github.vizaizai.server.web.co.*;
 import com.github.vizaizai.server.web.dto.JobDTO;
+import com.github.vizaizai.server.web.dto.JobRunDTO;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -55,13 +57,20 @@ public interface JobService {
      * @param jobRunCO
      * @return
      */
-    Result<Void> run(JobRunCO jobRunCO);
+    Result<JobRunDTO> run(JobRunCO jobRunCO);
+
     /**
-     * 状态上报
-     * @param statusReportCO
+     * 参数运行
+     * @param jobRunParam
      * @return
      */
-    Result<Void> statusReport(StatusReportCO statusReportCO);
+    Result<Long> run(JobRunParam jobRunParam);
+    /**
+     * 状态上报
+     * @param statusReportList
+     * @return
+     */
+    Result<Void> statusReport(List<StatusReportCO> statusReportList);
     /**
      * 查询所有等待触发的任务
      * @param maxTime 最大时间
@@ -79,7 +88,7 @@ public interface JobService {
      * @param lastTriggerTime 上次触发时间
      * @param nextTriggerTime 下次触发时间
      */
-    void refreshTriggerTime(Long jobId, Long lastTriggerTime, Long nextTriggerTime);
+    boolean refreshTriggerTime(Long jobId, Long lastTriggerTime, Long nextTriggerTime);
 
     /**
      * 停止任务
@@ -92,4 +101,11 @@ public interface JobService {
      * @return
      */
     List<JobDO> listByIds(List<Long> ids);
+
+    /**
+     * 获取任务缓存
+     * @param id 任务id
+     * @return JobCache
+     */
+    JobCache getJobCache(Long id);
 }

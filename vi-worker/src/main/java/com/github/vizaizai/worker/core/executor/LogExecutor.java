@@ -24,6 +24,7 @@ public class LogExecutor implements BizProcessor {
             jobLoggerHandler = JobLoggerHandler.getInstance(param.getJobId(), DateUtils.parse(param.getTriggerTime()).toLocalDate(), false);
             response = RpcResponse.ok(jobLoggerHandler.getLog(param.getLogId(), param.getStartPos(), param.getMaxLines()));
         }catch (Exception e) {
+            e.printStackTrace();
             response = RpcResponse.error(e.getMessage());
         }finally {
             if (jobLoggerHandler != null) {

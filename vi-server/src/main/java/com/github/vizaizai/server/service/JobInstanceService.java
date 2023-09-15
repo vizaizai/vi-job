@@ -1,7 +1,7 @@
 package com.github.vizaizai.server.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.github.vizaizai.common.model.LogInfo;
 import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.server.dao.dataobject.JobInstanceDO;
@@ -16,7 +16,7 @@ import java.util.List;
  * @author liaochongwei
  * @date 2023/6/14 16:01
  */
-public interface JobInstanceService {
+public interface JobInstanceService extends IService<JobInstanceDO> {
     /**
      * 分页查询任务实例
      * @param queryCO

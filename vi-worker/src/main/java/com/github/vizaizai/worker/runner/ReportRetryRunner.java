@@ -2,7 +2,7 @@ package com.github.vizaizai.worker.runner;
 
 import com.github.vizaizai.common.model.StatusReportParam;
 import com.github.vizaizai.logging.LoggerFactory;
-import com.github.vizaizai.worker.core.TaskContext;
+import com.github.vizaizai.remote.utils.Utils;
 import com.github.vizaizai.worker.starter.Commons;
 import org.slf4j.Logger;
 
@@ -11,6 +11,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -41,9 +42,9 @@ public class ReportRetryRunner extends Thread{
 
     /**
      * 写入重试参数
-     * @param param 重试参数
+     * @param params 重试参数列表
      */
-    public void writeRetryParam(StatusReportParam param) {
+    public void writeRetryParam(List<StatusReportParam> params) {
         if (this.stop) {
             throw new IllegalStateException("Re-report runner is stopped");
         }
@@ -57,8 +58,8 @@ public class ReportRetryRunner extends Thread{
             }
         }
 
-        try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(Paths.get(retryDir.getPath(), param.getJobInstanceId() + Commons.RETRY_SUFFIX)))){
-            oos.writeObject(param);
+        try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(Paths.get(retryDir.getPath(), Utils.getRequestId() + Commons.RETRY_SUFFIX)))){
+            oos.writeObject(params);
         }catch (Exception e) {
             logger.error("Write object error,", e);
         }
@@ -96,6 +97,7 @@ public class ReportRetryRunner extends Thread{
      * 开始处理重试上报
      * @return 数量
      */
+    @SuppressWarnings("unchecked")
     private int process() {
         int num = 0;
         File retryDir = Paths.get(Commons.getRetryPath()).toFile();
@@ -111,10 +113,9 @@ public class ReportRetryRunner extends Thread{
         for (File file : files) {
             if (file.isFile() && file.getName().endsWith(Commons.RETRY_SUFFIX)) {
                 try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(file.toPath()))){
-                    StatusReportParam param = (StatusReportParam) ois.readObject();
-                    TaskContext context = new TaskContext(param);
+                    List<StatusReportParam> params = (List<StatusReportParam>) ois.readObject();
                     // 执行上报
-                    reportRunner.doReport(context);
+                    reportRunner.doReport(null, params);
                     // 删除文件
                     boolean delete = file.delete();
                     if (!delete) {

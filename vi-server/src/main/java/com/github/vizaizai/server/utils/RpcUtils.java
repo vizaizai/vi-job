@@ -36,6 +36,16 @@ public class RpcUtils {
      */
     public static RpcResponse call(String address, String bizCode, Object param) {
         RpcRequest request = RpcRequest.wrap(bizCode, param);
+        return call(address, request);
+    }
+
+    /**
+     * 远程调用
+     * @param address ip:port
+     * @param request 请求
+     * @return RpcResponse
+     */
+    public static RpcResponse call(String address, RpcRequest request) {
         try {
             return NettyClient.getInstance(address).request(request, 30000);
         }catch (Exception e) {

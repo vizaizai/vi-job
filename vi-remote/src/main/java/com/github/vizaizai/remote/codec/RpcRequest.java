@@ -23,6 +23,10 @@ public class RpcRequest implements Serializable {
      * 请求参数
      */
     private Object param;
+    /**
+     * 源id
+     */
+    private String originId;
 
     public String getBizCode() {
         return bizCode;
@@ -40,9 +44,25 @@ public class RpcRequest implements Serializable {
         this.param = param;
     }
 
+    public String getOriginId() {
+        return originId;
+    }
+
+    public void setOriginId(String originId) {
+        this.originId = originId;
+    }
+
     public static RpcRequest wrap(String bizCode, Object param) {
         RpcRequest request = new RpcRequest();
         request.setBizCode(bizCode);
+        request.setParam(param);
+        return request;
+    }
+
+    public static RpcRequest wrap(String bizCode, String originId, Object param) {
+        RpcRequest request = new RpcRequest();
+        request.setBizCode(bizCode);
+        request.setOriginId(originId);
         request.setParam(param);
         return request;
     }

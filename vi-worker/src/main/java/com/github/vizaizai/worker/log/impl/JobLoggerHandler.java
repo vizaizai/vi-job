@@ -346,9 +346,12 @@ public class JobLoggerHandler {
         for (Pair<Long, Long> logRange : logRanges) {
             maxLines = maxLines - finalLogInfo.getLines();
             LogInfo logInfo = this.getLog(logRange, startPos, maxLines);
-            finalLogInfo.setData(finalLogInfo.getData() + logInfo.getData());
-            finalLogInfo.setEndPos(logInfo.getEndPos());
-            finalLogInfo.setLines(finalLogInfo.getLines() + logInfo.getLines());
+            if (logInfo != null) {
+                finalLogInfo.setData(finalLogInfo.getData() + logInfo.getData());
+                finalLogInfo.setLines(finalLogInfo.getLines() + logInfo.getLines());
+                finalLogInfo.setEndPos(logInfo.getEndPos());
+            }
+
         }
         return finalLogInfo;
     }

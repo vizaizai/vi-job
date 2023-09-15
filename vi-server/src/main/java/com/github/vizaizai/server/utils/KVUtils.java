@@ -2,8 +2,12 @@ package com.github.vizaizai.server.utils;
 
 import com.alipay.sofa.jraft.entity.PeerId;
 import com.github.vizaizai.server.raft.RaftServer;
+import com.github.vizaizai.server.raft.kv.KVStorage;
+import com.github.vizaizai.server.raft.kv.Type;
 import com.github.vizaizai.server.raft.kv.impl.SetKVStorage;
-import com.github.vizaizai.server.raft.proto.KVSetProto;
+import com.github.vizaizai.server.raft.kv.impl.StringKVStorage;
+import com.github.vizaizai.server.raft.kv.metadata.Metadata;
+import com.github.vizaizai.server.raft.proto.KVProto;
 import com.github.vizaizai.server.raft.proto.ResponseProto;
 
 import java.util.Collections;
@@ -23,7 +27,7 @@ public class KVUtils {
 
 
     /**
-     * set-添加元素
+     * set-add
      * @param key key
      * @param el 集合元素
      */
@@ -34,7 +38,7 @@ public class KVUtils {
             return;
         }
         PeerId leaderId = getRaftServer().getLeader();
-        KVSetProto.Request request = KVSetProto.Request
+        KVProto.SetRequest request = KVProto.SetRequest
                 .newBuilder()
                 .setOp("add")
                 .setKey(key)
@@ -51,7 +55,7 @@ public class KVUtils {
         }
     }
     /**
-     * set-移除元素
+     * set-remove
      * @param key key
      * @param el 集合元素
      */
@@ -62,7 +66,7 @@ public class KVUtils {
             return;
         }
         PeerId leaderId = getRaftServer().getLeader();
-        KVSetProto.Request request = KVSetProto.Request
+        KVProto.SetRequest request = KVProto.SetRequest
                 .newBuilder()
                 .setOp("remove")
                 .setKey(key)
@@ -80,7 +84,7 @@ public class KVUtils {
     }
 
     /**
-     * 获取集合元素
+     * set-members
      * @param key key
      * @return Set
      */
@@ -92,6 +96,100 @@ public class KVUtils {
         }
         return objects.stream().map(Object::toString).collect(Collectors.toSet());
     }
+
+    /**
+     * string-get
+     * @param key key
+     * @return String
+     */
+    public static String get(String key) {
+        StringKVStorage storage = new StringKVStorage();
+        Object object = storage.sGet(key);
+        if (object == null) {
+            return null;
+        }
+        return object.toString();
+    }
+
+    /**
+     * string-set
+     * @param key key
+     */
+    public static void set(String key, String value) {
+        if (!getRaftServer().isCluster()) {
+            StringKVStorage storage = new StringKVStorage();
+            storage.sSet(key,value);
+            return;
+        }
+        PeerId leaderId = getRaftServer().getLeader();
+        KVProto.StringRequest request = KVProto.StringRequest
+                .newBuilder()
+                .setOp("set")
+                .setKey(key)
+                .setValue(value)
+                .build();
+        try {
+            ResponseProto.Response response = (ResponseProto.Response) raftServer
+                    .getRpcClient().invokeSync(leaderId.getEndpoint(), request, 3000);
+            if (!response.getSuccess()) {
+                throw new RuntimeException("s-set error." + response.getErrorMsg());
+            }
+        }catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+
+    /**
+     * 删除key
+     * @param key key
+     */
+    public static void removeKey(String key, byte type) {
+        if (!getRaftServer().isCluster()) {
+            KVStorage storage = new KVStorage() {
+                @Override
+                protected Metadata get(String key) {
+                    return super.get(key);
+                }
+            };
+            storage.remove(key);
+            return;
+        }
+        PeerId leaderId = getRaftServer().getLeader();
+        Object request;
+        switch (type) {
+            case Type.SET:
+                request = KVProto.SetRequest
+                        .newBuilder()
+                        .setOp("rm_key")
+                        .setKey(key)
+                        .build();
+                break;
+            case Type.STRING:
+                request = KVProto.StringRequest
+                        .newBuilder()
+                        .setOp("rm_key")
+                        .setKey(key)
+                        .build();
+                break;
+            default:
+                return;
+        }
+        try {
+            ResponseProto.Response response = (ResponseProto.Response) raftServer
+                    .getRpcClient().invokeSync(leaderId.getEndpoint(), request, 3000);
+            if (!response.getSuccess()) {
+                throw new RuntimeException("remove-key error." + response.getErrorMsg());
+            }
+        }catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+
+
+
+
 
 
     private static RaftServer getRaftServer() {

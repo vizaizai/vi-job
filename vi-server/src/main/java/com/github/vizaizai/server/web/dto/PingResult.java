@@ -3,19 +3,19 @@ package com.github.vizaizai.server.web.dto;
 import lombok.Data;
 
 /**
- * pong
+ * ping
  * @author liaochongwei
  * @date 2023/5/10 16:36
  */
 @Data
-public class PongDTO {
+public class PingResult {
     /**
-     * 本地主机
+     * 源id
      */
-    private String localhost;
+    private String originId;
     /**
-     * 已绑定的服务主机
+     * 是否成功
      */
-    private String bindServerHost;
+    private Boolean success;
 
 }

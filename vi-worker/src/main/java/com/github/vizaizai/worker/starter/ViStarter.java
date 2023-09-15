@@ -16,7 +16,6 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -110,7 +109,7 @@ public class ViStarter {
     private void initEmbedServer() {
 
         Server server = new NettyServer(this.host, this.port);
-        server.addBizProcessor(BizCode.RUN, new TaskExecutor());
+        server.addBizProcessor(BizCode.EXEC, new TaskExecutor());
         server.addBizProcessor(BizCode.IDlE, new IdleExecutor());
         server.addBizProcessor(BizCode.LOG, new LogExecutor());
         server.addBizProcessor(BizCode.CANCEL, new ExecCancelExecutor());

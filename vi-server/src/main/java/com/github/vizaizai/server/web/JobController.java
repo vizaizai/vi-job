@@ -5,10 +5,12 @@ import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.server.service.JobService;
 import com.github.vizaizai.server.web.co.*;
 import com.github.vizaizai.server.web.dto.JobDTO;
+import com.github.vizaizai.server.web.dto.JobRunDTO;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author liaochongwei
@@ -47,13 +49,13 @@ public class JobController {
     }
 
     @PostMapping("/run")
-    public Result<Void> run(@RequestBody @Validated JobRunCO jobRunCO) {
+    public Result<JobRunDTO> run(@RequestBody @Validated JobRunCO jobRunCO) {
         return jobService.run(jobRunCO);
     }
 
     @PostMapping("/statusReport")
-    public Result<Void> statusReport(@RequestBody @Validated StatusReportCO statusReportCO) {
-        return jobService.statusReport(statusReportCO);
+    public Result<Void> statusReport(@RequestBody @Validated List<StatusReportCO> statusReportList) {
+        return jobService.statusReport(statusReportList);
     }
 
 }

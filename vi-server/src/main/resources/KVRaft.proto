@@ -1,0 +1,25 @@
+  syntax = "proto2";
+
+package jraft;
+
+option java_package = "com.github.vizaizai.server.raft.proto";
+option java_outer_classname = "KVProto";
+
+message SetRequest {
+  required string key = 1;
+  required string op = 2;
+  optional string element = 3;
+}
+
+message StringRequest {
+  required string key = 1;
+  required string op = 2;
+  optional string value = 3;
+}
+
+message HashRequest {
+  required string key = 1;
+  optional string hashKey = 2;
+  required string op = 3;
+  optional string value = 4;
+}

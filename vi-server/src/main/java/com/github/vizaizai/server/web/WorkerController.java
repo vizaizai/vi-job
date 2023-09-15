@@ -52,7 +52,7 @@ public class WorkerController {
     }
 
     @PostMapping("/register")
-    public Result<Void> register(@Validated @RequestBody  RegisterCO registerCO) {
+    public Result<String> register(@Validated @RequestBody  RegisterCO registerCO) {
         return workerService.register(registerCO);
     }
     @PostMapping("/unregister")

@@ -1,6 +1,7 @@
 package com.github.vizaizai.server.raft.kv.impl;
 
 import com.github.vizaizai.server.raft.kv.KVStorage;
+import com.github.vizaizai.server.raft.kv.metadata.Metadata;
 import com.github.vizaizai.server.raft.kv.metadata.StringMetadata;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,6 +20,10 @@ public class StringKVStorage extends KVStorage {
         return metadata.getData();
     }
     public Object sSet(String key, Object value) {
-        return this.put(key, new StringMetadata(value)).getData();
+        Metadata metadata = this.put(key, new StringMetadata(value));
+        if (metadata != null) {
+            return metadata.getData();
+        }
+        return null;
     }
 }

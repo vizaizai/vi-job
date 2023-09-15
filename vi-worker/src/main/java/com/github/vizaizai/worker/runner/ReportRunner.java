@@ -2,10 +2,12 @@ package com.github.vizaizai.worker.runner;
 
 import com.github.vizaizai.common.contants.BizCode;
 import com.github.vizaizai.common.model.Result;
+import com.github.vizaizai.common.model.StatusReportParam;
 import com.github.vizaizai.logging.LoggerFactory;
 import com.github.vizaizai.remote.codec.RpcRequest;
 import com.github.vizaizai.remote.codec.RpcResponse;
 import com.github.vizaizai.remote.common.sender.Sender;
+import com.github.vizaizai.remote.utils.Utils;
 import com.github.vizaizai.worker.core.HttpSender;
 import com.github.vizaizai.worker.core.TaskContext;
 import com.github.vizaizai.worker.starter.Commons;
@@ -13,10 +15,13 @@ import com.github.vizaizai.worker.utils.JSONUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 任务上报运行器
@@ -78,14 +83,19 @@ public class ReportRunner extends Thread{
         long startTime = System.currentTimeMillis();
         while (!stop) {
             try {
-                TaskContext taskContext = waitingReports.poll(5, TimeUnit.SECONDS);
-                if (taskContext != null) {
+                List<TaskContext> taskContexts = new ArrayList<>();
+                int count = waitingReports.drainTo(taskContexts, 30);
+                if (count > 0) {
+                    List<StatusReportParam> params = taskContexts.stream().map(TaskContext::getReportParam).collect(Collectors.toList());Sender sender = null;
+                    if (!taskContexts.isEmpty()) {
+                        sender = taskContexts.get(0).getSender();
+                    }
                     try {
-                        this.doReport(taskContext);
+                        this.doReport(sender, params);
                     }catch (Exception e) {
-                        logger.warn("job#{} report fail, {}",taskContext.getTriggerParam().getJobName(), e.getMessage());
+                        logger.warn("Report batch fail, {}", e.getMessage());
                         // 上报失败，保存重试参数
-                        ReportRetryRunner.getInstance().writeRetryParam(taskContext.getReportParam());
+                        ReportRetryRunner.getInstance().writeRetryParam(params);
                     }
                     // 重置时间
                     startTime = System.currentTimeMillis();
@@ -98,6 +108,7 @@ public class ReportRunner extends Thread{
                         logger.debug("Thead[{}] idle 120s", this.getName());
                     }
                 }
+                TimeUnit.SECONDS.sleep(5);
             }catch (Exception e) {
                 if (!stop) {
                     logger.error("Thead[{}] exception,", this.getName(), e);
@@ -107,10 +118,12 @@ public class ReportRunner extends Thread{
     }
 
     @SuppressWarnings("rawtypes")
-    public void doReport(TaskContext taskContext) {
-        Sender sender = taskContext.getSender();
+    public void doReport(Sender sender, List<StatusReportParam> params) {
+        if (Utils.isEmpty(params)) {
+            return;
+        }
         if (sender != null && sender.available()) {
-            RpcResponse response = (RpcResponse) sender.sendAndRevResponse(RpcRequest.wrap(BizCode.REPORT, taskContext.getReportParam()), 3000);
+            RpcResponse response = (RpcResponse) sender.sendAndRevResponse(RpcRequest.wrap(BizCode.REPORT, params), 3000);
             if (!response.getSuccess()) {
                 throw new RuntimeException(response.getMsg());
             }
@@ -121,7 +134,7 @@ public class ReportRunner extends Thread{
         }else {
             // http上报
             sender = new HttpSender(this.getRandomServerAddr() + STATUS_REPORT_URL);
-            String response = (String) sender.sendAndRevResponse(taskContext.getReportParam(), 3000);
+            String response = (String) sender.sendAndRevResponse(params, 3000);
             if (StringUtils.isBlank(response)) {
                 throw new RuntimeException("http请求异常");
             }

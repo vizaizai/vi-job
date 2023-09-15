@@ -7,6 +7,8 @@ import com.github.vizaizai.remote.codec.RpcRequest;
 import com.github.vizaizai.server.raft.RaftNodeOptions;
 import com.github.vizaizai.server.raft.RaftServer;
 import com.github.vizaizai.server.service.JobReportProcessor;
+import com.github.vizaizai.server.service.JobRunProcessor;
+import com.github.vizaizai.server.service.JobService;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
@@ -21,15 +23,16 @@ import javax.annotation.Resource;
 @Component
 public class AppLaunch implements ApplicationRunner {
     @Resource
-    private JobReportProcessor jobReportProcessor;
-    @Resource
     private RaftServer raftServer;
-
+    @Resource
+    private JobService jobService;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
         // 注册任务上报处理器
-        NettyClient.registerProcessor(BizCode.REPORT, jobReportProcessor);
+        NettyClient.registerProcessor(BizCode.REPORT, new JobReportProcessor(jobService));
+        // 注册任务运行处理器
+        NettyClient.registerProcessor(BizCode.RUN, new JobRunProcessor(jobService));
         // 设置心跳监听处理
         NettyClient.setIdleEventListener(sender -> sender.send(RpcMessage.createRequest(RpcRequest.wrap(BizCode.BEAT, "ping"))));
         // 初始化raft服务

@@ -96,8 +96,8 @@ public class JobAssignApplyService extends KVApplyService {
         command.setType(Type.HASH);
         command.setOp(Op.H_PUT);
         command.setKey(Commons.JOB_ASSIGN_KEY);
-        command.setValue(selectNode);
         command.setHashKey(jobKey);
+        command.setValue(selectNode);
 
         this.apply(command, closure);
     }

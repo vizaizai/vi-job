@@ -9,6 +9,7 @@ import com.alipay.sofa.jraft.error.RaftError;
 import com.github.vizaizai.common.model.Result;
 import com.github.vizaizai.server.raft.kv.KVCommand;
 import com.github.vizaizai.server.raft.kv.KVOpClosure;
+import com.github.vizaizai.server.raft.kv.Op;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -43,6 +44,22 @@ public class KVApplyService {
             return false;
         }
         return true;
+    }
+
+    /**
+     * 删除
+     * @param key key
+     * @param closure 回调
+     */
+    public void rmKey(String key, byte type, KVOpClosure closure) {
+        if (!this.checkNode(closure)) {
+            return;
+        }
+        KVCommand command = new KVCommand();
+        command.setType(type);
+        command.setOp(Op.RM);
+        command.setKey(key);
+        this.apply(command, closure);
     }
 
     protected void apply(KVCommand command, KVOpClosure closure) {

@@ -22,12 +22,7 @@ public class JobRmRequestProcessor implements RpcProcessor<JobProto.RmRequest> {
     @Override
     public void handleRequest(RpcContext rpcContext, JobProto.RmRequest rmRequest) {
         long jobId = rmRequest.getJobId();
-        final KVOpClosure closure = new KVOpClosure() {
-            @Override
-            public void run(Status status) {
-                rpcContext.sendResponse(getResponse());
-            }
-        };
+        final KVOpClosure closure = new KVOpClosure(rpcContext);
         jobAssignApplyService.remove(jobId, closure);
     }
 
